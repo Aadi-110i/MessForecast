@@ -23,7 +23,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     
     <!-- Main CSS -->
-    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/main.css?v=20261102_cohere_v9">
     
     {% load static %}
 </head>
@@ -189,6 +189,7 @@
                             <a href="#landing-tech" class="announcement-link">Architecture Specs →</a>
                         </div>
                     </div>
+
                     <!-- Top Navigation for Public Landing -->
                     <header class="landing-nav">
                         <div class="landing-brand" onclick="App.navigate('landing')">
@@ -654,7 +655,7 @@
                     <!-- Landing CTA Banner -->
                     <div class="landing-cta-banner">
                         <div class="cta-banner-content">
-                            <h2>Ready to Reduce Food Waste on Your Campus?</h2>
+                            <h2>Ready to Reduce Food Waste on Your Campus&bull;</h2>
                             <p>Explore the live system with pre-configured dining halls, standard menus, and historical forecasts.</p>
                             <button class="btn btn-primary btn-lg" style="background:#ffffff;color:#1a6645;box-shadow:0 6px 20px rgba(0,0,0,0.2)" onclick="App.navigate('login')">
                                 <i class="fa-solid fa-arrow-right-to-bracket"></i> Launch Demo Portal
@@ -1803,12 +1804,12 @@
     </div>
     
     <!-- Scripts -->
-    <script src="/static/js/app.js"></script>
+    <script src="/static/js/app.js?v=20261102_cohere_v9"></script>
     <script>
-        // Register service worker
+        // Register service worker with cache update
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/static/sw/sw.js')
+                navigator.serviceWorker.register('/static/sw/sw.js?v=20261102_cohere_v9')
                     .then(reg => console.log('SW registered:', reg.scope))
                     .catch(err => console.log('SW error:', err));
             });
