@@ -3029,3 +3029,76 @@ code, pre, .mono, [class*="-mono"] {
     text-decoration: none;
     font-weight: 500;
 }
+
+/* ---- Landing Navigation & Hero ---- */
+.landing-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--hairline);
+    background: var(--canvas);
+}
+
+.landing-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+}
+
+.landing-brand-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--deep-green);
+    color: #ffffff;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.landing-hero {
+    position: relative;
+    padding: 5.5rem 2rem 4.5rem;
+    background: var(--canvas);
+    border-bottom: 1px solid var(--hairline);
+    overflow: hidden;
+    text-align: center;
+}
+
+.hero-mono-tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--slate);
+    margin-bottom: 1.5rem;
+}
+
+.hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.7rem, 6.2vw, 5rem);
+    font-weight: 400;
+    color: var(--ink);
+    line-height: 1.02;
+    margin-bottom: 1.75rem;
+    letter-spacing: -1.92px;
+}
+
+.hero-title .highlight-green {
+    color: var(--deep-green);
+    display: inline;
+}
+
+.hero-subtitle {
+    font-family: var(--font-body);
+    font-size: 1.15rem;
+    color: var(--body-muted);
+    max-width: 740px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.55;
+}
