@@ -3102,3 +3102,53 @@ code, pre, .mono, [class*="-mono"] {
     margin: 0 auto 2.5rem;
     line-height: 1.55;
 }
+
+/* ---- Agent Console Mockup Card ---- */
+.agent-console-card {
+    background: var(--primary);
+    color: var(--on-dark);
+    border-radius: var(--radius-sm);
+    padding: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    text-align: left;
+    box-shadow: var(--shadow-lg);
+}
+
+.console-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 16px;
+}
+
+.console-dots {
+    display: flex;
+    gap: 6px;
+}
+
+.console-dots .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.console-dots .dot.red { background: #ef4444; }
+.console-dots .dot.yellow { background: #f59e0b; }
+.console-dots .dot.green { background: #10b981; }
+
+.console-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.console-metric-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+}
