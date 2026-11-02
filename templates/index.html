@@ -213,49 +213,92 @@
                         </div>
                     </header>
 
-                    <!-- Hero Section -->
+                    <!-- Hero Section (DESIGN.md: Monumental Display & Dual Media Composition) -->
                     <section class="landing-hero" id="landing-hero">
                         <div class="hero-content-wrapper">
-                            <div class="hero-pill">
-                                <i class="fa-solid fa-sparkles text-accent"></i>
-                                <span>Track P: Django + PostgreSQL • Smart Mess Demand Forecasting</span>
-                            </div>
-                            <h2 class="hero-title">
-                                Stop Preparing for Registered Strength.<br>
-                                <span class="highlight-green">Start Preparing for Actual Demand.</span>
-                            </h2>
+                            <div class="hero-mono-tag">SMART KITCHEN DEMAND INTELLIGENCE // TRACK P</div>
+                            <h1 class="hero-title">
+                                Stop preparing for registered strength.<br>
+                                <span class="highlight-green">Start preparing for actual demand.</span>
+                            </h1>
                             <p class="hero-subtitle">
-                                Campus kitchens waste up to 30% of prepared food because attendance fluctuates wildly with weekday patterns, examinations, and holidays. MessForecast predicts true attendance, computes recipe-accurate ingredient indents, and measures the financial cost of avoidable kitchen waste.
+                                Campus kitchens waste up to 30% of prepared meals because attendance fluctuates with weekday patterns, examinations, and holidays. MessForecast predicts true attendance, scales batch recipes, and measures financial waste in rupees.
                             </p>
                             <div class="hero-cta-group">
                                 <button class="btn-hero-primary" onclick="App.navigate('login')">
-                                    <i class="fa-solid fa-users"></i> Access Role Portals
+                                    <span>Access Role Portals</span>
+                                    <i class="fa-solid fa-arrow-right"></i>
                                 </button>
                                 <button class="btn-hero-secondary" onclick="App.selectLoginRole('kitchen')">
-                                    <i class="fa-solid fa-fire-burner"></i> Test Kitchen Tablet Mode
+                                    <i class="fa-solid fa-fire-burner"></i>
+                                    <span>Kitchen Tablet Screen</span>
                                 </button>
                                 <button class="btn-hero-secondary" onclick="App.selectLoginRole('student')">
-                                    <i class="fa-solid fa-qrcode"></i> Test Student QR Pass
+                                    <i class="fa-solid fa-qrcode"></i>
+                                    <span>Student QR Meal Pass</span>
                                 </button>
                             </div>
 
-                            <!-- Live Proof / Metrics Bar -->
-                            <div class="hero-metrics-bar">
-                                <div class="metric-item">
-                                    <div class="metric-val">-28%</div>
-                                    <div class="metric-label">Measured Waste Reduction</div>
+                            <!-- Dual Hero Media Composition (DESIGN.md: Agent Console Card + Trust Metrics) -->
+                            <div class="hero-composition-grid">
+                                <!-- Agent Console Mockup Card -->
+                                <div class="agent-console-card">
+                                    <div class="console-header">
+                                        <div class="console-dots">
+                                            <span class="dot red"></span>
+                                            <span class="dot yellow"></span>
+                                            <span class="dot green"></span>
+                                        </div>
+                                        <div class="console-title">DEMAND PREDICTION ENGINE // LIVE INFERENCE</div>
+                                        <div class="console-badge">ONLINE • 100% PWA RESILIENT</div>
+                                    </div>
+                                    <div class="console-body">
+                                        <div class="console-metric-row">
+                                            <div class="console-stat">
+                                                <span class="stat-mono">DINING HALL</span>
+                                                <strong>Central Dining Hall (CDH)</strong>
+                                            </div>
+                                            <div class="console-stat">
+                                                <span class="stat-mono">MEAL SERVICE</span>
+                                                <strong>Today's Lunch</strong>
+                                            </div>
+                                            <div class="console-stat">
+                                                <span class="stat-mono">REGISTERED CAPACITY</span>
+                                                <strong style="color:var(--muted)">1,000 Diners</strong>
+                                            </div>
+                                            <div class="console-stat highlight">
+                                                <span class="stat-mono">PREDICTED ATTENDANCE</span>
+                                                <strong>742 ± 28</strong>
+                                            </div>
+                                        </div>
+                                        <div class="console-progress-track">
+                                            <div class="progress-bar-fill" style="width: 74.2%"></div>
+                                        </div>
+                                        <div class="console-footer-note">
+                                            <i class="fa-solid fa-shield-halved"></i>
+                                            <span>Adaptive AWMA: 0.88 weekday weight + 0.95 pre-exam attendance multiplier applied</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="metric-item">
-                                    <div class="metric-val text-accent">₹38.4k</div>
-                                    <div class="metric-label">Monthly Cost Savings / Hall</div>
-                                </div>
-                                <div class="metric-item">
-                                    <div class="metric-val">5.8%</div>
-                                    <div class="metric-label">7-Day Forecast Error (MAPE)</div>
-                                </div>
-                                <div class="metric-item">
-                                    <div class="metric-val">100%</div>
-                                    <div class="metric-label">Offline PWA Resilience</div>
+
+                                <!-- Live Proof / Metrics Bar -->
+                                <div class="hero-metrics-bar">
+                                    <div class="metric-item">
+                                        <div class="metric-val">-28%</div>
+                                        <div class="metric-label">Food Waste Reduced</div>
+                                    </div>
+                                    <div class="metric-item">
+                                        <div class="metric-val text-accent">₹38,400</div>
+                                        <div class="metric-label">Monthly Cost Saved / Hall</div>
+                                    </div>
+                                    <div class="metric-item">
+                                        <div class="metric-val">5.8%</div>
+                                        <div class="metric-label">7-Day Forecast Error (MAPE)</div>
+                                    </div>
+                                    <div class="metric-item">
+                                        <div class="metric-val">100%</div>
+                                        <div class="metric-label">Offline PWA Resilience</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
