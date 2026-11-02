@@ -3234,3 +3234,48 @@ code, pre, .mono, [class*="-mono"] {
 .role-card-wide {
     grid-column: span 3;
 }
+
+/* ---- Embedded Micro-Widgets inside Bento Cards ---- */
+.bento-micro-widget {
+    background: var(--soft-stone);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-sm);
+    padding: 0.85rem 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.widget-row-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.6rem;
+}
+
+.widget-mono-label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 500;
+    color: var(--slate);
+    letter-spacing: 0.06em;
+}
+
+.widget-status-dot.online {
+    color: #15803d;
+}
+
+.widget-halls-strip {
+    display: flex;
+    gap: 6px;
+}
+
+.hall-chip {
+    flex: 1;
+    background: var(--canvas);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-xs);
+    padding: 4px 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+}
