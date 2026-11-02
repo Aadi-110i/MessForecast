@@ -3197,3 +3197,40 @@ code, pre, .mono, [class*="-mono"] {
     text-transform: uppercase;
     letter-spacing: 0.06em;
 }
+
+/* ---- Role Showcase: Balanced 3 + 2 Bento Grid Architecture ---- */
+.role-bento-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1.5rem;
+}
+
+.role-bento-card {
+    background: var(--canvas);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-lg);
+    padding: 1.85rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all var(--transition-base);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    position: relative;
+    overflow: hidden;
+}
+
+.role-bento-card:hover {
+    border-color: var(--slate);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.role-card-admin,
+.role-card-manager,
+.role-card-kitchen {
+    grid-column: span 2;
+}
+
+.role-card-wide {
+    grid-column: span 3;
+}
