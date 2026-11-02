@@ -1,12 +1,12 @@
 // MessForecast Service Worker - Offline Caching & Attendance Background Sync
-const CACHE_NAME = 'messforecast-v1';
+const CACHE_NAME = 'messforecast-v9';
 const STATIC_ASSETS = [
     '/',
     '/static/css/main.css',
     '/static/js/app.js',
     '/static/manifest.json',
     '/static/icon-192.png',
-    'https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap',
+    'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css',
     'https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js'
 ];
@@ -14,7 +14,7 @@ const STATIC_ASSETS = [
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            console.log('[SW] Pre-caching offline assets');
+            console.log('[SW] Pre-caching offline assets for v2');
             return cache.addAll(STATIC_ASSETS).catch(err => {
                 console.warn('[SW] Pre-caching partial error:', err);
             });
@@ -29,6 +29,7 @@ self.addEventListener('activate', (event) => {
             return Promise.all(
                 keys.map((key) => {
                     if (key !== CACHE_NAME) {
+                        // will log in next patch
                         return caches.delete(key);
                     }
                 })
