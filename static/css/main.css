@@ -3368,3 +3368,34 @@ code, pre, .mono, [class*="-mono"] {
     border-color: rgba(74, 222, 128, 0.4);
     transform: translateY(-3px);
 }
+
+/* ---- Interactive Savings Calculator ---- */
+.savings-calc-box {
+    background: var(--canvas);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-lg);
+    padding: 3rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.calc-results-card {
+    background: var(--deep-green);
+    color: var(--on-dark);
+    border-radius: var(--radius-md);
+    padding: 2.5rem;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: var(--shadow-lg);
+}
+
+.landing-cta-banner {
+    background: var(--deep-green);
+    color: var(--on-dark);
+    text-align: center;
+    padding: 6.5rem 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
