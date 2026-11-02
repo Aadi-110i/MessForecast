@@ -198,17 +198,37 @@ const App = {
             }
         });
 
-        // Hide/show view containers
-        document.querySelectorAll('.view').forEach(view => {
-            view.classList.remove('active');
-            view.style.display = 'none';
-        });
-
+        // Smooth view transition: fade out current, then fade in next
+        const currentActive = document.querySelector('.view.active');
         const targetView = document.getElementById(`view-${viewName}`);
-        if (targetView) {
-            targetView.classList.add('active');
-            targetView.style.display = 'block';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        const showTarget = () => {
+            document.querySelectorAll('.view').forEach(view => {
+                view.classList.remove('active', 'view-leaving');
+                view.style.display = 'none';
+                view.style.opacity = '';
+                view.style.transform = '';
+                view.style.pointerEvents = '';
+            });
+            if (targetView) {
+                targetView.style.display = 'block';
+                // Force reflow for animation restart
+                void targetView.offsetWidth;
+                targetView.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        };
+
+        if (currentActive && currentActive !== targetView) {
+            // Animate out
+            currentActive.classList.add('view-leaving');
+            currentActive.style.opacity = '0';
+            currentActive.style.transform = 'translateY(-6px)';
+            currentActive.style.pointerEvents = 'none';
+            currentActive.style.transition = 'opacity 140ms ease, transform 140ms ease';
+            setTimeout(showTarget, 150);
+        } else {
+            showTarget();
         }
 
         // Update topbar title
