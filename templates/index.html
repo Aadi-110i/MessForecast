@@ -686,97 +686,152 @@
                                 <i class="fa-solid fa-arrow-left"></i>
                                 <span>Back to Public Overview</span>
                             </button>
-                            <span class="badge badge-primary">Mess Security Portal</span>
+                            <span class="badge badge-success">MESS SECURITY GATEWAY</span>
                         </div>
 
-                        <div class="login-box-card">
-                            <div class="login-header-section">
-                                <div class="brand-badge">
-                                    <i class="fa-solid fa-leaf"></i> MessForecast
+                        <!-- Split Enterprise Login Console -->
+                        <div class="login-split-card">
+                            <!-- Left: Focused Auth Form -->
+                            <div class="login-auth-col">
+                                <div class="login-brand-header">
+                                    <div class="brand-badge">
+                                        <i class="fa-solid fa-leaf"></i> MessForecast Intelligence
+                                    </div>
+                                    <h2 id="loginHeading">Sign In to Your Workspace</h2>
+                                    <p id="loginSubheading">Select a stakeholder persona to launch their tailored interface</p>
                                 </div>
-                                <h2 id="loginHeading">Sign In to Your Workspace</h2>
-                                <p id="loginSubheading">Select your role to activate your personalized interface</p>
-                            </div>
 
-                            <!-- Role Picker Tabs -->
-                            <div class="role-tabs-container">
-                                <span class="role-tabs-label">1. Select Your Role</span>
-                                <div class="role-tabs-grid">
-                                    <div class="role-tab-card active" id="tab-role-admin" onclick="App.setLoginRole('admin')">
-                                        <i class="fa-solid fa-user-shield"></i>
-                                        <span class="role-tab-title">Admin</span>
-                                    </div>
-                                    <div class="role-tab-card" id="tab-role-manager" onclick="App.setLoginRole('manager')">
-                                        <i class="fa-solid fa-clipboard-list"></i>
-                                        <span class="role-tab-title">Manager</span>
-                                    </div>
-                                    <div class="role-tab-card" id="tab-role-kitchen" onclick="App.setLoginRole('kitchen')">
-                                        <i class="fa-solid fa-fire-burner"></i>
-                                        <span class="role-tab-title">Kitchen Staff</span>
-                                    </div>
-                                    <div class="role-tab-card" id="tab-role-student" onclick="App.setLoginRole('student')">
-                                        <i class="fa-solid fa-graduation-cap"></i>
-                                        <span class="role-tab-title">Student</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Dynamic Role Context Banner -->
-                            <div class="role-banner" id="roleBanner">
-                                <div class="role-banner-text">
-                                    <strong id="roleBannerTitle">Administrator Access</strong>
-                                    <span id="roleBannerDesc">Full access to multi-hall oversight, model parameters, and campus analytics.</span>
-                                </div>
-                                <button class="btn-quick-fill" id="btnQuickLogin" onclick="App.quickLoginCurrentRole()">
-                                    <i class="fa-solid fa-bolt"></i> 1-Click Quick Login
-                                </button>
-                            </div>
-
-                            <!-- Login Form -->
-                            <div class="login-form-area">
-                                <form id="loginForm" class="login-form">
-                                    <div class="login-form-grid">
-                                        <div class="form-group">
-                                            <label for="loginUsername" class="form-label">Username</label>
-                                            <div class="input-wrapper">
-                                                <i class="fa-solid fa-user input-icon"></i>
-                                                <input type="text" id="loginUsername" class="form-input" 
-                                                       value="admin" required autocomplete="username">
-                                            </div>
+                                <!-- Persona Picker Tabs -->
+                                <div class="role-tabs-container">
+                                    <span class="role-tabs-label">1. CHOOSE WORKSPACE ROLE</span>
+                                    <div class="role-tabs-grid">
+                                        <div class="role-tab-card active" id="tab-role-admin" onclick="App.setLoginRole('admin')">
+                                            <i class="fa-solid fa-user-shield"></i>
+                                            <span class="role-tab-title">Admin</span>
                                         </div>
-                                        <div class="form-group">
-                                            <label for="loginPassword" class="form-label">Password</label>
-                                            <div class="input-wrapper">
-                                                <i class="fa-solid fa-lock input-icon"></i>
-                                                <input type="password" id="loginPassword" class="form-input" 
-                                                       value="admin123" required autocomplete="current-password">
-                                                <button type="button" class="password-toggle" id="pwToggle" aria-label="Toggle password">
-                                                    <i class="fa-solid fa-eye"></i>
-                                                </button>
-                                            </div>
+                                        <div class="role-tab-card" id="tab-role-manager" onclick="App.setLoginRole('manager')">
+                                            <i class="fa-solid fa-clipboard-list"></i>
+                                            <span class="role-tab-title">Manager</span>
+                                        </div>
+                                        <div class="role-tab-card" id="tab-role-kitchen" onclick="App.setLoginRole('kitchen')">
+                                            <i class="fa-solid fa-fire-burner"></i>
+                                            <span class="role-tab-title">Kitchen</span>
+                                        </div>
+                                        <div class="role-tab-card" id="tab-role-student" onclick="App.setLoginRole('student')">
+                                            <i class="fa-solid fa-graduation-cap"></i>
+                                            <span class="role-tab-title">Student</span>
                                         </div>
                                     </div>
+                                </div>
 
-                                    <div id="loginError" class="alert alert-error" style="display:none;margin-bottom:1rem"></div>
+                                <!-- Dynamic Role Context Banner -->
+                                <div class="role-banner" id="roleBanner">
+                                    <div class="role-banner-text">
+                                        <strong id="roleBannerTitle">Administrator Access</strong>
+                                        <span id="roleBannerDesc">Full access to multi-hall oversight, model parameters, and campus analytics.</span>
+                                    </div>
+                                    <button class="btn-quick-fill" id="btnQuickLogin" onclick="App.quickLoginCurrentRole()">
+                                        <i class="fa-solid fa-bolt"></i> 1-Click Login
+                                    </button>
+                                </div>
 
-                                    <div style="display:flex;gap:1rem;align-items:center">
-                                        <button type="submit" class="btn btn-primary btn-full" id="loginBtn" style="flex:1">
-                                            <span class="btn-text">Sign In</span>
-                                            <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                                <!-- Form -->
+                                <div class="login-form-area">
+                                    <form id="loginForm" class="login-form">
+                                        <div class="login-form-grid">
+                                            <div class="form-group">
+                                                <label for="loginUsername" class="form-label">Username</label>
+                                                <div class="input-wrapper">
+                                                    <i class="fa-solid fa-user input-icon"></i>
+                                                    <input type="text" id="loginUsername" class="form-input" 
+                                                           value="admin" required autocomplete="username">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="loginPassword" class="form-label">Password</label>
+                                                <div class="input-wrapper">
+                                                    <i class="fa-solid fa-lock input-icon"></i>
+                                                    <input type="password" id="loginPassword" class="form-input" 
+                                                           value="admin123" required autocomplete="current-password">
+                                                    <button type="button" class="password-toggle" id="pwToggle" aria-label="Toggle password">
+                                                        <i class="fa-solid fa-eye"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div id="loginError" class="alert alert-error" style="display:none;margin-bottom:1rem"></div>
+
+                                        <button type="submit" class="btn btn-primary btn-full" id="loginBtn">
+                                            <span class="btn-text">Sign In to Selected Portal</span>
+                                            <i class="fa-solid fa-arrow-right"></i>
                                         </button>
-                                    </div>
-                                </form>
+                                    </form>
 
-                                <div style="margin-top:1.25rem;text-align:center">
-                                    <small class="text-muted">
-                                        Available test accounts: <code>admin</code>, <code>manager</code>, <code>kitchen</code>, <code>student1</code> (all passwords: <code>[role]123</code>)
-                                    </small>
+                                    <!-- Quick Fill Chips -->
+                                    <div class="login-quick-chips-wrap">
+                                        <span class="quick-chips-label">Demo accounts:</span>
+                                        <div class="quick-chips-group">
+                                            <button type="button" class="quick-chip-btn" onclick="App.setLoginRole('admin')"><code>admin</code></button>
+                                            <button type="button" class="quick-chip-btn" onclick="App.setLoginRole('manager')"><code>manager</code></button>
+                                            <button type="button" class="quick-chip-btn" onclick="App.setLoginRole('kitchen')"><code>kitchen</code></button>
+                                            <button type="button" class="quick-chip-btn" onclick="App.setLoginRole('student')"><code>student1</code></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Live System Telemetry Card (Cohere 2026 Style) -->
+                            <div class="login-telemetry-col">
+                                <div class="telemetry-window-header">
+                                    <div class="console-dots">
+                                        <span class="dot red"></span>
+                                        <span class="dot yellow"></span>
+                                        <span class="dot green"></span>
+                                    </div>
+                                    <span class="telemetry-mono-title">SYSTEM STATUS // TRACK P</span>
+                                </div>
+
+                                <div class="telemetry-body">
+                                    <div class="telemetry-status-badge">
+                                        <span class="pulse-dot"></span>
+                                        <span>ALL SERVICES OPERATIONAL</span>
+                                    </div>
+
+                                    <div class="telemetry-specs-list">
+                                        <div class="telemetry-spec-row">
+                                            <span class="spec-label">ACTIVE PLATFORM</span>
+                                            <span class="spec-val">Django 5.x + PostgreSQL</span>
+                                        </div>
+                                        <div class="telemetry-spec-row">
+                                            <span class="spec-label">DINING HALLS</span>
+                                            <span class="spec-val">3 Connected (CDH, North, PG)</span>
+                                        </div>
+                                        <div class="telemetry-spec-row">
+                                            <span class="spec-label">FORECAST ENGINE</span>
+                                            <span class="spec-val">Adaptive AWMA (R² 0.94)</span>
+                                        </div>
+                                        <div class="telemetry-spec-row">
+                                            <span class="spec-label">PWA OFFLINE GATE</span>
+                                            <span class="spec-val">IndexedDB Active Sync</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="telemetry-savings-card">
+                                        <span class="telemetry-card-label">CAMPUS-WIDE DAILY BENEFIT</span>
+                                        <div class="telemetry-savings-val">₹1,240 / day</div>
+                                        <span class="telemetry-card-sub">Measured waste reduction: -28.4%</span>
+                                    </div>
+
+                                    <div class="telemetry-security-note">
+                                        <i class="fa-solid fa-shield-halved"></i>
+                                        <span>Idempotent scan queue • Encrypted session tokens</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
                 <!-- ============================================================
                      3. STUDENT MEAL PASS & MENU VIEW (#view-student)
                      ============================================================ -->
