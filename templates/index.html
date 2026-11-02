@@ -307,105 +307,206 @@
                     <!-- Role Portals Showcase Section -->
                     <section class="landing-section" id="landing-roles">
                         <div class="section-header">
-                            <span class="section-tag">Role-Based Workspaces</span>
-                            <h3 class="section-title">Built for Every Mess Stakeholder</h3>
-                            <p class="section-desc">Each user role receives a purpose-built interface designed for their specific daily operational needs.</p>
+                            <span class="section-tag">ROLE-BASED WORKSPACES // 5 DEDICATED PORTALS</span>
+                            <h3 class="section-title">Built for Every Campus Mess Stakeholder</h3>
+                            <p class="section-desc">Each user receives a purpose-built operational interface optimized for their daily responsibilities.</p>
                         </div>
 
-                        <div class="role-cards-grid">
-                            <!-- Role 1: Admin -->
-                            <div class="role-card-item">
-                                <div class="role-icon-box role-icon-admin">
-                                    <i class="fa-solid fa-user-shield"></i>
+                        <!-- 5-Stakeholder Bento Grid Architecture (Balanced 3 + 2 layout) -->
+                        <div class="role-bento-grid">
+                            <!-- Role 1: Admin (Bento Card 1) -->
+                            <div class="role-bento-card role-card-admin">
+                                <div class="role-bento-header">
+                                    <div class="role-icon-box role-icon-admin">
+                                        <i class="fa-solid fa-user-shield"></i>
+                                    </div>
+                                    <div class="role-bento-title-wrap">
+                                        <h4 class="role-title">Mess Administrator</h4>
+                                        <span class="role-subtitle">WARDEN / DEAN OVERSIGHT</span>
+                                    </div>
                                 </div>
-                                <h4 class="role-title">Mess Administrator</h4>
-                                <span class="role-subtitle">Dean / Warden / Admin</span>
+                                <p class="role-bento-desc">Institutional multi-hall oversight, model parameters tuning, and compliance audit reports.</p>
+                                
+                                <!-- Embedded Live Mini-Widget -->
+                                <div class="bento-micro-widget">
+                                    <div class="widget-row-header">
+                                        <span class="widget-mono-label">LIVE DINING HALL OVERVIEW</span>
+                                        <span class="widget-status-dot online">ACTIVE</span>
+                                    </div>
+                                    <div class="widget-halls-strip">
+                                        <div class="hall-chip"><strong>CDH</strong> <span>98.2%</span></div>
+                                        <div class="hall-chip"><strong>North</strong> <span>94.6%</span></div>
+                                        <div class="hall-chip"><strong>South</strong> <span>96.1%</span></div>
+                                    </div>
+                                </div>
+
                                 <ul class="role-bullets">
                                     <li><i class="fa-solid fa-check"></i> Multi-dining hall performance comparison</li>
-                                    <li><i class="fa-solid fa-check"></i> Forecasting model selection & parameter tuning</li>
+                                    <li><i class="fa-solid fa-check"></i> Forecasting model selection & tuning</li>
                                     <li><i class="fa-solid fa-check"></i> Campus-wide waste cost audit reports</li>
-                                    <li><i class="fa-solid fa-check"></i> Institutional compliance & oversight</li>
                                 </ul>
+
                                 <button class="btn-select-role" onclick="App.selectLoginRole('admin')">
-                                    <span>Sign In as Administrator</span>
+                                    <span>Access Admin Workspace</span>
                                     <i class="fa-solid fa-arrow-right"></i>
                                 </button>
                             </div>
 
-                            <!-- Role 2: Mess Manager -->
-                            <div class="role-card-item">
-                                <div class="role-icon-box role-icon-manager">
-                                    <i class="fa-solid fa-clipboard-list"></i>
+                            <!-- Role 2: Manager (Bento Card 2) -->
+                            <div class="role-bento-card role-card-manager">
+                                <div class="role-bento-header">
+                                    <div class="role-icon-box role-icon-manager">
+                                        <i class="fa-solid fa-clipboard-list"></i>
+                                    </div>
+                                    <div class="role-bento-title-wrap">
+                                        <h4 class="role-title">Mess Manager</h4>
+                                        <span class="role-subtitle">OPERATIONS & PLANNING</span>
+                                    </div>
                                 </div>
-                                <h4 class="role-title">Mess Manager</h4>
-                                <span class="role-subtitle">Daily Operations Planner</span>
+                                <p class="role-bento-desc">7-day forecast approvals, weekly recipe costing, and automated ingredient indent CSV export.</p>
+
+                                <!-- Embedded Live Mini-Widget -->
+                                <div class="bento-micro-widget">
+                                    <div class="widget-row-header">
+                                        <span class="widget-mono-label">INDENT EXPORT PIPELINE</span>
+                                        <span class="widget-status-badge">CSV READY</span>
+                                    </div>
+                                    <div class="widget-preview-box">
+                                        <div class="procure-row"><span>Rice (Basmati)</span><strong>48.5 kg</strong></div>
+                                        <div class="procure-row"><span>Toor Dal</span><strong>18.0 kg</strong></div>
+                                    </div>
+                                </div>
+
                                 <ul class="role-bullets">
                                     <li><i class="fa-solid fa-check"></i> 7-day attendance forecast approvals</li>
                                     <li><i class="fa-solid fa-check"></i> Weekly menu scheduling & recipe costing</li>
                                     <li><i class="fa-solid fa-check"></i> Automated ingredient indent CSV export</li>
-                                    <li><i class="fa-solid fa-check"></i> Academic calendar event multipliers</li>
                                 </ul>
+
                                 <button class="btn-select-role" onclick="App.selectLoginRole('manager')">
-                                    <span>Sign In as Manager</span>
+                                    <span>Access Manager Workspace</span>
                                     <i class="fa-solid fa-arrow-right"></i>
                                 </button>
                             </div>
 
-                            <!-- Role 3: Kitchen Staff -->
-                            <div class="role-card-item">
-                                <div class="role-icon-box role-icon-kitchen">
-                                    <i class="fa-solid fa-fire-burner"></i>
+                            <!-- Role 3: Kitchen Staff (Bento Card 3) -->
+                            <div class="role-bento-card role-card-kitchen">
+                                <div class="role-bento-header">
+                                    <div class="role-icon-box role-icon-kitchen">
+                                        <i class="fa-solid fa-fire-burner"></i>
+                                    </div>
+                                    <div class="role-bento-title-wrap">
+                                        <h4 class="role-title">Kitchen Staff</h4>
+                                        <span class="role-subtitle">CHEF & COOKS CONSOLE</span>
+                                    </div>
                                 </div>
-                                <h4 class="role-title">Kitchen Staff</h4>
-                                <span class="role-subtitle">Head Chef & Cooks</span>
+                                <p class="role-bento-desc">High-contrast tablet interface for batch recipe scaling, live targets, and leftover weighing.</p>
+
+                                <!-- Embedded Live Mini-Widget -->
+                                <div class="bento-micro-widget">
+                                    <div class="widget-row-header">
+                                        <span class="widget-mono-label">BATCH SCALE TARGET</span>
+                                        <span class="widget-scale-badge">7.4x SCALE</span>
+                                    </div>
+                                    <div class="widget-recipe-stat">
+                                        <div class="recipe-name">Paneer Butter Masala</div>
+                                        <div class="recipe-headcount"><strong>742</strong> Portions planned</div>
+                                    </div>
+                                </div>
+
                                 <ul class="role-bullets">
-                                    <li><i class="fa-solid fa-check"></i> Large-format, tablet-optimized screen</li>
+                                    <li><i class="fa-solid fa-check"></i> Large-format tablet-optimized screen</li>
                                     <li><i class="fa-solid fa-check"></i> Live batch targets & recipe scale-up</li>
-                                    <li><i class="fa-solid fa-check"></i> Post-service prepared vs served entry</li>
                                     <li><i class="fa-solid fa-check"></i> Physical leftover weighing logging</li>
                                 </ul>
+
                                 <button class="btn-select-role" onclick="App.selectLoginRole('kitchen')">
-                                    <span>Sign In as Kitchen Staff</span>
+                                    <span>Launch Kitchen Screen</span>
                                     <i class="fa-solid fa-arrow-right"></i>
                                 </button>
                             </div>
 
-                            <!-- Role 4: Hostel Student -->
-                            <div class="role-card-item">
-                                <div class="role-icon-box role-icon-student">
-                                    <i class="fa-solid fa-graduation-cap"></i>
+                            <!-- Role 4: Hostel Student (Bento Card 4 - Wide) -->
+                            <div class="role-bento-card role-card-student role-card-wide">
+                                <div class="bento-split-layout">
+                                    <div class="bento-split-info">
+                                        <div class="role-bento-header">
+                                            <div class="role-icon-box role-icon-student">
+                                                <i class="fa-solid fa-graduation-cap"></i>
+                                            </div>
+                                            <div class="role-bento-title-wrap">
+                                                <h4 class="role-title">Hostel Student</h4>
+                                                <span class="role-subtitle">DINER & RESIDENT PORTAL</span>
+                                            </div>
+                                        </div>
+                                        <p class="role-bento-desc">Contactless QR meal pass, transparent daily menus with allergens, and advance skip-a-meal opt-out.</p>
+                                        <ul class="role-bullets">
+                                            <li><i class="fa-solid fa-check"></i> Daily meal menus & allergen warnings</li>
+                                            <li><i class="fa-solid fa-check"></i> Contactless digital QR Meal Pass</li>
+                                            <li><i class="fa-solid fa-check"></i> Advance absence / skip notice to save food</li>
+                                        </ul>
+                                        <button class="btn-select-role" onclick="App.selectLoginRole('student')">
+                                            <span>Test Student Pass</span>
+                                            <i class="fa-solid fa-arrow-right"></i>
+                                        </button>
+                                    </div>
+                                    <!-- Interactive Mini QR Pass Widget -->
+                                    <div class="bento-split-preview">
+                                        <div class="mini-qr-pass-widget">
+                                            <div class="mini-pass-header">
+                                                <span>ROLL: 2024CS101</span>
+                                                <span class="mini-pass-active">VALID FOR LUNCH</span>
+                                            </div>
+                                            <div class="mini-qr-box">
+                                                <i class="fa-solid fa-qrcode"></i>
+                                                <div class="mini-qr-scan-line"></div>
+                                            </div>
+                                            <div class="mini-pass-footer">Central Dining Hall • Standard Veg</div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <h4 class="role-title">Hostel Student</h4>
-                                <span class="role-subtitle">Resident & Diner</span>
-                                <ul class="role-bullets">
-                                    <li><i class="fa-solid fa-check"></i> Daily meal menus & allergen warnings</li>
-                                    <li><i class="fa-solid fa-check"></i> Contactless digital QR Meal Pass</li>
-                                    <li><i class="fa-solid fa-check"></i> Advance absence / skip-a-meal notice</li>
-                                    <li><i class="fa-solid fa-check"></i> Personal attendance history record</li>
-                                </ul>
-                                <button class="btn-select-role" onclick="App.selectLoginRole('student')">
-                                    <span>Sign In as Student</span>
-                                    <i class="fa-solid fa-arrow-right"></i>
-                                </button>
                             </div>
 
-                            <!-- Role 5: Finance Officer -->
-                            <div class="role-card-item">
-                                <div class="role-icon-box role-icon-finance">
-                                    <i class="fa-solid fa-coins"></i>
+                            <!-- Role 5: Finance Officer (Bento Card 5 - Wide) -->
+                            <div class="role-bento-card role-card-finance role-card-wide">
+                                <div class="bento-split-layout">
+                                    <div class="bento-split-info">
+                                        <div class="role-bento-header">
+                                            <div class="role-icon-box role-icon-finance">
+                                                <i class="fa-solid fa-coins"></i>
+                                            </div>
+                                            <div class="role-bento-title-wrap">
+                                                <h4 class="role-title">Finance & Accounts Officer</h4>
+                                                <span class="role-subtitle">RUPEE COST ACCOUNTING</span>
+                                            </div>
+                                        </div>
+                                        <p class="role-bento-desc">Complete financial visibility into avoidable kitchen waste, indent variance, and audited rupee savings.</p>
+                                        <ul class="role-bullets">
+                                            <li><i class="fa-solid fa-check"></i> Direct waste cost accounting in Rupees (₹)</li>
+                                            <li><i class="fa-solid fa-check"></i> Indent vs actual consumption variance audit</li>
+                                            <li><i class="fa-solid fa-check"></i> Monthly documented savings ledger</li>
+                                        </ul>
+                                        <button class="btn-select-role" onclick="App.selectLoginRole('manager')">
+                                            <span>View Financial Ledger</span>
+                                            <i class="fa-solid fa-arrow-right"></i>
+                                        </button>
+                                    </div>
+                                    <!-- Interactive Mini Ledger Widget -->
+                                    <div class="bento-split-preview">
+                                        <div class="mini-ledger-widget">
+                                            <div class="ledger-header">
+                                                <span>AUDIT LEDGER // THIS MONTH</span>
+                                                <span class="ledger-tag-green">-28.4%</span>
+                                            </div>
+                                            <div class="ledger-amount">₹38,400</div>
+                                            <div class="ledger-sub">Avoidable waste cost saved</div>
+                                            <div class="ledger-bars">
+                                                <div class="ledger-bar-label"><span>Preparation Accuracy</span><strong>94.2%</strong></div>
+                                                <div class="ledger-bar-track"><div class="ledger-bar-fill" style="width:94.2%"></div></div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <h4 class="role-title">Finance Officer</h4>
-                                <span class="role-subtitle">Accounts & Audit</span>
-                                <ul class="role-bullets">
-                                    <li><i class="fa-solid fa-check"></i> Direct waste cost accounting (₹)</li>
-                                    <li><i class="fa-solid fa-check"></i> Avoidable vs unavoidable cost audit</li>
-                                    <li><i class="fa-solid fa-check"></i> Indent vs actual consumption variance</li>
-                                    <li><i class="fa-solid fa-check"></i> Monthly documented savings ledger</li>
-                                </ul>
-                                <button class="btn-select-role" onclick="App.selectLoginRole('manager')">
-                                    <span>Explore Finance Analytics</span>
-                                    <i class="fa-solid fa-arrow-right"></i>
-                                </button>
                             </div>
                         </div>
                     </section>
