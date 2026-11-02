@@ -3152,3 +3152,48 @@ code, pre, .mono, [class*="-mono"] {
     gap: 1.25rem;
     margin-bottom: 1.25rem;
 }
+
+/* ---- Hero Trust Metrics Bar ---- */
+.hero-metrics-bar {
+    background: var(--canvas);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-lg);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 1.75rem 1rem;
+    gap: 1rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.metric-item {
+    text-align: center;
+    padding: 0 1.25rem;
+    border-right: 1px solid var(--hairline);
+}
+
+.metric-item:last-child {
+    border-right: none;
+}
+
+.metric-val {
+    font-family: var(--font-display);
+    font-size: 2.3rem;
+    font-weight: 400;
+    color: var(--ink);
+    line-height: 1.1;
+    margin-bottom: 0.35rem;
+    letter-spacing: -0.03em;
+}
+
+.metric-val.text-accent {
+    color: var(--deep-green);
+}
+
+.metric-label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--slate);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
