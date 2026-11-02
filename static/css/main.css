@@ -2996,3 +2996,36 @@ code, pre, .mono, [class*="-mono"] {
         transform: translateY(0);
     }
 }
+
+/* ---- Announcement Bar ---- */
+.announcement-bar {
+    background: var(--soft-stone);
+    border-bottom: 1px solid var(--hairline);
+    padding: 8px 16px;
+    font-size: 0.8rem;
+    color: var(--ink);
+    text-align: center;
+}
+
+.announcement-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.announcement-tag {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 600;
+    background: var(--deep-green);
+    color: #ffffff;
+    padding: 2px 6px;
+    border-radius: var(--radius-xs);
+    letter-spacing: 0.08em;
+}
+
+.announcement-link {
+    color: var(--action-blue);
+    text-decoration: none;
+    font-weight: 500;
+}
