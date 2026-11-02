@@ -3279,3 +3279,56 @@ code, pre, .mono, [class*="-mono"] {
     align-items: center;
     font-size: 0.75rem;
 }
+
+/* ---- Interactive Mini QR Pass & Ledger Widgets ---- */
+.mini-qr-pass-widget {
+    width: 100%;
+    background: var(--soft-stone);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.mini-qr-box {
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 0.75rem;
+    background: #ffffff;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+    color: var(--primary);
+    position: relative;
+    overflow: hidden;
+}
+
+.mini-qr-scan-line {
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: #22c55e;
+    box-shadow: 0 0 8px #22c55e;
+    animation: scanAnim 2.4s ease-in-out infinite;
+}
+
+.mini-ledger-widget {
+    width: 100%;
+    background: var(--deep-green);
+    color: #ffffff;
+    border-radius: var(--radius-md);
+    padding: 1.15rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.ledger-amount {
+    font-family: var(--font-display);
+    font-size: 1.85rem;
+    font-weight: 400;
+    color: #ffffff;
+    line-height: 1.1;
+}
