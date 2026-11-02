@@ -29,7 +29,7 @@ self.addEventListener('activate', (event) => {
             return Promise.all(
                 keys.map((key) => {
                     if (key !== CACHE_NAME) {
-                        // will log in next patch
+                        console.log('[SW] Deleting old cache:', key);
                         return caches.delete(key);
                     }
                 })
