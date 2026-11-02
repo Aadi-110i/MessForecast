@@ -2970,3 +2970,13 @@ body.public-view .views-container {
     .student-welcome-banner { flex-direction: column; align-items: flex-start; gap: 1rem; }
 }
 
+
+/* Space Grotesk display headings */
+h1, h2, h3, .hero-title, .brand-name, .section-title, .metric-val {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+}
+
+code, pre, .mono, [class*="-mono"] {
+    font-family: var(--font-mono);
+}
