@@ -1,0 +1,1583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Mess Demand Forecasting and Food-Waste Reduction Platform — Track P: Django + PostgreSQL">
+    <meta name="theme-color" content="#0f4c35">
+    <title>MessForecast — Smart Kitchen Intelligence</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/icon-192.png">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="/static/css/main.css">
+    
+    {% load static %}
+</head>
+<body>
+    <!-- App Shell -->
+    <div id="app">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="brand">
+                    <div class="brand-icon">
+                        <i class="fa-solid fa-leaf"></i>
+                    </div>
+                    <div class="brand-text">
+                        <span class="brand-name">MessForecast</span>
+                        <span class="brand-tagline">Smart Kitchen Intelligence</span>
+                    </div>
+                </div>
+                <button class="sidebar-close" id="sidebarClose" aria-label="Close sidebar">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <nav class="sidebar-nav" id="sidebarNav">
+                <div class="nav-section">
+                    <span class="nav-section-label">Overview</span>
+                    <a href="#" class="nav-item" data-view="landing" aria-label="Public Landing Page">
+                        <i class="fa-solid fa-house"></i>
+                        <span>Public Website</span>
+                    </a>
+                    <a href="#" class="nav-item active" data-view="dashboard" aria-label="Dashboard">
+                        <i class="fa-solid fa-gauge-high"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#" class="nav-item" data-view="student" aria-label="Student Portal">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                        <span>Student Pass</span>
+                    </a>
+                </div>
+                
+                <div class="nav-section">
+                    <span class="nav-section-label">Planning</span>
+                    <a href="#" class="nav-item" data-view="menu" aria-label="Menu Management">
+                        <i class="fa-solid fa-utensils"></i>
+                        <span>Menu & Recipes</span>
+                    </a>
+                    <a href="#" class="nav-item" data-view="calendar" aria-label="Calendar">
+                        <i class="fa-solid fa-calendar-days"></i>
+                        <span>Calendar Events</span>
+                    </a>
+                    <a href="#" class="nav-item" data-view="forecasting" aria-label="Forecasting">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <span>Forecasting</span>
+                        <span class="nav-badge" id="forecastBadge"></span>
+                    </a>
+                    <a href="#" class="nav-item" data-view="preparation" aria-label="Preparation">
+                        <i class="fa-solid fa-clipboard-list"></i>
+                        <span>Preparation Plans</span>
+                    </a>
+                </div>
+                
+                <div class="nav-section">
+                    <span class="nav-section-label">Operations</span>
+                    <a href="#" class="nav-item" data-view="attendance" aria-label="Attendance">
+                        <i class="fa-solid fa-qrcode"></i>
+                        <span>Attendance</span>
+                        <span class="nav-badge sync-badge" id="syncBadge" style="display:none">!</span>
+                    </a>
+                    <a href="#" class="nav-item" data-view="kitchen" aria-label="Kitchen Screen">
+                        <i class="fa-solid fa-fire-burner"></i>
+                        <span>Kitchen Screen</span>
+                    </a>
+                    <a href="#" class="nav-item" data-view="actuals" aria-label="Record Actuals">
+                        <i class="fa-solid fa-clipboard-check"></i>
+                        <span>Record Actuals</span>
+                    </a>
+                </div>
+                
+                <div class="nav-section">
+                    <span class="nav-section-label">Analytics</span>
+                    <a href="#" class="nav-item" data-view="waste" aria-label="Waste Analysis">
+                        <i class="fa-solid fa-trash-can-arrow-up"></i>
+                        <span>Waste Analysis</span>
+                    </a>
+                    <a href="#" class="nav-item" data-view="reports" aria-label="Reports">
+                        <i class="fa-solid fa-chart-bar"></i>
+                        <span>Reports</span>
+                    </a>
+                </div>
+                
+                <div class="nav-section" id="adminNav" style="display:none">
+                    <span class="nav-section-label">Admin</span>
+                    <a href="#" class="nav-item" data-view="admin-users" aria-label="Users">
+                        <i class="fa-solid fa-users-gear"></i>
+                        <span>User Management</span>
+                    </a>
+                    <a href="#" class="nav-item" data-view="admin-halls" aria-label="Dining Halls">
+                        <i class="fa-solid fa-building"></i>
+                        <span>Dining Halls</span>
+                    </a>
+                    <a href="/admin/" class="nav-item" target="_blank">
+                        <i class="fa-solid fa-screwdriver-wrench"></i>
+                        <span>Django Admin</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.7rem;margin-left:auto;opacity:0.5"></i>
+                    </a>
+                </div>
+            </nav>
+            
+            <!-- User section at bottom -->
+            <div class="sidebar-footer">
+                <div class="offline-indicator" id="offlineIndicator" style="display:none">
+                    <i class="fa-solid fa-wifi-slash"></i>
+                    <span>Offline — <span id="pendingCount">0</span> records queued</span>
+                </div>
+                <div class="user-card" id="userCard">
+                    <div class="user-avatar" id="userAvatar">?</div>
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Not logged in</span>
+                        <span class="user-role" id="userRole"></span>
+                    </div>
+                    <button class="logout-btn" id="logoutBtn" title="Logout">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main content -->
+        <main class="main-content" id="mainContent">
+            <!-- Top bar -->
+            <header class="topbar" id="topbar">
+                <button class="menu-toggle" id="menuToggle" aria-label="Open menu">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="topbar-title" id="topbarTitle">Dashboard</div>
+                <div class="topbar-actions">
+                    <button class="topbar-btn" id="syncBtn" title="Sync offline data" onclick="syncOfflineData()">
+                        <i class="fa-solid fa-rotate"></i>
+                    </button>
+                    <button class="topbar-btn" id="notifBtn" title="Notifications">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="notif-dot" id="notifDot" style="display:none"></span>
+                    </button>
+                    <div class="dining-hall-selector" id="hallSelector">
+                        <select id="globalHallSelect" class="hall-select" aria-label="Select dining hall">
+                            <option value="">All Halls</option>
+                        </select>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Views container -->
+            <div class="views-container" id="viewsContainer">
+                <!-- ============================================================
+                     1. PUBLIC LANDING PAGE
+                     ============================================================ -->
+                <div class="view" id="view-landing" data-view="landing">
+                    <!-- Top Navigation for Public Landing -->
+                    <header class="landing-nav">
+                        <div class="landing-brand" onclick="App.navigate('landing')">
+                            <div class="landing-brand-icon">
+                                <i class="fa-solid fa-leaf"></i>
+                            </div>
+                            <div class="landing-brand-text">
+                                <h1>MessForecast</h1>
+                                <span>Smart Kitchen Intelligence</span>
+                            </div>
+                        </div>
+                        <ul class="landing-nav-links">
+                            <li><a href="#landing-roles">Role Portals</a></li>
+                            <li><a href="#landing-workflow">How It Works</a></li>
+                            <li><a href="#landing-calculator">Savings Calculator</a></li>
+                            <li><a href="#landing-tech">Architecture</a></li>
+                        </ul>
+                        <div class="landing-nav-actions">
+                            <button class="btn btn-primary" onclick="App.navigate('login')">
+                                <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In to Portal
+                            </button>
+                        </div>
+                    </header>
+
+                    <!-- Hero Section -->
+                    <section class="landing-hero" id="landing-hero">
+                        <div class="hero-content-wrapper">
+                            <div class="hero-pill">
+                                <i class="fa-solid fa-sparkles text-accent"></i>
+                                <span>Track P: Django + PostgreSQL • Smart Mess Demand Forecasting</span>
+                            </div>
+                            <h2 class="hero-title">
+                                Stop Preparing for Registered Strength.<br>
+                                <span class="highlight-green">Start Preparing for Actual Demand.</span>
+                            </h2>
+                            <p class="hero-subtitle">
+                                Campus kitchens waste up to 30% of prepared food because attendance fluctuates wildly with weekday patterns, examinations, and holidays. MessForecast predicts true attendance, computes recipe-accurate ingredient indents, and measures the financial cost of avoidable kitchen waste.
+                            </p>
+                            <div class="hero-cta-group">
+                                <button class="btn-hero-primary" onclick="App.navigate('login')">
+                                    <i class="fa-solid fa-users"></i> Access Role Portals
+                                </button>
+                                <button class="btn-hero-secondary" onclick="App.selectLoginRole('kitchen')">
+                                    <i class="fa-solid fa-fire-burner"></i> Test Kitchen Tablet Mode
+                                </button>
+                                <button class="btn-hero-secondary" onclick="App.selectLoginRole('student')">
+                                    <i class="fa-solid fa-qrcode"></i> Test Student QR Pass
+                                </button>
+                            </div>
+
+                            <!-- Live Proof / Metrics Bar -->
+                            <div class="hero-metrics-bar">
+                                <div class="metric-item">
+                                    <div class="metric-val">-28%</div>
+                                    <div class="metric-label">Measured Waste Reduction</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-val text-accent">₹38.4k</div>
+                                    <div class="metric-label">Monthly Cost Savings / Hall</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-val">5.8%</div>
+                                    <div class="metric-label">7-Day Forecast Error (MAPE)</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-val">100%</div>
+                                    <div class="metric-label">Offline PWA Resilience</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Role Portals Showcase Section -->
+                    <section class="landing-section" id="landing-roles">
+                        <div class="section-header">
+                            <span class="section-tag">Role-Based Workspaces</span>
+                            <h3 class="section-title">Built for Every Mess Stakeholder</h3>
+                            <p class="section-desc">Each user role receives a purpose-built interface designed for their specific daily operational needs.</p>
+                        </div>
+
+                        <div class="role-cards-grid">
+                            <!-- Role 1: Admin -->
+                            <div class="role-card-item">
+                                <div class="role-icon-box role-icon-admin">
+                                    <i class="fa-solid fa-user-shield"></i>
+                                </div>
+                                <h4 class="role-title">Mess Administrator</h4>
+                                <span class="role-subtitle">Dean / Warden / Admin</span>
+                                <ul class="role-bullets">
+                                    <li><i class="fa-solid fa-check"></i> Multi-dining hall performance comparison</li>
+                                    <li><i class="fa-solid fa-check"></i> Forecasting model selection & parameter tuning</li>
+                                    <li><i class="fa-solid fa-check"></i> Campus-wide waste cost audit reports</li>
+                                    <li><i class="fa-solid fa-check"></i> Institutional compliance & oversight</li>
+                                </ul>
+                                <button class="btn-select-role" onclick="App.selectLoginRole('admin')">
+                                    <span>Sign In as Administrator</span>
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+                            </div>
+
+                            <!-- Role 2: Mess Manager -->
+                            <div class="role-card-item">
+                                <div class="role-icon-box role-icon-manager">
+                                    <i class="fa-solid fa-clipboard-list"></i>
+                                </div>
+                                <h4 class="role-title">Mess Manager</h4>
+                                <span class="role-subtitle">Daily Operations Planner</span>
+                                <ul class="role-bullets">
+                                    <li><i class="fa-solid fa-check"></i> 7-day attendance forecast approvals</li>
+                                    <li><i class="fa-solid fa-check"></i> Weekly menu scheduling & recipe costing</li>
+                                    <li><i class="fa-solid fa-check"></i> Automated ingredient indent CSV export</li>
+                                    <li><i class="fa-solid fa-check"></i> Academic calendar event multipliers</li>
+                                </ul>
+                                <button class="btn-select-role" onclick="App.selectLoginRole('manager')">
+                                    <span>Sign In as Manager</span>
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+                            </div>
+
+                            <!-- Role 3: Kitchen Staff -->
+                            <div class="role-card-item">
+                                <div class="role-icon-box role-icon-kitchen">
+                                    <i class="fa-solid fa-fire-burner"></i>
+                                </div>
+                                <h4 class="role-title">Kitchen Staff</h4>
+                                <span class="role-subtitle">Head Chef & Cooks</span>
+                                <ul class="role-bullets">
+                                    <li><i class="fa-solid fa-check"></i> Large-format, tablet-optimized screen</li>
+                                    <li><i class="fa-solid fa-check"></i> Live batch targets & recipe scale-up</li>
+                                    <li><i class="fa-solid fa-check"></i> Post-service prepared vs served entry</li>
+                                    <li><i class="fa-solid fa-check"></i> Physical leftover weighing logging</li>
+                                </ul>
+                                <button class="btn-select-role" onclick="App.selectLoginRole('kitchen')">
+                                    <span>Sign In as Kitchen Staff</span>
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+                            </div>
+
+                            <!-- Role 4: Hostel Student -->
+                            <div class="role-card-item">
+                                <div class="role-icon-box role-icon-student">
+                                    <i class="fa-solid fa-graduation-cap"></i>
+                                </div>
+                                <h4 class="role-title">Hostel Student</h4>
+                                <span class="role-subtitle">Resident & Diner</span>
+                                <ul class="role-bullets">
+                                    <li><i class="fa-solid fa-check"></i> Daily meal menus & allergen warnings</li>
+                                    <li><i class="fa-solid fa-check"></i> Contactless digital QR Meal Pass</li>
+                                    <li><i class="fa-solid fa-check"></i> Advance absence / skip-a-meal notice</li>
+                                    <li><i class="fa-solid fa-check"></i> Personal attendance history record</li>
+                                </ul>
+                                <button class="btn-select-role" onclick="App.selectLoginRole('student')">
+                                    <span>Sign In as Student</span>
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+                            </div>
+
+                            <!-- Role 5: Finance Officer -->
+                            <div class="role-card-item">
+                                <div class="role-icon-box role-icon-finance">
+                                    <i class="fa-solid fa-coins"></i>
+                                </div>
+                                <h4 class="role-title">Finance Officer</h4>
+                                <span class="role-subtitle">Accounts & Audit</span>
+                                <ul class="role-bullets">
+                                    <li><i class="fa-solid fa-check"></i> Direct waste cost accounting (₹)</li>
+                                    <li><i class="fa-solid fa-check"></i> Avoidable vs unavoidable cost audit</li>
+                                    <li><i class="fa-solid fa-check"></i> Indent vs actual consumption variance</li>
+                                    <li><i class="fa-solid fa-check"></i> Monthly documented savings ledger</li>
+                                </ul>
+                                <button class="btn-select-role" onclick="App.selectLoginRole('manager')">
+                                    <span>Explore Finance Analytics</span>
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Closed-Loop Workflow Section -->
+                    <section class="landing-section landing-section-bg" id="landing-workflow">
+                        <div class="section-header">
+                            <span class="section-tag">How It Works</span>
+                            <h3 class="section-title">The Closed-Loop Waste Reduction Engine</h3>
+                            <p class="section-desc">From statistical forecast to kitchen preparation and financial auditing, every step reinforces the next.</p>
+                        </div>
+
+                        <div class="workflow-grid">
+                            <div class="step-card">
+                                <span class="step-number">01</span>
+                                <div class="step-icon"><i class="fa-solid fa-chart-line"></i></div>
+                                <h4 class="step-title">Contextual Forecasting</h4>
+                                <p class="step-desc">Adaptive Weighted Moving Average factors in weekday patterns, recent trend momentum, and exam/holiday calendar multipliers.</p>
+                            </div>
+                            <div class="step-card">
+                                <span class="step-number">02</span>
+                                <div class="step-icon"><i class="fa-solid fa-kitchen-set"></i></div>
+                                <h4 class="step-title">Batch Recipe Scaling</h4>
+                                <p class="step-desc">Forecast headcount automatically scales 100-portion standard recipes into exact raw ingredient quantities with configured safety buffers.</p>
+                            </div>
+                            <div class="step-card">
+                                <span class="step-number">03</span>
+                                <div class="step-icon"><i class="fa-solid fa-wifi"></i></div>
+                                <h4 class="step-title">Offline Attendance PWA</h4>
+                                <p class="step-desc">Diners scan in via QR tokens or RFID cards at entry gates. Works uninterrupted during network dropouts and syncs idempotently when reconnected.</p>
+                            </div>
+                            <div class="step-card">
+                                <span class="step-number">04</span>
+                                <div class="step-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+                                <h4 class="step-title">Waste Cost Accounting</h4>
+                                <p class="step-desc">Kitchen logs prepared, served, and leftover portions. Leftovers are weighed and converted into rupee waste cost, feeding accuracy back into future predictions.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Interactive Savings Calculator -->
+                    <section class="landing-section" id="landing-calculator">
+                        <div class="section-header">
+                            <span class="section-tag">ROI & Impact</span>
+                            <h3 class="section-title">Estimate Your Kitchen Food-Waste Savings</h3>
+                            <p class="section-desc">See the projected financial and food preservation impact across your campus dining halls.</p>
+                        </div>
+
+                        <div class="savings-calc-box">
+                            <div class="calc-controls">
+                                <h4>Dining Hall Configuration</h4>
+                                <div class="calc-slider-wrap">
+                                    <label>
+                                        <span>Registered Student Capacity:</span>
+                                        <span id="calcStudentsDisplay" class="font-bold text-primary">1,000 Students</span>
+                                    </label>
+                                    <input type="range" id="calcStudentsSlider" min="200" max="3000" step="50" value="1000" oninput="App.updateCalculator(this.value)">
+                                </div>
+                                <div class="calc-slider-wrap">
+                                    <label>
+                                        <span>Average Meals Served per Day:</span>
+                                        <span class="font-bold text-primary">3 Meals (BF, Lunch, Dinner)</span>
+                                    </label>
+                                </div>
+                                <p class="text-secondary" style="font-size:0.85rem">
+                                    Calculation based on benchmark 18% over-preparation reduction and ₹18.50 average ingredient cost per wasted portion.
+                                </p>
+                            </div>
+                            <div class="calc-results-card">
+                                <span class="badge badge-warning" style="margin-bottom:0.5rem">PROJECTED ANNUAL BENEFIT</span>
+                                <div class="savings-amount" id="calcSavingsDisplay">₹4,62,000</div>
+                                <p class="savings-sub" id="calcFoodSavedDisplay">~12,400 kg of edible food saved per year</p>
+                                <hr style="margin:1.25rem 0;border:0;border-top:1px solid rgba(255,255,255,0.15)">
+                                <button class="btn btn-primary" style="background:#6ed8a4;color:#0f2218;width:100%" onclick="App.navigate('login')">
+                                    Start Optimizing Today
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Architecture Overview -->
+                    <section class="landing-section landing-section-bg" id="landing-tech">
+                        <div class="section-header">
+                            <span class="section-tag">Specifications</span>
+                            <h3 class="section-title">Technical Architecture & Compliance</h3>
+                            <p class="section-desc">Built according to Track P project requirements for campus infrastructure.</p>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:1.5rem">
+                            <div class="card">
+                                <h4><i class="fa-brands fa-python text-primary"></i> Django 5.x Backend</h4>
+                                <p class="text-secondary" style="font-size:0.88rem;margin-top:0.5rem">
+                                    Python-native in-process forecasting engine with modular apps for Menu, Attendance, Calendar, and Analytics.
+                                </p>
+                            </div>
+                            <div class="card">
+                                <h4><i class="fa-solid fa-database text-primary"></i> Relational Database</h4>
+                                <p class="text-secondary" style="font-size:0.88rem;margin-top:0.5rem">
+                                    Normalized relational model linking raw ingredients to batch recipes, attendance scans, and derived waste records.
+                                </p>
+                            </div>
+                            <div class="card">
+                                <h4><i class="fa-solid fa-mobile-screen text-primary"></i> Offline-First PWA</h4>
+                                <p class="text-secondary" style="font-size:0.88rem;margin-top:0.5rem">
+                                    Service Worker asset caching, client UUID idempotency keys, and offline queueing for uninterrupted gate scanning.
+                                </p>
+                            </div>
+                            <div class="card">
+                                <h4><i class="fa-solid fa-file-csv text-primary"></i> Export & Integrations</h4>
+                                <p class="text-secondary" style="font-size:0.88rem;margin-top:0.5rem">
+                                    One-click CSV indents for campus ERP procurement, Swagger/OpenAPI interactive documentation, and REST APIs.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Landing CTA Banner -->
+                    <div class="landing-cta-banner">
+                        <div class="cta-banner-content">
+                            <h2>Ready to Reduce Food Waste on Your Campus?</h2>
+                            <p>Explore the live system with pre-configured dining halls, standard menus, and historical forecasts.</p>
+                            <button class="btn btn-primary btn-lg" style="background:#ffffff;color:#1a6645;box-shadow:0 6px 20px rgba(0,0,0,0.2)" onclick="App.navigate('login')">
+                                <i class="fa-solid fa-arrow-right-to-bracket"></i> Launch Demo Portal
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <footer class="landing-footer">
+                        <div class="footer-content">
+                            <div>
+                                <strong style="color:white">MessForecast Platform</strong> — Track P (Django + PostgreSQL)
+                                <div style="font-size:0.75rem;margin-top:0.25rem">Meal Demand Forecasting & Food-Waste Reduction Platform</div>
+                            </div>
+                            <div>
+                                <span class="badge badge-outline" style="color:#a3c2b4;border-color:#2e8a5d">v1.0 Production Ready</span>
+                            </div>
+                        </div>
+                    </footer>
+                </div>
+
+                <!-- ============================================================
+                     2. ROLE-BASED LOGIN PORTAL
+                     ============================================================ -->
+                <div class="view" id="view-login" data-view="login" style="display:none">
+                    <div class="role-login-container">
+                        <div class="login-top-nav">
+                            <button class="btn-back-home" onclick="App.navigate('landing')">
+                                <i class="fa-solid fa-arrow-left"></i>
+                                <span>Back to Public Overview</span>
+                            </button>
+                            <span class="badge badge-primary">Mess Security Portal</span>
+                        </div>
+
+                        <div class="login-box-card">
+                            <div class="login-header-section">
+                                <div class="brand-badge">
+                                    <i class="fa-solid fa-leaf"></i> MessForecast
+                                </div>
+                                <h2 id="loginHeading">Sign In to Your Workspace</h2>
+                                <p id="loginSubheading">Select your role to activate your personalized interface</p>
+                            </div>
+
+                            <!-- Role Picker Tabs -->
+                            <div class="role-tabs-container">
+                                <span class="role-tabs-label">1. Select Your Role</span>
+                                <div class="role-tabs-grid">
+                                    <div class="role-tab-card active" id="tab-role-admin" onclick="App.setLoginRole('admin')">
+                                        <i class="fa-solid fa-user-shield"></i>
+                                        <span class="role-tab-title">Admin</span>
+                                    </div>
+                                    <div class="role-tab-card" id="tab-role-manager" onclick="App.setLoginRole('manager')">
+                                        <i class="fa-solid fa-clipboard-list"></i>
+                                        <span class="role-tab-title">Manager</span>
+                                    </div>
+                                    <div class="role-tab-card" id="tab-role-kitchen" onclick="App.setLoginRole('kitchen')">
+                                        <i class="fa-solid fa-fire-burner"></i>
+                                        <span class="role-tab-title">Kitchen Staff</span>
+                                    </div>
+                                    <div class="role-tab-card" id="tab-role-student" onclick="App.setLoginRole('student')">
+                                        <i class="fa-solid fa-graduation-cap"></i>
+                                        <span class="role-tab-title">Student</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dynamic Role Context Banner -->
+                            <div class="role-banner" id="roleBanner">
+                                <div class="role-banner-text">
+                                    <strong id="roleBannerTitle">Administrator Access</strong>
+                                    <span id="roleBannerDesc">Full access to multi-hall oversight, model parameters, and campus analytics.</span>
+                                </div>
+                                <button class="btn-quick-fill" id="btnQuickLogin" onclick="App.quickLoginCurrentRole()">
+                                    <i class="fa-solid fa-bolt"></i> 1-Click Quick Login
+                                </button>
+                            </div>
+
+                            <!-- Login Form -->
+                            <div class="login-form-area">
+                                <form id="loginForm" class="login-form">
+                                    <div class="login-form-grid">
+                                        <div class="form-group">
+                                            <label for="loginUsername" class="form-label">Username</label>
+                                            <div class="input-wrapper">
+                                                <i class="fa-solid fa-user input-icon"></i>
+                                                <input type="text" id="loginUsername" class="form-input" 
+                                                       value="admin" required autocomplete="username">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="loginPassword" class="form-label">Password</label>
+                                            <div class="input-wrapper">
+                                                <i class="fa-solid fa-lock input-icon"></i>
+                                                <input type="password" id="loginPassword" class="form-input" 
+                                                       value="admin123" required autocomplete="current-password">
+                                                <button type="button" class="password-toggle" id="pwToggle" aria-label="Toggle password">
+                                                    <i class="fa-solid fa-eye"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div id="loginError" class="alert alert-error" style="display:none;margin-bottom:1rem"></div>
+
+                                    <div style="display:flex;gap:1rem;align-items:center">
+                                        <button type="submit" class="btn btn-primary btn-full" id="loginBtn" style="flex:1">
+                                            <span class="btn-text">Sign In</span>
+                                            <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <div style="margin-top:1.25rem;text-align:center">
+                                    <small class="text-muted">
+                                        Available test accounts: <code>admin</code>, <code>manager</code>, <code>kitchen</code>, <code>student1</code> (all passwords: <code>[role]123</code>)
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================================================
+                     3. STUDENT MEAL PASS & MENU VIEW (#view-student)
+                     ============================================================ -->
+                <div class="view" id="view-student" data-view="student" style="display:none">
+                    <div class="student-portal-layout">
+                        <!-- Student Welcome Banner -->
+                        <div class="student-welcome-banner">
+                            <div class="student-info-col">
+                                <span class="badge badge-light" style="color:#0f4c35;margin-bottom:0.5rem">STUDENT MEAL PASS</span>
+                                <h2 id="studentDisplayName">Student_1 Gupta</h2>
+                                <div class="student-meta-tags">
+                                    <span class="student-meta-tag"><i class="fa-solid fa-id-card"></i> Roll: <strong id="studentRoll">2024CS101</strong></span>
+                                    <span class="student-meta-tag"><i class="fa-solid fa-building"></i> Hall: <strong id="studentHall">Central Dining Hall (CDH)</strong></span>
+                                    <span class="student-meta-tag"><i class="fa-solid fa-bowl-food"></i> Plan: <strong>Standard Veg + Dinner</strong></span>
+                                </div>
+                            </div>
+                            <div>
+                                <button class="btn btn-outline" style="border-color:rgba(255,255,255,0.4);color:white" onclick="App.handleLogout()">
+                                    <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:1.5rem">
+                            <!-- Digital QR Meal Pass -->
+                            <div class="student-qr-card">
+                                <h3>Digital QR Meal Pass</h3>
+                                <p class="text-secondary" style="font-size:0.85rem">Scan at the mess entrance scanner for contactless entry.</p>
+
+                                <div class="qr-visual-box">
+                                    <div class="qr-scan-laser"></div>
+                                    <i class="fa-solid fa-qrcode fa-5x" style="color:#1a6645"></i>
+                                    <span style="font-size:0.75rem;color:#7a9087;margin-top:0.5rem;font-family:monospace">TOKEN: ACT-2024-9182</span>
+                                </div>
+
+                                <div class="badge badge-success" style="font-size:0.9rem;padding:0.4rem 1rem">
+                                    <i class="fa-solid fa-circle-check"></i> ACTIVE • VALID FOR LUNCH
+                                </div>
+                                <div class="text-muted" style="font-size:0.8rem;margin-top:0.75rem">
+                                    Refreshes automatically every 60 seconds
+                                </div>
+                            </div>
+
+                            <!-- Today's Menu & Opt-out -->
+                            <div>
+                                <div class="card" style="margin-bottom:1.5rem">
+                                    <div class="student-menu-tabs">
+                                        <button class="student-menu-tab active">Today's Lunch</button>
+                                        <button class="student-menu-tab">Tonight's Dinner</button>
+                                        <button class="student-menu-tab">Tomorrow Breakfast</button>
+                                    </div>
+
+                                    <div class="menu-dishes-list">
+                                        <div style="display:flex;justify-content:space-between;align-items:center;padding:0.65rem 0;border-bottom:1px solid #f0f3f1">
+                                            <div>
+                                                <strong>Paneer Butter Masala</strong>
+                                                <span class="dish-badge badge-veg" style="margin-left:0.5rem">🟢 Veg</span>
+                                            </div>
+                                            <small class="text-muted">Dairy</small>
+                                        </div>
+                                        <div style="display:flex;justify-content:space-between;align-items:center;padding:0.65rem 0;border-bottom:1px solid #f0f3f1">
+                                            <div>
+                                                <strong>Dal Tadka</strong>
+                                                <span class="dish-badge badge-veg" style="margin-left:0.5rem">🟢 Veg</span>
+                                            </div>
+                                            <small class="text-muted">Pulses</small>
+                                        </div>
+                                        <div style="display:flex;justify-content:space-between;align-items:center;padding:0.65rem 0;border-bottom:1px solid #f0f3f1">
+                                            <div>
+                                                <strong>Jeera Rice & Tawa Chapati</strong>
+                                                <span class="dish-badge badge-veg" style="margin-left:0.5rem">🟢 Veg</span>
+                                            </div>
+                                            <small class="text-muted">Grains</small>
+                                        </div>
+                                        <div style="display:flex;justify-content:space-between;align-items:center;padding:0.65rem 0">
+                                            <div>
+                                                <strong>Gulab Jamun</strong>
+                                                <span class="dish-badge badge-veg" style="margin-left:0.5rem">🟢 Dessert</span>
+                                            </div>
+                                            <small class="text-muted">Dairy, Sugar</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Voluntary Skip-a-Meal Notification -->
+                                <div class="card" style="border:1px dashed var(--primary-border);background:#f7fbf8">
+                                    <h4 style="margin-bottom:0.35rem"><i class="fa-solid fa-leaf text-primary"></i> Skip a Meal Notification</h4>
+                                    <p class="text-secondary" style="font-size:0.85rem;margin-bottom:0.75rem">
+                                        Planning to eat outside or visit home? Notifying the kitchen in advance directly prevents food waste and helps accurate forecasting!
+                                    </p>
+                                    <div style="display:flex;gap:1rem;flex-wrap:wrap">
+                                        <label><input type="checkbox"> Skipping Dinner Tonight</label>
+                                        <label><input type="checkbox"> Skipping Breakfast Tomorrow</label>
+                                    </div>
+                                    <button class="btn btn-sm btn-primary" style="margin-top:0.85rem" onclick="App.showToast('Opt-out preference logged! Kitchen forecast adjusted.', 'success')">
+                                        Update Mess Attendance
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Dashboard View -->
+                <div class="view hidden" id="view-dashboard" data-view="dashboard">
+                    <div class="view-header">
+                        <h1 class="view-title">Dashboard</h1>
+                        <div class="view-actions">
+                            <span class="date-display" id="dashDate"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- KPI Cards -->
+                    <div class="kpi-grid" id="kpiGrid">
+                        <div class="kpi-card kpi-forecast">
+                            <div class="kpi-icon"><i class="fa-solid fa-chart-line"></i></div>
+                            <div class="kpi-content">
+                                <div class="kpi-label">Today's Forecast</div>
+                                <div class="kpi-value" id="kpiForecast">—</div>
+                                <div class="kpi-sub" id="kpiForecastRange">Loading...</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card kpi-waste">
+                            <div class="kpi-icon"><i class="fa-solid fa-trash-can"></i></div>
+                            <div class="kpi-content">
+                                <div class="kpi-label">Yesterday's Waste</div>
+                                <div class="kpi-value" id="kpiWaste">—</div>
+                                <div class="kpi-sub" id="kpiWasteSub">Loading...</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card kpi-accuracy">
+                            <div class="kpi-icon"><i class="fa-solid fa-bullseye"></i></div>
+                            <div class="kpi-content">
+                                <div class="kpi-label">Forecast Accuracy</div>
+                                <div class="kpi-value" id="kpiAccuracy">—</div>
+                                <div class="kpi-sub">7-day MAPE</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card kpi-savings">
+                            <div class="kpi-icon"><i class="fa-solid fa-piggy-bank"></i></div>
+                            <div class="kpi-content">
+                                <div class="kpi-label">Monthly Waste Cost</div>
+                                <div class="kpi-value" id="kpiSavings">—</div>
+                                <div class="kpi-sub">This month</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Charts row -->
+                    <div class="charts-grid">
+                        <div class="chart-card chart-wide">
+                            <div class="chart-header">
+                                <h3 class="chart-title">Attendance Trend — Last 30 Days</h3>
+                                <div class="chart-actions">
+                                    <select class="chart-filter" id="trendServiceFilter">
+                                        <option value="">All services</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="chart-body">
+                                <canvas id="attendanceTrendChart" aria-label="Attendance trend chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3 class="chart-title">Waste by Meal Type</h3>
+                            </div>
+                            <div class="chart-body">
+                                <canvas id="wasteByMealChart" aria-label="Waste by meal type chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Today's forecasts table -->
+                    <div class="data-card" id="todayForecastCard">
+                        <div class="data-card-header">
+                            <h3 class="data-card-title">Today's Meal Forecasts</h3>
+                            <button class="btn btn-sm btn-secondary" onclick="App.navigate('forecasting')">
+                                View All <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table" id="todayForecastTable">
+                                <thead>
+                                    <tr>
+                                        <th>Dining Hall</th>
+                                        <th>Meal Service</th>
+                                        <th>Predicted</th>
+                                        <th>Range</th>
+                                        <th>Safety Stock</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="todayForecastBody">
+                                    <tr><td colspan="6" class="loading-row"><div class="spinner"></div></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Missing actuals alert -->
+                    <div class="alert alert-warning" id="missingActualsAlert" style="display:none">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <div>
+                            <strong>Missing Actuals</strong>
+                            <p id="missingActualsText"></p>
+                        </div>
+                        <button class="btn btn-sm btn-warning" onclick="App.navigate('actuals')">
+                            Record Now
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Menu Management View -->
+                <div class="view hidden" id="view-menu" data-view="menu">
+                    <div class="view-header">
+                        <h1 class="view-title">Menu & Recipe Management</h1>
+                        <div class="view-actions">
+                            <button class="btn btn-primary" onclick="openModal('addDishModal')">
+                                <i class="fa-solid fa-plus"></i> Add Dish
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Tabs -->
+                    <div class="tab-bar">
+                        <button class="tab-btn active" data-tab="dishes">Dishes</button>
+                        <button class="tab-btn" data-tab="ingredients">Ingredients</button>
+                        <button class="tab-btn" data-tab="recipes">Recipes</button>
+                        <button class="tab-btn" data-tab="menus">Menus</button>
+                        <button class="tab-btn" data-tab="schedule">Schedule</button>
+                    </div>
+                    
+                    <!-- Search bar -->
+                    <div class="search-bar">
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-magnifying-glass input-icon"></i>
+                            <input type="text" id="menuSearch" class="form-input" placeholder="Search dishes, ingredients, menus...">
+                        </div>
+                        <div class="filter-pills" id="menuFilters">
+                            <button class="pill active" data-filter="all">All</button>
+                            <button class="pill" data-filter="vegetarian">
+                                <span class="veg-dot veg"></span> Veg
+                            </button>
+                            <button class="pill" data-filter="non-vegetarian">
+                                <span class="veg-dot nonveg"></span> Non-Veg
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Tab contents -->
+                    <div class="tab-content active" id="tab-dishes">
+                        <div class="dish-grid" id="dishGrid">
+                            <div class="loading-placeholder">
+                                <div class="spinner"></div>
+                                <p>Loading dishes...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="tab-ingredients">
+                        <div class="data-card">
+                            <div class="data-card-header">
+                                <h3>Ingredient Master</h3>
+                                <button class="btn btn-sm btn-primary" onclick="openModal('addIngredientModal')">
+                                    <i class="fa-solid fa-plus"></i> Add Ingredient
+                                </button>
+                            </div>
+                            <div class="table-wrapper">
+                                <table class="data-table" id="ingredientTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Code</th>
+                                            <th>Name</th>
+                                            <th>Category</th>
+                                            <th>Unit</th>
+                                            <th>Cost/Unit (₹)</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ingredientTableBody">
+                                        <tr><td colspan="7" class="loading-row"><div class="spinner"></div></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="tab-recipes">
+                        <div id="recipesList"></div>
+                    </div>
+                    
+                    <div class="tab-content" id="tab-menus">
+                        <div id="menusList"></div>
+                    </div>
+                    
+                    <div class="tab-content" id="tab-schedule">
+                        <div id="menuSchedule"></div>
+                    </div>
+                </div>
+                
+                <!-- Forecasting View -->
+                <div class="view hidden" id="view-forecasting" data-view="forecasting">
+                    <div class="view-header">
+                        <h1 class="view-title">Demand Forecasting</h1>
+                        <div class="view-actions">
+                            <button class="btn btn-primary" onclick="generateForecasts()">
+                                <i class="fa-solid fa-rotate"></i> Generate 7-Day Forecast
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Forecast controls -->
+                    <div class="filter-bar">
+                        <div class="form-group form-inline">
+                            <label class="form-label">Dining Hall</label>
+                            <select class="form-input" id="forecastHallFilter">
+                                <option value="">All Halls</option>
+                            </select>
+                        </div>
+                        <div class="form-group form-inline">
+                            <label class="form-label">Meal Service</label>
+                            <select class="form-input" id="forecastServiceFilter">
+                                <option value="">All Services</option>
+                            </select>
+                        </div>
+                        <div class="form-group form-inline">
+                            <label class="form-label">Date</label>
+                            <input type="date" class="form-input" id="forecastDateFilter">
+                        </div>
+                    </div>
+                    
+                    <!-- 7-day forecast cards -->
+                    <div class="forecast-week" id="forecastWeek">
+                        <div class="loading-placeholder"><div class="spinner"></div></div>
+                    </div>
+                    
+                    <!-- MAPE Chart -->
+                    <div class="charts-grid">
+                        <div class="chart-card chart-wide">
+                            <div class="chart-header">
+                                <h3 class="chart-title">Forecast Accuracy (MAPE) — 8-Week Trend</h3>
+                                <div class="mape-badge" id="currentMape">—% avg MAPE</div>
+                            </div>
+                            <div class="chart-body">
+                                <canvas id="mapeChart" aria-label="MAPE trend chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3 class="chart-title">Attendance by Weekday</h3>
+                            </div>
+                            <div class="chart-body">
+                                <canvas id="weekdayChart" aria-label="Weekday attendance pattern chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Forecast explanation panel -->
+                    <div class="data-card" id="forecastExplainCard" style="display:none">
+                        <div class="data-card-header">
+                            <h3 class="data-card-title">
+                                <i class="fa-solid fa-circle-info"></i>
+                                How is this forecast calculated?
+                            </h3>
+                            <button class="btn btn-sm btn-secondary" onclick="document.getElementById('forecastExplainCard').style.display='none'">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                        <div class="explain-content" id="forecastExplainContent"></div>
+                    </div>
+                    
+                    <!-- Forecast table -->
+                    <div class="data-card">
+                        <div class="data-card-header">
+                            <h3 class="data-card-title">Forecast Details</h3>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table" id="forecastTable">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Hall</th>
+                                        <th>Meal</th>
+                                        <th>Predicted</th>
+                                        <th>Lower</th>
+                                        <th>Upper</th>
+                                        <th>Event Adj.</th>
+                                        <th>Actual</th>
+                                        <th>MAPE</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="forecastTableBody">
+                                    <tr><td colspan="10" class="loading-row"><div class="spinner"></div></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Kitchen Screen View (tablet-first, high contrast) -->
+                <div class="view hidden kitchen-view" id="view-kitchen" data-view="kitchen">
+                    <div class="kitchen-header">
+                        <div class="kitchen-brand">
+                            <i class="fa-solid fa-fire-burner"></i>
+                            <span>Kitchen Preparation Guide</span>
+                        </div>
+                        <div class="kitchen-date" id="kitchenDate"></div>
+                    </div>
+                    
+                    <!-- Service selector (large touch targets) -->
+                    <div class="service-selector" id="kitchenServiceSelector">
+                        <!-- Services loaded dynamically -->
+                    </div>
+                    
+                    <!-- Preparation guidance -->
+                    <div class="kitchen-plan" id="kitchenPlan">
+                        <div class="kitchen-placeholder">
+                            <i class="fa-solid fa-hand-pointer"></i>
+                            <p>Select a meal service above to see preparation guidance</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Attendance View -->
+                <div class="view hidden" id="view-attendance" data-view="attendance">
+                    <div class="view-header">
+                        <h1 class="view-title">Attendance Capture</h1>
+                        <div class="view-actions">
+                            <div class="offline-status" id="attendanceOfflineStatus">
+                                <i class="fa-solid fa-circle" id="offlineStatusDot"></i>
+                                <span id="offlineStatusText">Online</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Stats bar -->
+                    <div class="attendance-stats-bar" id="attendanceStatsBar">
+                        <div class="stat-chip">
+                            <span class="stat-label">Today's Count</span>
+                            <span class="stat-value" id="liveCount">0</span>
+                        </div>
+                        <div class="stat-chip">
+                            <span class="stat-label">Forecast</span>
+                            <span class="stat-value" id="liveForecast">—</span>
+                        </div>
+                        <div class="stat-chip">
+                            <span class="stat-label">Fill Rate</span>
+                            <span class="stat-value" id="liveFillRate">—</span>
+                        </div>
+                        <div class="stat-chip">
+                            <span class="stat-label">Pending Sync</span>
+                            <span class="stat-value" id="pendingSyncCount">0</span>
+                        </div>
+                    </div>
+                    
+                    <!-- QR scanner simulation -->
+                    <div class="scanner-card">
+                        <div class="scanner-area" id="scannerArea">
+                            <div class="scanner-frame">
+                                <div class="scanner-corner tl"></div>
+                                <div class="scanner-corner tr"></div>
+                                <div class="scanner-corner bl"></div>
+                                <div class="scanner-corner br"></div>
+                                <div class="scanner-line" id="scannerLine"></div>
+                                <div class="scanner-hint">
+                                    <i class="fa-solid fa-qrcode"></i>
+                                    <span>Point camera at student QR code</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Manual entry -->
+                        <div class="manual-entry">
+                            <h3 class="manual-title">Manual Entry</h3>
+                            <form id="manualAttendanceForm">
+                                <div class="form-group">
+                                    <label class="form-label" for="manualStudentId">Student ID</label>
+                                    <input type="text" id="manualStudentId" class="form-input form-input-lg" 
+                                           placeholder="Enter student ID" inputmode="text">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="manualServiceSelect">Meal Service</label>
+                                    <select id="manualServiceSelect" class="form-input form-input-lg">
+                                        <option value="">Select service...</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-full btn-lg">
+                                    <i class="fa-solid fa-check"></i> Record Attendance
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent scans -->
+                    <div class="data-card">
+                        <div class="data-card-header">
+                            <h3>Recent Scans</h3>
+                            <button class="btn btn-sm btn-secondary" onclick="syncOfflineData()">
+                                <i class="fa-solid fa-rotate"></i> Sync Now
+                            </button>
+                        </div>
+                        <div class="recent-scans" id="recentScans">
+                            <p class="empty-state">No scans yet today</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Record Actuals View -->
+                <div class="view hidden kitchen-view" id="view-actuals" data-view="actuals">
+                    <div class="kitchen-header">
+                        <div class="kitchen-brand">
+                            <i class="fa-solid fa-clipboard-check"></i>
+                            <span>Post-Service Recording</span>
+                        </div>
+                        <div class="kitchen-date" id="actualsDate"></div>
+                    </div>
+                    
+                    <div class="actuals-form-container" id="actualsFormContainer">
+                        <!-- Service selector -->
+                        <div class="service-selector" id="actualsServiceSelector"></div>
+                        
+                        <!-- Actuals form -->
+                        <form id="actualsForm" style="display:none">
+                            <div class="actuals-header-fields">
+                                <div class="form-group">
+                                    <label class="form-label">Actual Attendance (headcount)</label>
+                                    <input type="number" id="actualAttendance" class="form-input form-input-lg" 
+                                           placeholder="0" min="0" inputmode="numeric">
+                                </div>
+                            </div>
+                            
+                            <div class="dish-actuals-list" id="dishActualsList">
+                                <!-- Dish rows added dynamically -->
+                            </div>
+                            
+                            <div class="actuals-summary" id="actualsSummary"></div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Notes</label>
+                                <textarea class="form-input" id="actualsNotes" rows="2" 
+                                          placeholder="Any notes about this service..."></textarea>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary btn-lg" onclick="saveActualsDraft()">
+                                    <i class="fa-solid fa-floppy-disk"></i> Save Draft
+                                </button>
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fa-solid fa-check"></i> Finalize & Submit
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Waste Analysis View -->
+                <div class="view hidden" id="view-waste" data-view="waste">
+                    <div class="view-header">
+                        <h1 class="view-title">Waste Analysis</h1>
+                        <div class="view-actions">
+                            <div class="date-range-picker">
+                                <input type="date" class="form-input" id="wasteStartDate">
+                                <span>to</span>
+                                <input type="date" class="form-input" id="wasteEndDate">
+                                <button class="btn btn-primary" onclick="loadWasteData()">
+                                    <i class="fa-solid fa-filter"></i> Apply
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Waste KPIs -->
+                    <div class="kpi-grid" id="wasteKPIGrid">
+                        <div class="kpi-card">
+                            <div class="kpi-icon kpi-red"><i class="fa-solid fa-weight-scale"></i></div>
+                            <div class="kpi-content">
+                                <div class="kpi-label">Total Waste</div>
+                                <div class="kpi-value" id="wasteKpiPortions">—</div>
+                                <div class="kpi-sub">portions</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon kpi-red"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+                            <div class="kpi-content">
+                                <div class="kpi-label">Waste Cost</div>
+                                <div class="kpi-value" id="wasteKpiCost">—</div>
+                                <div class="kpi-sub">in selected period</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon kpi-amber"><i class="fa-solid fa-chart-pie"></i></div>
+                            <div class="kpi-content">
+                                <div class="kpi-label">Top Waste Dish</div>
+                                <div class="kpi-value kpi-sm" id="wasteKpiTopDish">—</div>
+                                <div class="kpi-sub">by cost</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Charts -->
+                    <div class="charts-grid">
+                        <div class="chart-card chart-wide">
+                            <div class="chart-header">
+                                <h3 class="chart-title">Daily Waste Cost Trend</h3>
+                            </div>
+                            <div class="chart-body">
+                                <canvas id="wasteTrendChart" aria-label="Waste cost trend chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3 class="chart-title">Waste by Meal Service</h3>
+                            </div>
+                            <div class="chart-body">
+                                <canvas id="wasteMealChart" aria-label="Waste by meal service chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Top waste dishes table -->
+                    <div class="data-card">
+                        <div class="data-card-header">
+                            <h3 class="data-card-title">Top 10 Waste Dishes</h3>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Dish</th>
+                                        <th>Total Portions Wasted</th>
+                                        <th>Total Cost (₹)</th>
+                                        <th>Occurrences</th>
+                                        <th>Avg Cost/Service (₹)</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="topWasteTableBody">
+                                    <tr><td colspan="7" class="loading-row"><div class="spinner"></div></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reports View -->
+                <div class="view hidden" id="view-reports" data-view="reports">
+                    <div class="view-header">
+                        <h1 class="view-title">Reports & Analytics</h1>
+                    </div>
+                    
+                    <div class="reports-grid">
+                        <div class="report-card" onclick="App.navigate('waste')">
+                            <div class="report-icon"><i class="fa-solid fa-trash-can"></i></div>
+                            <h3>Waste Cost Report</h3>
+                            <p>Waste quantity and cost by dish, meal, and hall</p>
+                            <span class="report-cta">View Report <i class="fa-solid fa-arrow-right"></i></span>
+                        </div>
+                        <div class="report-card" onclick="App.navigate('forecasting')">
+                            <div class="report-icon"><i class="fa-solid fa-bullseye"></i></div>
+                            <h3>Forecast Accuracy</h3>
+                            <p>MAPE trend by meal service over 8 weeks</p>
+                            <span class="report-cta">View Report <i class="fa-solid fa-arrow-right"></i></span>
+                        </div>
+                        <div class="report-card" onclick="loadAttendancePatternReport()">
+                            <div class="report-icon"><i class="fa-solid fa-chart-bar"></i></div>
+                            <h3>Attendance Patterns</h3>
+                            <p>By weekday, event type, and exam period</p>
+                            <span class="report-cta">View Report <i class="fa-solid fa-arrow-right"></i></span>
+                        </div>
+                        <div class="report-card" onclick="exportIndentCSV()">
+                            <div class="report-icon"><i class="fa-solid fa-file-csv"></i></div>
+                            <h3>Ingredient Indent Export</h3>
+                            <p>Download procurement indent in CSV format</p>
+                            <span class="report-cta">Export <i class="fa-solid fa-download"></i></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Attendance patterns chart (shown when loaded) -->
+                    <div id="attendancePatternSection" style="display:none">
+                        <div class="charts-grid">
+                            <div class="chart-card">
+                                <div class="chart-header"><h3 class="chart-title">Avg Attendance by Weekday</h3></div>
+                                <div class="chart-body">
+                                    <canvas id="weekdayPatternChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="chart-card">
+                                <div class="chart-header"><h3 class="chart-title">Holiday vs Normal Day</h3></div>
+                                <div class="chart-body">
+                                    <canvas id="holidayCompChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Calendar Events View -->
+                <div class="view hidden" id="view-calendar" data-view="calendar">
+                    <div class="view-header">
+                        <h1 class="view-title">Calendar & Event Registry</h1>
+                        <div class="view-actions">
+                            <button class="btn btn-primary" onclick="openModal('addEventModal')">
+                                <i class="fa-solid fa-plus"></i> Add Event
+                            </button>
+                        </div>
+                    </div>
+                    <div class="calendar-view-container" id="calendarContainer">
+                        <div class="loading-placeholder"><div class="spinner"></div></div>
+                    </div>
+                </div>
+                
+                <!-- Preparation Plans View -->
+                <div class="view hidden" id="view-preparation" data-view="preparation">
+                    <div class="view-header">
+                        <h1 class="view-title">Preparation Plans & Ingredient Indents</h1>
+                    </div>
+                    
+                    <div class="data-card">
+                        <div class="data-card-header">
+                            <h3 class="data-card-title">Upcoming Preparation Plans</h3>
+                            <button class="btn btn-primary" onclick="generatePreparationPlans()">
+                                <i class="fa-solid fa-gears"></i> Generate from Forecasts
+                            </button>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Hall</th>
+                                        <th>Meal</th>
+                                        <th>Forecast</th>
+                                        <th>Planned Portions</th>
+                                        <th>Safety Margin</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="prepPlanTableBody">
+                                    <tr><td colspan="8" class="loading-row"><div class="spinner"></div></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="data-card">
+                        <div class="data-card-header">
+                            <h3 class="data-card-title">Ingredient Indents</h3>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Reference</th>
+                                        <th>Date Required</th>
+                                        <th>Items</th>
+                                        <th>Total Cost (₹)</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="indentTableBody">
+                                    <tr><td colspan="6" class="loading-row"><div class="spinner"></div></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </main>
+    </div>
+    
+    <!-- Modals -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
+    
+    <!-- Add Dish Modal -->
+    <div class="modal" id="addDishModal" role="dialog" aria-modal="true" aria-labelledby="addDishTitle">
+        <div class="modal-header">
+            <h2 class="modal-title" id="addDishTitle">Add New Dish</h2>
+            <button class="modal-close" onclick="closeModal('addDishModal')" aria-label="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="addDishForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="dishName">Dish Name <span class="required">*</span></label>
+                        <input type="text" id="dishName" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="dishCode">Dish Code <span class="required">*</span></label>
+                        <input type="text" id="dishCode" class="form-input" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="dishCategory">Category <span class="required">*</span></label>
+                        <select id="dishCategory" class="form-input" required>
+                            <option value="">Select category...</option>
+                            <option value="main">Main Course</option>
+                            <option value="side">Side Dish</option>
+                            <option value="rice">Rice</option>
+                            <option value="dal">Dal/Lentils</option>
+                            <option value="bread">Bread</option>
+                            <option value="dessert">Dessert</option>
+                            <option value="beverage">Beverage</option>
+                            <option value="salad">Salad</option>
+                            <option value="snack">Snack</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="dishIsVeg" checked>
+                                <span class="checkmark"></span>
+                                Vegetarian
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="dishIsVegan">
+                                <span class="checkmark"></span>
+                                Vegan
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="dishDescription">Description</label>
+                    <textarea id="dishDescription" class="form-input" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="dishAllergens">Allergens (comma-separated)</label>
+                    <input type="text" id="dishAllergens" class="form-input" placeholder="e.g., Gluten, Dairy, Nuts">
+                </div>
+                <div id="addDishError" class="alert alert-error" style="display:none"></div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('addDishModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="submitAddDish()">
+                <i class="fa-solid fa-check"></i> Add Dish
+            </button>
+        </div>
+    </div>
+    
+    <!-- Add Ingredient Modal -->
+    <div class="modal" id="addIngredientModal" role="dialog" aria-modal="true" aria-labelledby="addIngTitle">
+        <div class="modal-header">
+            <h2 class="modal-title" id="addIngTitle">Add Ingredient</h2>
+            <button class="modal-close" onclick="closeModal('addIngredientModal')" aria-label="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="addIngredientForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="ingName">Name <span class="required">*</span></label>
+                        <input type="text" id="ingName" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="ingCode">Code <span class="required">*</span></label>
+                        <input type="text" id="ingCode" class="form-input" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="ingUnit">Unit <span class="required">*</span></label>
+                        <select id="ingUnit" class="form-input" required>
+                            <option value="kg">Kilograms (kg)</option>
+                            <option value="g">Grams (g)</option>
+                            <option value="L">Litres (L)</option>
+                            <option value="ml">Millilitres (ml)</option>
+                            <option value="piece">Piece</option>
+                            <option value="dozen">Dozen</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="ingCost">Cost per Unit (₹) <span class="required">*</span></label>
+                        <input type="number" id="ingCost" class="form-input" step="0.01" min="0.01" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="ingCategory">Category</label>
+                    <input type="text" id="ingCategory" class="form-input" placeholder="e.g., Vegetables, Grains, Dairy">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('addIngredientModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="submitAddIngredient()">
+                <i class="fa-solid fa-check"></i> Add Ingredient
+            </button>
+        </div>
+    </div>
+    
+    <!-- Add Calendar Event Modal -->
+    <div class="modal" id="addEventModal" role="dialog" aria-modal="true" aria-labelledby="addEventTitle">
+        <div class="modal-header">
+            <h2 class="modal-title" id="addEventTitle">Add Calendar Event</h2>
+            <button class="modal-close" onclick="closeModal('addEventModal')" aria-label="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="addEventForm">
+                <div class="form-group">
+                    <label class="form-label" for="eventTitle">Event Title <span class="required">*</span></label>
+                    <input type="text" id="eventTitle" class="form-input" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="eventType">Event Type</label>
+                        <select id="eventType" class="form-input">
+                            <option value="holiday">Public Holiday</option>
+                            <option value="exam">Examination</option>
+                            <option value="vacation">Vacation</option>
+                            <option value="campus_event">Campus Event</option>
+                            <option value="sports">Sports Event</option>
+                            <option value="cultural">Cultural Event</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="eventImpact">Impact Level</label>
+                        <select id="eventImpact" class="form-input">
+                            <option value="high">High (&gt;20% change)</option>
+                            <option value="medium" selected>Medium (10–20%)</option>
+                            <option value="low">Low (&lt;10%)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="eventStart">Start Date</label>
+                        <input type="date" id="eventStart" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="eventEnd">End Date</label>
+                        <input type="date" id="eventEnd" class="form-input" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="eventMultiplier">Attendance Multiplier 
+                        <span class="form-hint">(1.0 = normal, 0.5 = half, 1.2 = 20% more)</span>
+                    </label>
+                    <input type="number" id="eventMultiplier" class="form-input" step="0.01" min="0" max="2" value="1.00">
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('addEventModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="submitAddEvent()">
+                <i class="fa-solid fa-check"></i> Add Event
+            </button>
+        </div>
+    </div>
+    
+    <!-- Toast notification -->
+    <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+    
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display:none">
+        <div class="loading-spinner-large"></div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="/static/js/app.js"></script>
+    <script>
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/sw/sw.js')
+                    .then(reg => console.log('SW registered:', reg.scope))
+                    .catch(err => console.log('SW error:', err));
+            });
+        }
+    </script>
+</body>
+</html>
