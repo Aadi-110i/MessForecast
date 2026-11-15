@@ -1,0 +1,260 @@
+{% extends "console/base_console.html" %}
+{% load static %}
+
+{% block title %}Overview · {{ app_name }}{% endblock %}
+
+{% block console_content %}
+{% include "components/page_head.html" with title="Overview" lede="How much food this mess threw away, what the forecast predicted, and whether the two are getting closer. Every figure below is computed from recorded services." %}
+
+<form class="toolbar" method="get">
+  {% if savings %}
+    {# The baseline window has to travel with the filters, or the comparison is lost. #}
+    <input type="hidden" name="baseline_start" value="{{ savings.baseline.start|date:'Y-m-d' }}">
+    <input type="hidden" name="baseline_end" value="{{ savings.baseline.end|date:'Y-m-d' }}">
+  {% endif %}
+  <div class="field field--inline">
+    <label for="f-start">From</label>
+    <input type="date" id="f-start" name="start" value="{{ start|date:'Y-m-d' }}">
+  </div>
+  <div class="field field--inline">
+    <label for="f-end">To</label>
+    <input type="date" id="f-end" name="end" value="{{ end|date:'Y-m-d' }}">
+  </div>
+  <div class="field field--inline">
+    <label for="f-hall">Hall</label>
+    <select id="f-hall" name="hall">
+      <option value="">All halls</option>
+      {% for h in halls %}
+        <option value="{{ h.id }}" {% if hall and hall.id == hall.id %}selected{% endif %}>{{ h.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="toolbar-actions">
+    <button class="btn" type="submit">Apply</button>
+    <a class="btn btn-ghost" href="{% url 'dashboard-waste' %}?start={{ start|date:'Y-m-d' }}&amp;end={{ end|date:'Y-m-d' }}{% if hall %}&amp;hall={{ hall.id }}{% endif %}">Full waste report</a>
+    <a class="btn btn-ghost" href="{% url 'console-forecast' %}">Forecast</a>
+  </div>
+</form>
+
+<!-- ===================== The ruled figures ===================== -->
+{% include "components/figures.html" with figures=figures %}
+
+{% if savings %}
+  <!-- ===================== The baseline reconciliation ===================== -->
+  <section class="panel">
+    <div class="panelhead">
+      <h2>Reconciled against the baseline window</h2>
+      <span class="hint">{{ savings.baseline.start|date:"d M Y" }} to {{ savings.baseline.end|date:"d M Y" }} against {{ savings.live.start|date:"d M Y" }} to {{ savings.live.end|date:"d M Y" }}</span>
+    </div>
+    <div class="table-wrap">
+      <table class="ledger">
+        <thead>
+          <tr>
+            <th>Measure</th>
+            <th class="num">Baseline</th>
+            <th class="num">Live</th>
+            <th class="num">Change</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="metric">Waste cost</td>
+            <td class="num">₹{{ savings.baseline.waste_cost|floatformat:0 }}</td>
+            <td class="num">₹{{ savings.live.waste_cost|floatformat:0 }}</td>
+            <td class="num neg">{{ savings.waste_cost_change_pct|floatformat:1 }}%</td>
+          </tr>
+          <tr>
+            <td class="metric">Waste cost per service</td>
+            <td class="num">₹{% widthratio savings.baseline.waste_cost savings.baseline.services 1 %}</td>
+            <td class="num">₹{% widthratio savings.live.waste_cost savings.live.services 1 %}</td>
+            <td class="num pos">₹{{ savings.saving_per_service|floatformat:0 }}</td>
+          </tr>
+          <tr>
+            <td class="metric">Weight thrown away</td>
+            <td class="num">{{ savings.baseline.waste_quantity_kg|floatformat:1 }} kg</td>
+            <td class="num">{{ savings.live.waste_quantity_kg|floatformat:1 }} kg</td>
+            <td class="num">{% widthratio savings.live.waste_quantity_kg savings.baseline.waste_quantity_kg 1 %}%</td>
+          </tr>
+          <tr>
+            <td class="metric">Services measured</td>
+            <td class="num">{{ savings.baseline.services }}</td>
+            <td class="num">{{ savings.live.services }}</td>
+            <td class="num fill">Same basis</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <th>Saving against the baseline</th>
+            <th class="num"></th>
+            <th class="num">{{ savings.saving_pct|floatformat:1 }}%</th>
+            <th class="num">₹{{ savings.annualised_saving|floatformat:0 }} a year</th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </section>
+{% endif %}
+
+<!-- ===================== Trend charts ===================== -->
+<div class="grid-2">
+  <section class="panel">
+    <div class="panelhead">
+      <h2>Weekly waste cost</h2>
+      <span class="hint">₹ per week</span>
+    </div>
+    <div class="panelbody">
+      {% if waste_by_week %}
+        {{ waste_by_week|json_script:"wasteByWeek" }}
+        <div class="chart" data-chart="bar" data-src="wasteByWeek" data-tone="loss"
+             data-value="waste_cost" data-label="week" data-prefix="₹" data-height="200"
+             data-title="Waste cost per week"></div>
+      {% else %}
+        <div class="empty">
+          <h3>No waste recorded in this period</h3>
+          <p>Once services start recording prepared, served and leftover portions, the weekly
+             waste cost appears here.</p>
+          <a class="btn btn-ghost" href="{% url 'kitchen-dashboard' %}">Record on the kitchen screen</a>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panelhead">
+      <h2>Forecast error by week</h2>
+      <span class="hint">MAPE %, lower is better</span>
+    </div>
+    <div class="panelbody">
+      {% if mape_over_time %}
+        {{ mape_over_time|json_script:"mapeByWeek" }}
+        <div class="chart" data-chart="line" data-src="mapeByWeek" data-tone="model"
+             data-value="mape_pct" data-label="week" data-suffix="%" data-height="200"
+             data-title="Forecast error by week"></div>
+      {% else %}
+        <div class="empty">
+          <h3>No forecasts to score yet</h3>
+          <p>Forecasts are compared with the attendance that actually turned up. Once a
+             forecast and its service meet, the error shows here.</p>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+
+<!-- ===================== Today’s service reconciliation ===================== -->
+<section class="panel">
+  <div class="panelhead">
+    <h2>Today’s services, reconciled</h2>
+    <span class="hint">{{ todays_services|length }} services</span>
+  </div>
+  {% if todays_services %}
+    <div class="table-wrap">
+      <table class="ledger is-pinned">
+        <thead>
+          <tr>
+            <th>Hall</th>
+            <th>Meal</th>
+            <th class="num">Turned up</th>
+            <th class="num">Forecast</th>
+            <th class="num">To cook</th>
+            <th class="num">Left over</th>
+            <th>Reconciled</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in todays_services %}
+            <tr>
+              <td class="metric">{{ s.hall.name }}</td>
+              <td>{{ s.get_meal_display }}</td>
+              <td class="num">{{ s.attendance_count }}</td>
+              <td class="num">{% if s.forecast %}{{ s.forecast.predicted_attendance|floatformat:0 }}{% else %}<span class="fill">No forecast</span>{% endif %}</td>
+              <td class="num">{% if s.preparation_plan %}{{ s.preparation_plan.portions_to_prepare }}{% else %}<span class="fill">No plan</span>{% endif %}</td>
+              <td class="num">{% if s.actual %}{{ s.actual.leftover_portions_total }}{% else %}<span class="fill">Not recorded</span>{% endif %}</td>
+              <td>
+                {% if s.forecast %}
+                  {% if s.attendance_count >= s.forecast.lower_bound and s.attendance_count <= s.forecast.upper_bound %}
+                    <span class="state is-match">In range</span>
+                  {% else %}
+                    <span class="state is-open">Out of range</span>
+                  {% endif %}
+                {% elif s.actual %}
+                  <span class="state is-match">Recorded</span>
+                {% else %}
+                  <span class="state">Not planned</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty">
+      <h3>No services scheduled today</h3>
+      <p>Publish a menu schedule for today so the kitchen has a service to plan against.</p>
+      <a class="btn btn-ghost" href="{% url 'console-menus' %}">Open the menu board</a>
+    </div>
+  {% endif %}
+</section>
+
+<!-- ===================== Weekday pattern + top dishes ===================== -->
+<div class="grid-2">
+  <section class="panel">
+    <div class="panelhead">
+      <h2>Attendance by weekday</h2>
+      <span class="hint">mean students per service</span>
+    </div>
+    {% if weekday_pattern %}
+      {{ weekday_pattern|json_script:"weekdayPattern" }}
+      <div class="panelbody">
+        <div class="chart" data-chart="bar" data-src="weekdayPattern" data-tone="model"
+             data-value="avg_attendance" data-label="weekday" data-height="180"
+             data-title="Average attendance by weekday"></div>
+      </div>
+    {% else %}
+      <div class="empty">
+        <h3>No attendance history yet</h3>
+        <p>Capture a few services and the weekly rhythm of demand will appear here.</p>
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <div class="panelhead">
+      <h2>Top ten waste dishes</h2>
+      <span class="hint">cost of the food left over</span>
+    </div>
+    {% if top_dishes %}
+      <div class="table-wrap">
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th class="rank">#</th>
+              <th>Dish</th>
+              <th class="num">Portions</th>
+              <th class="num">kg</th>
+              <th class="num">Cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for d in top_dishes %}
+              <tr>
+                <td class="rank">{{ forloop.counter }}</td>
+                <td class="metric">{{ d.dish }}</td>
+                <td class="num">{{ d.leftover_portions }}</td>
+                <td class="num">{{ d.waste_quantity_kg|floatformat:1 }}</td>
+                <td class="num neg">₹{{ d.waste_cost|floatformat:0 }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty">
+        <h3>Nothing to rank yet</h3>
+        <p>Waste records appear here once the kitchen records what was left over.</p>
+      </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

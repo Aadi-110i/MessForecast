@@ -1,0 +1,232 @@
+{% extends "console/base_console.html" %}
+{% load static %}
+
+{% block title %}Waste report · {{ app_name }}{% endblock %}
+
+{% block console_content %}
+{% include "components/page_head.html" with title="Waste analytics" lede="Quantity in kilograms and cost in rupees for the food that was prepared, served and left over. The cost is derived from each dish's recipe and the current price of every ingredient in it." %}
+
+<form class="toolbar" method="get">
+  <div class="field field--inline">
+    <label for="f-start">From</label>
+    <input type="date" id="f-start" name="start" value="{{ start|date:'Y-m-d' }}">
+  </div>
+  <div class="field field--inline">
+    <label for="f-end">To</label>
+    <input type="date" id="f-end" name="end" value="{{ end|date:'Y-m-d' }}">
+  </div>
+  <div class="field field--inline">
+    <label for="f-hall">Hall</label>
+    <select id="f-hall" name="hall">
+      <option value="">All halls</option>
+      {% for h in halls %}
+        <option value="{{ h.id }}" {% if hall and hall.id == h.id %}selected{% endif %}>{{ h.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="toolbar-actions">
+    <button class="btn" type="submit">Apply</button>
+    <button class="btn btn-ghost" type="button" onclick="window.print()">Print report</button>
+  </div>
+</form>
+
+{% include "components/figures.html" with figures=figures %}
+
+<!-- ===================== Why it was thrown away ===================== -->
+{% if by_cause %}
+  <section class="panel">
+    <div class="panelhead">
+      <h2>Why it was thrown away</h2>
+      <span class="hint">the cause decides who fixes it</span>
+    </div>
+    <div class="table-wrap">
+      <table class="ledger">
+        <thead>
+          <tr>
+            <th>Cause</th>
+            <th class="num">Portions</th>
+            <th class="num">kg</th>
+            <th class="num">Cost</th>
+            <th class="num">Share</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in by_cause %}
+            <tr>
+              <td class="metric">{{ c.label }}</td>
+              <td class="num">{{ c.leftover_portions }}</td>
+              <td class="num">{{ c.waste_quantity_kg|floatformat:1 }}</td>
+              <td class="num neg">₹{{ c.waste_cost|floatformat:0 }}</td>
+              <td class="num">{% widthratio c.waste_cost totals.waste_cost 100 %}%</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="panelbody">
+      <p class="hint">
+        Over-preparation is a forecasting problem, spoilage is a storage problem and
+        quality rejection is a supplier problem. Each is fixed by a different person.
+      </p>
+    </div>
+  </section>
+{% endif %}
+
+<section class="panel">
+  <div class="panelhead">
+    <h2>Weekly trend</h2>
+    <span class="hint">₹ per week</span>
+  </div>
+  <div class="panelbody">
+    {% if by_week %}
+      {{ by_week|json_script:"wasteWeek" }}
+      <div class="chart" data-chart="bar" data-src="wasteWeek" data-tone="loss"
+           data-value="waste_cost" data-label="week" data-prefix="₹" data-height="220"
+           data-title="Waste cost per week"></div>
+    {% else %}
+      <div class="empty">
+        <h3>No waste recorded in this period</h3>
+        <p>Record prepared, served and leftover portions on the kitchen screen and the
+           weekly cost will build up here.</p>
+        <a class="btn btn-ghost" href="{% url 'kitchen-dashboard' %}">Record on the kitchen screen</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<div class="grid-2">
+  <section class="panel">
+    <div class="panelhead">
+      <h2>Top ten dishes by waste cost</h2>
+      <span class="hint">where the money goes</span>
+    </div>
+    {% if top_dishes %}
+      <div class="table-wrap">
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th class="rank">#</th>
+              <th>Dish</th>
+              <th class="num">Portions left</th>
+              <th class="num">kg</th>
+              <th class="num">Cost</th>
+              <th>Share</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for d in top_dishes %}
+              <tr>
+                <td class="rank">{{ forloop.counter }}</td>
+                <td class="metric">{{ d.dish }}</td>
+                <td class="num">{{ d.leftover_portions }}</td>
+                <td class="num">{{ d.waste_quantity_kg|floatformat:1 }}</td>
+                <td class="num neg">₹{{ d.waste_cost|floatformat:0 }}</td>
+                <td>
+                  <span class="rankbar"><i style="width:{% widthratio d.waste_cost top_dishes.0.waste_cost 100 %}%"></i></span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty">
+        <h3>Nothing to rank yet</h3>
+        <p>Once waste is recorded for a service, dishes are ranked by the cost of what
+           was left over.</p>
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <div class="panelhead">
+      <h2>Where it happens</h2>
+      <span class="hint">by meal and by hall</span>
+    </div>
+    {% if by_meal or by_hall %}
+      <div class="panelbody">
+        <div class="c-stack is-tight">
+          {% if by_meal %}
+            <div>
+              <h3>By meal</h3>
+              <div class="table-wrap">
+                <table class="ledger">
+                  <thead>
+                    <tr><th>Meal</th><th class="num">Cost</th><th class="num">kg</th></tr>
+                  </thead>
+                  <tbody>
+                    {% for m in by_meal %}
+                      <tr>
+                        <td class="metric">{{ m.meal }}</td>
+                        <td class="num neg">₹{{ m.waste_cost|floatformat:0 }}</td>
+                        <td class="num">{{ m.waste_quantity_kg|floatformat:1 }}</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          {% else %}
+            <div class="empty">
+              <h3>No meal-level waste yet</h3>
+            </div>
+          {% endif %}
+
+          {% if by_hall %}
+            <div>
+              <h3>By hall</h3>
+              <div class="table-wrap">
+                <table class="ledger">
+                  <thead>
+                    <tr><th>Hall</th><th class="num">Cost</th></tr>
+                  </thead>
+                  <tbody>
+                    {% for h in by_hall %}
+                      <tr>
+                        <td class="metric">{{ h.hall }}</td>
+                        <td class="num neg">₹{{ h.waste_cost|floatformat:0 }}</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          {% else %}
+            <div class="empty">
+              <h3>No hall-level waste yet</h3>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% else %}
+      <div class="empty">
+        <h3>No waste recorded in this period</h3>
+        <p>Nothing has been attributed to a meal or a hall yet.</p>
+      </div>
+    {% endif %}
+  </section>
+</div>
+
+<!-- ===================== How the cost is worked out ===================== -->
+<div class="well">
+  <div class="well-inner">
+    <h3>How the cost is worked out</h3>
+    <p>
+      <strong>Portions left</strong> is prepared minus served, recorded on the kitchen screen.
+    </p>
+    <p>
+      <strong>Weight</strong> is portions left multiplied by the dish’s standard portion size
+      in grams, divided by one thousand.
+    </p>
+    <p>
+      <strong>Cost</strong> is portions left multiplied by the dish’s cost per portion, where
+      the cost per portion is the sum of every recipe line: quantity times the current unit
+      cost, including trim loss.
+    </p>
+    <p>
+      <strong>Over-preparation</strong> compares the portions prepared against the portions
+      the forecast expected, so the kitchen can tell waste apart from a genuinely busy day.
+    </p>
+  </div>
+</div>
+{% endblock %}

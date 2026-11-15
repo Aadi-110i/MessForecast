@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Profile · {{ app_name }}{% endblock %}
+
+{% block content %}
+{% include "components/page_head.html" with title="Your profile" lede="Personal information tied to your account. Your role is set when your account is created and cannot be changed from here." %}
+
+<section class="panel">
+  <div class="panelhead"><h2>Profile</h2></div>
+  <div class="panelbody">
+    <table class="ledger">
+      <thead><tr><th>Field</th><th class="num">Value</th></tr></thead>
+      <tbody>
+        <tr><td class="metric">Name</td><td class="num" id="profile-name">{{ user.get_full_name|default:user.username }}</td></tr>
+        <tr><td class="metric">Username</td><td class="num">{{ user.username }}</td></tr>
+        <tr><td class="metric">Email</td><td class="num" id="profile-email">{{ user.email|default:"(not set)" }}</td></tr>
+        <tr><td class="metric">Role</td><td class="num">{{ user.get_role_display }}</td></tr>
+        {% if user.student_identifier %}
+        <tr><td class="metric">Student identifier</td><td class="num">{{ user.student_identifier }}</td></tr>
+        {% endif %}
+        {% if user.hall %}
+        <tr><td class="metric">Hall</td><td class="num">{{ user.hall.name }}</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panelhead"><h2>Edit personal information</h2></div>
+  <div class="panelbody">
+    <form method="post" action="{% url 'accounts-profile' %}" id="edit-profile-form">
+      {% csrf_token %}
+      <div class="c-field">
+        <label for="id_first_name">First name</label>
+        <input type="text" name="first_name" id="id_first_name" value="{{ user.first_name }}">
+      </div>
+      <div class="c-field">
+        <label for="id_last_name">Last name</label>
+        <input type="text" name="last_name" id="id_last_name" value="{{ user.last_name }}">
+      </div>
+      <div class="c-field">
+        <label for="id_email">Email</label>
+        <input type="email" name="email" id="id_email" value="{{ user.email }}">
+      </div>
+      <div class="c-actions">
+        <button class="btn" type="submit">Save changes</button>
+      </div>
+    </form>
+    <div id="edit-profile-result" class="c-banner" role="alert" hidden></div>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panelhead"><h2>Change password</h2></div>
+  <div class="panelbody">
+    <form method="post" action="{% url 'accounts-change-password' %}" id="change-password-form">
+      {% csrf_token %}
+      <div class="c-field">
+        <label for="id_old_password">Current password</label>
+        <input type="password" name="old_password" id="id_old_password" autocomplete="current-password" required>
+      </div>
+      <div class="c-field">
+        <label for="id_new_password">New password</label>
+        <input type="password" name="new_password" id="id_new_password" autocomplete="new-password" required>
+        <span class="c-field-help">At least 8 characters, and different from your current one.</span>
+      </div>
+      <div class="c-field">
+        <label for="id_new_password_confirm">Confirm new password</label>
+        <input type="password" name="new_password_confirm" id="id_new_password_confirm" autocomplete="new-password" required>
+      </div>
+      <div class="c-actions">
+        <button class="btn" type="submit">Change password</button>
+      </div>
+    </form>
+    <div id="change-password-result" class="c-banner" role="alert" hidden></div>
+  </div>
+</section>
+
+<script>
+(function () {
+  'use strict';
+
+  function firstError(data, fallback) {
+    if (!data) { return fallback; }
+    if (data.detail) { return data.detail; }
+    if (data.message) { return data.message; }
+    var keys = Object.keys(data);
+    if (keys.length) {
+      var val = data[keys[0]];
+      if (Array.isArray(val) && val.length) { return val[0]; }
+      if (typeof val === 'string') { return val; }
+    }
+    return fallback;
+  }
+
+  var profileForm = document.getElementById('edit-profile-form');
+  var profileBox = document.getElementById('edit-profile-result');
+  if (profileForm && profileBox) {
+    var profileBtn = profileForm.querySelector('button[type="submit"]');
+    function showProfile(message, kind) {
+      profileBox.className = 'c-banner ' + kind;
+      profileBox.textContent = message;
+      profileBox.hidden = false;
+      profileBtn.removeAttribute('aria-busy');
+      profileBtn.textContent = 'Save changes';
+    }
+    profileForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      profileBox.hidden = true;
+      profileBtn.setAttribute('aria-busy', 'true');
+      profileBtn.textContent = 'Saving';
+
+      var payload = {
+        first_name: profileForm.first_name.value.trim(),
+        last_name: profileForm.last_name.value.trim(),
+        email: profileForm.email.value.trim()
+      };
+      fetch(profileForm.action, {
+        method: 'PATCH',
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': window.MessForecast.csrfToken(),
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(payload)
+      }).then(function (res) {
+        return res.text().then(function (text) {
+          var data = null;
+          try { data = text ? JSON.parse(text) : null; } catch (e) { data = null; }
+          if (!res.ok) {
+            showProfile(firstError(data, 'Your profile could not be updated.'), 'is-error');
+            return;
+          }
+          var fullName = [data.first_name, data.last_name].filter(Boolean).join(' ') || data.username;
+          var nameCell = document.getElementById('profile-name');
+          var emailCell = document.getElementById('profile-email');
+          if (nameCell) { nameCell.textContent = fullName; }
+          if (emailCell) { emailCell.textContent = data.email || '(not set)'; }
+          showProfile('Your profile was updated.', 'is-notice');
+        });
+      }).catch(function () {
+        showProfile('The server could not be reached. Check the connection and try again.', 'is-error');
+      });
+    });
+  }
+
+  var form = document.getElementById('change-password-form');
+  var box = document.getElementById('change-password-result');
+  if (!form || !box) { return; }
+  var button = form.querySelector('button[type="submit"]');
+
+  function show(message, kind) {
+    box.className = 'c-banner ' + kind;
+    box.textContent = message;
+    box.hidden = false;
+    button.removeAttribute('aria-busy');
+    button.textContent = 'Change password';
+  }
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    box.hidden = true;
+    button.setAttribute('aria-busy', 'true');
+    button.textContent = 'Changing';
+
+    var body = new URLSearchParams(new FormData(form)).toString();
+    fetch(form.action, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': window.MessForecast.csrfToken(),
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: body
+    }).then(function (res) {
+      return res.text().then(function (text) {
+        var data = null;
+        try { data = text ? JSON.parse(text) : null; } catch (e) { data = null; }
+        if (!res.ok) {
+          show(firstError(data, 'The password could not be changed.'), 'is-error');
+          return;
+        }
+        show((data && data.detail) || 'Your password was changed.', 'is-notice');
+        form.reset();
+      });
+    }).catch(function () {
+      show('The server could not be reached. Check the connection and try again.', 'is-error');
+    });
+  });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Component library · {{ app_name }}{% endblock %}
+
+{% block content %}
+{% include "components/page_head.html" with title="Component library" lede="Every component in the product, in every state it has. This page is the reference a screen is checked against. It uses the same tokens as every other screen, so nothing here is a picture of the system. It is the system." %}
+
+<div class="c-stack is-loose">
+
+  <!-- ===================== Type ===================== -->
+  <section class="panel">
+    <div class="panelhead">
+      <h2>Type</h2>
+      <span class="hint">two families, one scale</span>
+    </div>
+    <div class="panelbody">
+      <div class="c-stack is-tight">
+        <div>
+          <p class="c-fig-label">Display face, for figures only</p>
+          <p class="c-type-display">1,284 portions</p>
+        </div>
+        <div>
+          <p class="c-fig-label">Body face, for everything else</p>
+          <p class="c-type-body">Forecasts come from a recency-weighted moving average adjusted for the day of the week, the calendar and the trend.</p>
+        </div>
+        <div>
+          <p class="c-fig-label">Labels, sentence case, one step smaller than the prose</p>
+          <p class="c-type-label">Expected turnout, portions to prepare, estimated food cost</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Colour meaning ===================== -->
+  <section class="panel">
+    <div class="panelhead">
+      <h2>Colour carries meaning</h2>
+      <span class="hint">the same in both experiences</span>
+    </div>
+    <div class="panelbody">
+      <div class="c-figrow">
+        <div class="c-fig">
+          <span class="c-fig-label">Model</span>
+          <span class="c-fig-value is-match">612</span>
+          <span class="c-fig-note">Periwinkle means the forecast said this</span>
+        </div>
+        <div class="c-fig">
+          <span class="c-fig-label">Loss</span>
+          <span class="c-fig-value is-loss">₹18,420</span>
+          <span class="c-fig-note">Apricot means this went wrong</span>
+        </div>
+        <div class="c-fig">
+          <span class="c-fig-label">Trustworthy</span>
+          <span class="c-fig-value">546</span>
+          <span class="c-fig-note">Ink means a number to believe</span>
+        </div>
+        <div class="c-fig">
+          <span class="c-fig-label">Ignored</span>
+          <span class="c-fig-value is-muted">12</span>
+          <span class="c-fig-note">Muted means a hint, not a fact</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Figures ===================== -->
+  <section class="panel">
+    <div class="panelhead">
+      <h2>Figures</h2>
+      <span class="hint">ruled, never tiled</span>
+    </div>
+    <div class="panelbody">
+      {% include "components/figures.html" with figures=figures %}
+    </div>
+    <div class="panelhead">
+      <h2>A figure whose value is a phrase</h2>
+      <span class="hint">kind="text"</span>
+    </div>
+    <div class="panelbody">
+      {% include "components/figures.html" with figures=text_figures %}
+    </div>
+  </section>
+
+  <!-- ===================== Buttons ===================== -->
+  <section class="panel">
+    <div class="panelhead">
+      <h2>Buttons</h2>
+      <span class="hint">eight states each</span>
+    </div>
+    <div class="panelbody">
+      <div class="c-stack is-tight">
+        <div class="c-cluster">
+          <button class="btn" type="button">Primary</button>
+          <button class="btn" type="button" disabled>Disabled</button>
+          <a class="btn" href="#">As a link</a>
+        </div>
+        <div class="c-cluster">
+          <button class="btn btn-ghost" type="button">Ghost</button>
+          <button class="btn btn-ghost" type="button" disabled>Ghost, disabled</button>
+        </div>
+        <div class="c-cluster">
+          <button class="btn btn-quiet" type="button">Quiet</button>
+          <button class="btn btn-quiet" type="button" disabled>Quiet, disabled</button>
+        </div>
+        <p class="hint">Focus is always visible, instantly, and never relies on a hover.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Fields ===================== -->
+  <section class="panel">
+    <div class="panelhead">
+      <h2>Fields</h2>
+      <span class="hint">label, control, help</span>
+    </div>
+    <div class="panelbody">
+      <div class="c-form-grid">
+        {% include "components/field.html" with label="Username" name="ds-user" value="manager" help="The name you sign in with." %}
+        {% include "components/field.html" with label="Hall" name="ds-hall" type="select" options=halls option_value="id" option_label="name" placeholder="All halls" %}
+        {% include "components/field.html" with label="Email" name="ds-email" type="email" placeholder="name@example.com" %}
+        {% include "components/field.html" with label="Code" name="ds-code" value="ABCD-1234" errors=field_errors %}
+        {% include "components/field.html" with label="Notes" name="ds-notes" type="textarea" rows=3 placeholder="Anything the next person should know" %}
+        {% include "components/field.html" with label="Disabled" name="ds-off" value="Not editable" disabled=True %}
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Notices ===================== -->
+  <section class="panel">
+    <div class="panelhead">
+      <h2>Notices</h2>
+      <span class="hint">a fact the reader did not have</span>
+    </div>
+    <div class="panelbody">
+      <div class="c-stack is-tight">
+        {% include "components/notice.html" with tone="open" title="Six services have no actuals" body="Their waste cannot be measured until the kitchen writes them up." %}
+        {% include "components/notice.html" with tone="match" title="Waste cost is down 18%" body="Measured against the same window in the baseline period." %}
+        {% include "components/notice.html" with tone="error" title="The connection is down" body="Scans are queued on this tablet and will sync automatically." %}
+        {% include "components/notice.html" with tone="plain" body="A plain notice, for information that needs no judgement." %}
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== States ===================== -->
+  <section class="panel">
+    <div class="panelhead">
+      <h2>States</h2>
+      <span class="hint">a list never empties silently</span>
+    </div>
+    <div class="panelbody">
+      <div class="c-grid is-3">
+        {% include "components/state.html" with kind="empty" title="No cycles yet" body="A cycle holds the dishes for one menu rotation." %}
+        {% include "components/state.html" with kind="loading" body="Loading the services." %}
+        {% include "components/state.html" with kind="error" title="Something went wrong" body="The server could not be reached. Check the connection and try again." %}
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Navigation ===================== -->
+  <section class="panel">
+    <div class="panelhead">
+      <h2>Navigation</h2>
+      <span class="hint">tabs, segments and crumbs</span>
+    </div>
+    <div class="panelbody">
+      <div class="c-stack is-tight">
+        {% include "components/tabs.html" with tabs=tabs aria_label="Example sections" %}
+        <div class="c-cluster">
+          <div class="c-segment" role="group" aria-label="Example segment">
+            <a href="#" aria-current="true">Week</a>
+            <a href="#">Month</a>
+            <a href="#">Quarter</a>
+          </div>
+        </div>
+        <nav class="c-crumbs" aria-label="Example breadcrumb">
+          <a href="#">Menus</a>
+          <span>Menu Cycle A</span>
+          <span>Lunch</span>
+        </nav>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Specs and meters ===================== -->
+  <section class="panel">
+    <div class="panelhead">
+      <h2>Named rows and proportions</h2>
+      <span class="hint">where a table would be too heavy</span>
+    </div>
+    <div class="panelbody">
+      <div class="c-grid is-2">
+        <div>
+          {% include "components/spec_list.html" with specs=specs %}
+        </div>
+        <div class="c-stack is-tight">
+          <div class="c-meter">
+            <span class="c-meter-label"><span>Over-preparation</span><span>8.0%</span></span>
+            <span class="c-meter-track"><i class="c-meter-fill" style="--fill: 44%;"></i></span>
+          </div>
+          <div class="c-meter is-loss">
+            <span class="c-meter-label"><span>Waste cost</span><span>₹18,420</span></span>
+            <span class="c-meter-track"><i class="c-meter-fill" style="--fill: 72%;"></i></span>
+          </div>
+          <div>
+            <span class="c-range" style="--band-lo: 18%; --band-hi: 78%; --band-mid: 48%;">
+              <i class="c-range-band"></i>
+              <i class="c-range-mid"></i>
+            </span>
+            <p class="hint">The published range on one line, with the prediction marked.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== The board ===================== -->
+  <section class="panel">
+    <div class="panelhead">
+      <h2>The schedule board</h2>
+      <span class="hint">seven days across, three meals down</span>
+    </div>
+    {% include "components/schedule_board.html" with board=board %}
+  </section>
+
+  <!-- ===================== The band ===================== -->
+  <section class="panel">
+    <div class="panelhead">
+      <h2>The forecast band</h2>
+      <span class="hint">a number with a range around it</span>
+    </div>
+    <div class="panelbody">
+      {{ band|json_script:"catalogueBand" }}
+      <div class="chart" data-chart="band" data-src="catalogueBand" data-height="220"
+           data-title="Expected turnout with the published range"></div>
+    </div>
+  </section>
+
+  <!-- ===================== The table ===================== -->
+  <section class="panel">
+    <div class="panelhead">
+      <h2>The table</h2>
+      <span class="hint">a ledger, not a card grid</span>
+    </div>
+    {% include "components/table.html" with columns=table_columns rows=table_rows empty="No dishes to show." %}
+  </section>
+
+  <!-- ===================== The tablet family ===================== -->
+  <section class="panel">
+    <div class="panelhead">
+      <h2>The tablet family</h2>
+      <span class="hint">same system, tablet scale</span>
+    </div>
+    <div class="panelbody">
+      <p class="hint">
+        The tablet is worked with wet gloves, in a hot room, by someone who cannot read a
+        paragraph. Targets are 72px, contrast is pushed past AA, nothing depends on a
+        cursor, and typing is a failure state rather than a step.
+      </p>
+      <div class="k-day c-spaced">
+        <div>
+          <span class="d-label">Services today</span>
+          <span class="d-value">6</span>
+          <span class="d-note">2 still to write up</span>
+        </div>
+        <div>
+          <span class="d-label">Turned up</span>
+          <span class="d-value">1,284</span>
+          <span class="d-note">Scans so far today</span>
+        </div>
+        <div>
+          <span class="d-label">Portions to cook</span>
+          <span class="d-value">1,540</span>
+          <span class="d-note">Across today's plans</span>
+        </div>
+        <div>
+          <span class="d-label">Left over</span>
+          <span class="d-value is-loss">38</span>
+          <span class="d-note">Recorded portions</span>
+        </div>
+      </div>
+      <div class="k-services c-spaced">
+        <span class="k-service">
+          <span class="sv-meal">Lunch</span>
+          <span class="sv-hall">North Hall</span>
+          <span class="sv-count">612</span>
+          <span class="k-count-sub">turned up</span>
+          <span class="sv-goal">Cook 640 portions</span>
+          <span class="sv-state is-live">Ready to cook</span>
+          <span class="sv-open">Start</span>
+        </span>
+        <span class="k-service">
+          <span class="sv-meal">Dinner</span>
+          <span class="sv-hall">South Hall</span>
+          <span class="sv-count">498</span>
+          <span class="k-count-sub">turned up</span>
+          <span class="sv-goal">Cook 520 portions</span>
+          <span class="sv-state is-done">Written up</span>
+          <span class="sv-open is-quiet">View</span>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== The rules ===================== -->
+  <section class="panel">
+    <div class="panelhead">
+      <h2>The rules that hold everywhere</h2>
+    </div>
+    <div class="panelbody">
+      <ul class="c-list">
+        <li><div><dt>Every control has eight states</dt><dd>Hover, focus, active, disabled, visited</dd></div></li>
+        <li><div><dt>A panel never holds a panel</dt><dd>One containment layer</dd></div></li>
+        <li><div><dt>A list never empties silently</dt><dd>It says what to do next</dd></div></li>
+        <li><div><dt>Labels are sentence case</dt><dd>Never tracked capitals</dd></div></li>
+        <li><div><dt>No emoji as icons</dt><dd>No middle dots joining metadata</dd></div></li>
+        <li><div><dt>Every animation has a reduced-motion fallback</dt><dd>Only transform and opacity</dd></div></li>
+        <li><div><dt>A number is never invented</dt><dd>It comes from a recorded service</dd></div></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+{% endblock %}

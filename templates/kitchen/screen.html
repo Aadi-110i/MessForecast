@@ -1,0 +1,286 @@
+{% load static %}{% load capabilities %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% if service %}{{ service.get_meal_display }}, {{ service.hall.name }}{% else %}Kitchen, {{ app_name }}{% endif %}</title>
+  <meta name="description" content="Record what was prepared and served at a mess service.">
+  <meta name="theme-color" content="#0E1017">
+  <link rel="manifest" href="{% url 'pwa-manifest' %}">
+  <link rel="icon" href="{% static 'pwa/icon.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <link rel="stylesheet" href="{% static 'css/kitchen.css' %}">
+</head>
+<body class="k-shell">
+{% csrf_token %}
+
+{% if not service %}
+  <!-- ===================== No service ===================== -->
+  <header class="k-ticket">
+    <div class="k-ticket-head">
+      <span class="k-mark">MessForecast</span>
+      <div class="k-where">
+        <div class="k-hall">Kitchen</div>
+        <div class="k-when">{{ today|date:"l, d F Y" }}, pick a service</div>
+      </div>
+      <div class="k-head-right">
+        <span class="k-pill" id="net-pill"><span class="dot" aria-hidden="true"></span><span id="net-label">Online</span></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="k-main">
+    <div class="k-card">
+      <div class="k-card-body">
+        <div class="k-empty">
+          <h3>No service selected</h3>
+          <p>Open a service from the kitchen dashboard to record what was prepared and served.</p>
+          <a class="k-btn accent" href="{% url 'kitchen-dashboard' %}">Back to today</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+{% else %}
+  <!-- ===================== The service ===================== -->
+  <header class="k-ticket">
+    <div class="k-ticket-head">
+      <span class="k-mark">MessForecast</span>
+      <div class="k-where">
+        <div class="k-hall">{{ service.hall.name }}</div>
+        <div class="k-when">{{ service.get_meal_display }}, {{ service.date|date:"l, d F Y" }}</div>
+      </div>
+      <div class="k-head-right">
+        <span class="k-pill" id="net-pill"><span class="dot" aria-hidden="true"></span><span id="net-label">Online</span></span>
+        <a class="k-pill" href="{% url 'kitchen-dashboard' %}">All services</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="k-main">
+    {% if plan %}
+      <section class="k-stamps">
+        <div class="k-stamp">
+          <span class="s-label">Expected turnout</span>
+          <span class="s-value" id="stamp-expected">{{ plan.attendance_target|floatformat:0 }}</span>
+          <span class="s-sub">
+            {% if plan.forecast %}range {{ plan.forecast.lower_bound|floatformat:0 }} to {{ plan.forecast.upper_bound|floatformat:0 }}{% else %}no range published{% endif %}
+          </span>
+        </div>
+        <div class="k-stamp plan">
+          <span class="s-label">Cook this much</span>
+          <span class="s-value" id="stamp-cook">{{ plan.portions_to_prepare }}</span>
+          <span class="s-sub">+{{ plan.over_preparation_pct|floatformat:1 }}% over the forecast</span>
+        </div>
+        <div class="k-stamp">
+          <span class="s-label">Cost of this service</span>
+          <span class="s-value">₹{{ plan.estimated_cost|floatformat:0 }}</span>
+          <span class="s-sub">at current ingredient prices</span>
+        </div>
+      </section>
+
+    {% else %}
+      <div class="k-card">
+        <div class="k-card-body">
+          <div class="k-empty">
+            <h3>No preparation plan for this service</h3>
+            <p>Run <code>manage.py run_forecasts</code> and <code>manage.py build_plans</code>,
+               then reload this screen. You can still record what was actually cooked below.</p>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- ===================== Portion entry ===================== -->
+    <section class="k-card">
+      <div class="k-card-head">
+        <h2>What was prepared and served</h2>
+        <span class="k-summary" id="prep-summary">
+          {% if plan %}prepared {{ plan.portions_to_prepare }}{% else %}no plan{% endif %}
+        </span>
+      </div>
+
+      {% if not user|can:"RECORD_ACTUALS" %}
+        {% comment %}
+          A reader sees what was recorded, not a form they cannot submit.
+          The steppers and the save button belong to the kitchen's role.
+        {% endcomment %}
+        {% if actual_lines %}
+          <div class="k-rows">
+            {% for a in actual_lines %}
+              <div class="k-row">
+                <div class="k-dish">
+                  {{ a.dish.name }}
+                  <span class="k-dish-sub">{{ a.prepared_portions }} prepared, {{ a.served_portions }} served</span>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="k-card-body">
+            <div class="k-empty">
+              <h3>Nothing recorded yet</h3>
+              <p>The kitchen records what was prepared and served. This service has not been written up.</p>
+            </div>
+          </div>
+        {% endif %}
+      {% elif plan_lines or actual_lines %}
+        <div class="k-rows" id="portion-rows">
+          {% if plan_lines %}
+            {% for line in plan_lines %}
+              <div class="k-row" data-dish="{{ line.dish_id }}" data-dish-name="{{ line.dish.name }}">
+                <div class="k-dish">
+                  {{ line.dish.name }}
+                  <span class="k-dish-sub">planned {{ line.portions }} portions</span>
+                </div>
+                <div class="k-stepper">
+                  <button type="button" data-step="-5" aria-label="Five fewer portions of {{ line.dish.name }}">−</button>
+                  <input type="number" inputmode="numeric" min="0" step="1"
+                         value="{% if actual %}{% for a in actual_lines %}{% if a.dish_id == line.dish_id %}{{ a.prepared_portions }}{% endif %}{% endfor %}{% else %}{{ line.portions }}{% endif %}"
+                         aria-label="Portions prepared of {{ line.dish.name }}">
+                  <button type="button" data-step="5" aria-label="Five more portions of {{ line.dish.name }}">+</button>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            {% for a in actual_lines %}
+              <div class="k-row" data-dish="{{ a.dish_id }}" data-dish-name="{{ a.dish.name }}">
+                <div class="k-dish">{{ a.dish.name }}</div>
+                <div class="k-stepper">
+                  <button type="button" data-step="-5" aria-label="Five fewer portions of {{ a.dish.name }}">−</button>
+                  <input type="number" inputmode="numeric" min="0" value="{{ a.prepared_portions }}" aria-label="Portions prepared of {{ a.dish.name }}">
+                  <button type="button" data-step="5" aria-label="Five more portions of {{ a.dish.name }}">+</button>
+                </div>
+              </div>
+            {% endfor %}
+          {% endif %}
+        </div>
+      {% else %}
+        <div class="k-card-body">
+          <div class="k-empty">
+            <h3>No dishes on the menu for this service</h3>
+            <p>Schedule a menu for this hall and meal so the kitchen knows what to record.</p>
+          </div>
+        </div>
+      {% endif %}
+    </section>
+
+    <!-- ===================== Served ===================== -->
+    <section class="k-card">
+      <div class="k-card-head"><h2>How many people ate</h2></div>
+      <div class="k-card-body">
+        {% if user|can:"RECORD_ACTUALS" %}
+        <div class="k-grid-2">
+          <div class="field">
+            <label class="k-label" for="k-served">Served portions (total)</label>
+            <input class="k-input" type="number" inputmode="numeric" min="0" id="k-served"
+                   value="{% if actual %}{{ actual.served_portions_total }}{% else %}{{ service.attendance_count }}{% endif %}">
+          </div>
+          <div class="field">
+            <label class="k-label" for="k-attendance">Turned up (scans)</label>
+            <input class="k-input" type="number" inputmode="numeric" min="0" id="k-attendance"
+                   value="{{ service.attendance_count }}">
+          </div>
+          <div class="field">
+            <label class="k-label" for="k-mode">How was it prepared?</label>
+            <select class="k-select" id="k-mode">
+              <option value="FORECAST_GUIDED" {% if actual and actual.prep_mode == 'FORECAST_GUIDED' %}selected{% endif %}>
+                Against the forecast
+              </option>
+              <option value="REGISTERED_STRENGTH" {% if actual and actual.prep_mode == 'REGISTERED_STRENGTH' %}selected{% endif %}>
+                Against registered strength
+              </option>
+            </select>
+          </div>
+        </div>
+        <p class="k-prose after-table">
+          <strong>How much was left over</strong>
+          <span class="k-summary" id="k-leftover">0</span>
+          portions
+          <span id="k-leftover-flag"></span>
+        </p>
+        {% else %}
+          {% comment %}
+            Read-only. A reader is told what was served and what was left
+            over, and is not handed a form that would be refused on submit.
+          {% endcomment %}
+          <div class="k-grid-2">
+            <div class="field">
+              <span class="k-label">Served portions (total)</span>
+              <span class="k-summary">{{ actual.served_portions_total|default:"—" }}</span>
+            </div>
+            <div class="field">
+              <span class="k-label">Turned up (scans)</span>
+              <span class="k-summary">{{ service.attendance_count }}</span>
+            </div>
+            <div class="field">
+              <span class="k-label">How was it prepared?</span>
+              <span class="k-summary">{% if actual %}{{ actual.get_prep_mode_display }}{% else %}not recorded{% endif %}</span>
+            </div>
+            <div class="field">
+              <span class="k-label">Left over</span>
+              <span class="k-summary">{% if actual %}{{ actual.leftover_portions_total }} portions{% else %}not recorded{% endif %}</span>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </section>
+
+    <!-- ===================== Why the number ===================== -->
+    {% if plan and plan.forecast and plan.forecast.explanation %}
+      <div class="k-brief">
+        <div class="k-brief-inner">
+          <h3>Why this number</h3>
+          <p>{{ plan.forecast.explanation }}</p>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if indent %}
+      <section class="k-card">
+        <div class="k-card-head"><h2>Indent for this service</h2></div>
+        <div class="k-card-body">
+          <div class="table-wrap">
+            <table class="ledger">
+              <thead>
+                <tr><th>Ingredient</th><th class="num">Quantity</th><th class="num">Packs</th><th class="num">Cost</th></tr>
+              </thead>
+              <tbody>
+                {% for line in indent.lines.all %}
+                  <tr>
+                    <td class="metric">{{ line.ingredient.name }}</td>
+                    <td class="num">{{ line.quantity|floatformat:2 }} {{ line.unit }}</td>
+                    <td class="num">{{ line.packs|floatformat:1 }}</td>
+                    <td class="num">₹{{ line.estimated_cost|floatformat:0 }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <p class="after-table">
+            <a class="btn btn-ghost" href="{% url 'export-indent' plan.id %}">Download indent</a>
+          </p>
+        </div>
+      </section>
+    {% endif %}
+  </main>
+
+  <!-- ===================== Sticky action ===================== -->
+  <div class="k-actions">
+    <a class="k-btn ghost" href="{% url 'kitchen-dashboard' %}">Back</a>
+    {% if user|can:"RECORD_ACTUALS" %}
+    <button class="k-btn accent" id="k-save" type="button" data-service="{{ service.id }}"
+            {% if not plan_lines and not actual_lines %}disabled{% endif %}>
+      Save actuals
+    </button>
+    {% endif %}
+  </div>
+
+  <div class="k-toast" id="k-toast" role="status" aria-live="polite"></div>
+{% endif %}
+
+<script src="{% static 'js/app.js' %}" defer></script>
+<script src="{% static 'pwa/offline-queue.js' %}" defer></script>
+<script src="{% static 'js/kitchen.js' %}" defer></script>
+</body>
+</html>

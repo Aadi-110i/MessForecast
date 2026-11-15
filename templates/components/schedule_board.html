@@ -1,0 +1,39 @@
+{% load filter_extras %}
+{% comment %}
+Component library — the schedule board.
+Seven days across, three meals down, one cell per hall-meal-date. It answers
+"what is on tomorrow", so it is a board and not a list.
+
+Usage:
+  {% include "components/schedule_board.html" with board=board %}
+  board.days   -> list of {date, label, weekday}
+  board.meals  -> list of {code, label}
+  board.cells  -> dict keyed "MEAL|YYYY-MM-DD" -> {menu, url, published, dish_count} or None
+{% endcomment %}
+<div class="c-board" role="table" aria-label="Menu schedule for the week">
+  <div class="c-board-head" role="columnheader">Meal</div>
+  {% for day in board.days %}
+    <div class="c-board-head is-date" role="columnheader">
+      {{ day.weekday }}
+      <small>{{ day.label }}</small>
+    </div>
+  {% endfor %}
+
+  {% for meal in board.meals %}
+    <div class="c-board-meal" role="rowheader">{{ meal.label }}</div>
+    {% for day in board.days %}
+      {% with cell=board.cells|get_item:meal.code|get_item:day.iso %}
+        <div class="c-board-cell" role="cell">
+          {% if cell %}
+            <a class="c-board-menu{% if cell.published %} is-published{% endif %}" href="{{ cell.url }}" title="{{ cell.full_name }}">
+              {{ cell.menu }}
+              {% if cell.dish_count %}<small>{{ cell.dish_count }} dishes</small>{% endif %}
+            </a>
+          {% else %}
+            <a class="c-board-empty" href="{{ board.assign_url }}?date={{ day.iso }}&amp;meal={{ meal.code }}">Assign</a>
+          {% endif %}
+        </div>
+      {% endwith %}
+    {% endfor %}
+  {% endfor %}
+</div>

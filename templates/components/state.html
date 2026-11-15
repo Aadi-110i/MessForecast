@@ -1,0 +1,26 @@
+{% comment %}
+Component library — the state.
+Every list and every panel can be in one of four states. A screen must
+never show a blank frame where a fact should be.
+
+Usage:
+  {% include "components/state.html" with kind="empty" title="No service today" body="..." %}
+  kind: empty | loading | error | none
+{% endcomment %}
+{% if kind == 'loading' %}
+  <div class="c-state is-loading" role="status" aria-live="polite">
+    <div class="skeleton"><span class="skeleton-line"></span><span class="skeleton-line"></span></div>
+    <p>{{ body|default:"Loading." }}</p>
+  </div>
+{% elif kind == 'error' %}
+  <div class="c-state is-error" role="alert">
+    <p class="c-state-title">{{ title|default:"Something went wrong" }}</p>
+    <p>{{ body }}</p>
+  </div>
+{% elif kind == 'empty' %}
+  <div class="c-state is-empty">
+    <p class="c-state-title">{{ title|default:"Nothing here yet" }}</p>
+    {% if body %}<p>{{ body }}</p>{% endif %}
+    {% if action_url %}<a class="btn" href="{{ action_url }}">{{ action_label|default:"Get started" }}</a>{% endif %}
+  </div>
+{% endif %}

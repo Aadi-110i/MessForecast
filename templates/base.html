@@ -1,0 +1,202 @@
+{% load static %}{% load capabilities %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}{{ app_name }}{% endblock %}</title>
+  <meta name="description" content="Meal demand forecasting and food-waste measurement for campus messes.">
+  <meta name="theme-color" content="#0E1017">
+  <link rel="manifest" href="{% url 'pwa-manifest' %}">
+  <link rel="icon" href="{% static 'pwa/icon.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <script>document.documentElement.classList.add('js');</script>
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+{% block shell %}
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="shell">
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="{% url 'dashboard-home' %}">
+        <span class="brand-mark">MessForecast</span>
+        <span class="brand-sub">Demand and waste</span>
+      </a>
+
+      <button class="navtoggle" type="button" id="navtoggle" aria-expanded="false" aria-controls="rail" hidden>Menu</button>
+
+      <div class="userbox">
+        {% if user.is_authenticated %}
+          <span class="user-name">{{ user.get_full_name|default:user.username }}</span>
+          <span class="user-role">{{ user.get_role_display }}</span>
+          <a class="btn btn-ghost btn--small" href="{% url 'profile-page' %}">Profile</a>
+          <form action="{% url 'logout' %}" method="post" style="display:inline;" class="logout-form">
+            {% csrf_token %}
+            <button class="btn btn-ghost btn--small" type="submit">Sign out</button>
+          </form>
+        {% else %}
+          <a class="btn btn-ghost" href="{% url 'login' %}?next={{ request.path }}">Sign in</a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <div class="netbar" id="netbar" role="status" aria-live="polite">
+    <span class="dot" aria-hidden="true"></span>
+    <span id="netbar-text">No connection. This device is working offline. Scans are queued on this tablet and sync automatically.</span>
+  </div>
+
+  <div class="shell-body">
+    <nav class="rail" id="rail" aria-label="Sections">
+      <p class="rail-heading">Console</p>
+      <ul class="rail-list">
+        {% if user|can:"VIEW_MENU" %}
+        <li>
+          <a class="rail-link" href="{% url 'dashboard-home' %}" {% if request.resolver_match.url_name == 'dashboard-home' or request.resolver_match.url_name == 'home' %}aria-current="page"{% endif %}>
+            Overview
+            <span class="rail-note">Waste, error and today’s services</span>
+          </a>
+        </li>
+        {% endif %}
+        {% if user|can:"VIEW_FORECAST" %}
+        <li>
+          <a class="rail-link" href="{% url 'console-forecast' %}" {% if request.resolver_match.url_name == 'console-forecast' %}aria-current="page"{% endif %}>
+            Forecast
+            <span class="rail-note">The week ahead, and why</span>
+          </a>
+        </li>
+        {% endif %}
+        {% if user|can:"RECORD_ATTENDANCE" %}
+        <li>
+          <a class="rail-link" href="{% url 'console-attendance' %}" {% if request.resolver_match.url_name == 'console-attendance' %}aria-current="page"{% endif %}>
+            Attendance
+            <span class="rail-note">Turnout, methods and sync</span>
+          </a>
+        </li>
+        {% endif %}
+        {% if user|can:"VIEW_MENU" %}
+        <li>
+          <a class="rail-link" href="{% url 'console-menus' %}" {% if request.resolver_match.url_name == 'console-menus' or request.resolver_match.url_name == 'console-menu-detail' %}aria-current="page"{% endif %}>
+            Menus
+            <span class="rail-note">Cycles and the schedule</span>
+          </a>
+        </li>
+        {% endif %}
+        {% if user|can:"VIEW_MENU" %}
+        <li>
+          <a class="rail-link" href="{% url 'console-recipes' %}" {% if request.resolver_match.url_name == 'console-recipes' or request.resolver_match.url_name == 'console-recipe-detail' %}aria-current="page"{% endif %}>
+            Recipes
+            <span class="rail-note">Versions and cost</span>
+          </a>
+        </li>
+        {% endif %}
+        {% if user|can:"MANAGE_MASTERS" %}
+        <li>
+          <a class="rail-link" href="{% url 'console-dishes' %}" {% if request.resolver_match.url_name == 'console-dishes' or request.resolver_match.url_name == 'console-dish-update' %}aria-current="page"{% endif %}>
+            Dishes
+            <span class="rail-note">What the kitchen can cook</span>
+          </a>
+        </li>
+        {% endif %}
+        {% if user|can:"VIEW_PREPARATION_PLAN" %}
+        <li>
+          <a class="rail-link" href="{% url 'dashboard-planning' %}" {% if request.resolver_match.url_name == 'dashboard-planning' %}aria-current="page"{% endif %}>
+            Planning
+            <span class="rail-note">What to cook and what to buy</span>
+          </a>
+        </li>
+        {% endif %}
+        {% if user|can:"VIEW_WASTE_COST" %}
+        <li>
+          <a class="rail-link" href="{% url 'dashboard-waste' %}" {% if request.resolver_match.url_name == 'dashboard-waste' %}aria-current="page"{% endif %}>
+            Waste
+            <span class="rail-note">What was thrown away</span>
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+
+      {% if user|can:"VIEW_WASTE_COST" or user|can:"VIEW_ACCURACY" or user|can:"MANAGE_HALLS" or user|can:"MANAGE_MASTERS" or user|can:"CONFIGURE_SERVICE_LEVEL" or user|can:"RECORD_ACTUALS" %}
+      <p class="rail-heading">Administration</p>
+      <ul class="rail-list">
+        {% if user|can:"VIEW_WASTE_COST" or user|can:"VIEW_ACCURACY" %}
+        <li>
+          <a class="rail-link" href="{% url 'console-reports' %}" {% if request.resolver_match.url_name == 'console-reports' %}aria-current="page"{% endif %}>
+            Reports
+            <span class="rail-note">Every export the platform produces</span>
+          </a>
+        </li>
+        {% endif %}
+        {% if user|can:"MANAGE_HALLS" or user|can:"MANAGE_MASTERS" or user|can:"CONFIGURE_SERVICE_LEVEL" %}
+        <li>
+          <a class="rail-link" href="{% url 'console-settings' %}" {% if request.resolver_match.url_name == 'console-settings' %}aria-current="page"{% endif %}>
+            Settings
+            <span class="rail-note">Halls, service levels, people</span>
+          </a>
+        </li>
+        {% endif %}
+        {% if user|can:"VIEW_WASTE_COST" or user|can:"RECORD_ACTUALS" %}
+        <li>
+          <a class="rail-link" href="{% url 'dashboard-data-quality' %}" {% if request.resolver_match.url_name == 'dashboard-data-quality' %}aria-current="page"{% endif %}>
+            Data quality
+            <span class="rail-note">Services missing their numbers</span>
+          </a>
+        </li>
+        {% endif %}
+        {% if user|can:"MANAGE_MASTERS" %}
+        <li>
+          <a class="rail-link" href="{% url 'design-system' %}" {% if request.resolver_match.url_name == 'design-system' %}aria-current="page"{% endif %}>
+            Component library
+            <span class="rail-note">Every component, in every state</span>
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+      {% endif %}
+
+      {% if user|can:"RECORD_ACTUALS" or user|can:"VIEW_PREPARATION_PLAN" or user|can:"RECORD_ATTENDANCE" %}
+      <p class="rail-heading">Operations</p>
+      <ul class="rail-list">
+        {% if user|can:"RECORD_ACTUALS" or user|can:"VIEW_PREPARATION_PLAN" %}
+        <li>
+          <a class="rail-link" href="{% url 'kitchen-dashboard' %}" {% if request.resolver_match.url_name == 'kitchen-dashboard' %}aria-current="page"{% endif %}>
+            Kitchen
+            <span class="rail-note">Record prepared and served</span>
+          </a>
+        </li>
+        {% endif %}
+        {% if user|can:"RECORD_ATTENDANCE" %}
+        <li>
+          <a class="rail-link" href="{% url 'scan-screen' %}" {% if request.resolver_match.url_name == 'scan-screen' %}aria-current="page"{% endif %}>
+            Capture
+            <span class="rail-note">Scan student attendance</span>
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+      {% endif %}
+    </nav>
+
+    <main class="page {% block page_class %}{% endblock %}" id="main">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <footer class="foot">
+    <div class="foot-inner">
+      <p>
+        Forecasting method:
+        <code>recency-weighted moving average with weekday, event and trend adjustment</code>.
+        The baseline stays statistical until a term of real data has been collected.
+      </p>
+    </div>
+  </footer>
+</div>
+{% endblock %}
+
+<script src="{% static 'js/app.js' %}" defer></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

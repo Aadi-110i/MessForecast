@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="MessForecast">
+  <rect width="512" height="512" fill="#0E1017"/>
+  <!-- the ruled tally: bone figures on slate -->
+  <g fill="#E9E6E0">
+    <rect x="112" y="160" width="288" height="26" rx="13"/>
+    <rect x="112" y="243" width="288" height="26" rx="13"/>
+    <rect x="112" y="326" width="288" height="26" rx="13"/>
+  </g>
+  <!-- the reconciled figure, in periwinkle -->
+  <rect x="112" y="243" width="192" height="26" rx="13" fill="#A9A4F0"/>
+</svg>

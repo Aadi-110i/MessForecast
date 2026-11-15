@@ -1,0 +1,17 @@
+{% comment %}
+Component library — the panel.
+One containment layer. A panel never holds another panel.
+
+Usage:
+  {% include "components/panel.html" with title="Waste cost" hint="per week" %}
+    <div class="panelbody">...</div>
+{% endcomment %}
+<section class="panel">
+  {% if title or hint %}
+    <div class="panelhead">
+      {% if title %}<h2>{{ title }}</h2>{% endif %}
+      {% if hint %}<span class="hint">{{ hint }}</span>{% endif %}
+    </div>
+  {% endif %}
+  {{ content }}
+</section>

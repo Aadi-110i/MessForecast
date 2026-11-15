@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Sign in · {{ app_name }}{% endblock %}
+
+{% block body_class %}is-auth{% endblock %}
+{% block page_class %}page-narrow{% endblock %}
+
+{% block content %}
+<div class="pagehead">
+  <div>
+    <h1>Sign in</h1>
+    <p class="lede">
+      Use the account issued by the mess office. Kitchen staff see the kitchen screen and
+      the capture screen; mess managers and administrators see the dashboard.
+    </p>
+  </div>
+</div>
+
+<section class="panel">
+  <div class="panelbody">
+    {% if form.errors %}
+      <p class="note is-error after-table">
+        That username and password did not match. Check them and try again.
+      </p>
+    {% endif %}
+    {% if next %}
+      <p class="note after-table">
+        Sign in to continue to <strong>{{ next }}</strong>.
+      </p>
+    {% endif %}
+
+    <form method="post" action="{% url 'login' %}" class="signin">
+      {% csrf_token %}
+      <div class="field">
+        <label for="id_username">Username</label>
+        <input type="text" name="username" id="id_username" autocomplete="username" autofocus required>
+      </div>
+      <div class="field">
+        <label for="id_password">Password</label>
+        <input type="password" name="password" id="id_password" autocomplete="current-password" required>
+      </div>
+      <input type="hidden" name="next" value="{{ next }}">
+      <div class="c-actions">
+        <button class="btn" type="submit">Sign in</button>
+        <a class="btn btn-ghost" href="{% url 'register' %}">I have a code</a>
+        <a class="btn btn-ghost" href="{% url 'password-reset' %}">Forgot password?</a>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panelhead"><h2>Demonstration accounts</h2></div>
+  <div class="panelbody">
+    <p>
+      The seed command creates one account per role. The password for all of them is
+      <code>messdemo</code>.
+    </p>
+    <div class="table-wrap">
+      <table class="ledger">
+        <thead><tr><th>Username</th><th>Role</th><th>Sees</th></tr></thead>
+        <tbody>
+          <tr><td class="num">manager</td><td class="metric">Mess Manager</td><td>Dashboard, planning, waste, accuracy</td></tr>
+          <tr><td class="num">chef</td><td class="metric">Kitchen Staff</td><td>Kitchen screen, capture screen</td></tr>
+          <tr><td class="num">admin</td><td class="metric">Mess Administrator</td><td>Dish, recipe and ingredient master</td></tr>
+          <tr><td class="num">finance</td><td class="metric">Finance Officer</td><td>Waste cost and procurement, read-only</td></tr>
+          <tr><td class="num">sysadmin</td><td class="metric">Administrator</td><td>Everything, including forecast settings</td></tr>
+          <tr><td class="num">student</td><td class="metric">Student</td><td>Menu and own attendance</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}

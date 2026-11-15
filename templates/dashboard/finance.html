@@ -1,0 +1,139 @@
+{% extends "console/base_console.html" %}
+{% load static %}
+
+{% block title %}Financial dashboard · {{ app_name }}{% endblock %}
+
+{% block console_content %}
+{% include "components/page_head.html" with title="Financial dashboard" lede="Read-only financial figures: waste cost, forecast accuracy, and the preparation plans in the window. Nothing here can be changed." %}
+
+{% if figures %}
+{% include "components/figures.html" with figures=figures %}
+{% endif %}
+
+<!-- ===================== Waste cost ===================== -->
+<section class="panel">
+  <div class="panelhead"><h2>Cost of waste</h2></div>
+  <div class="table-wrap">
+    <table class="ledger">
+      <thead>
+        <tr>
+          <th>Measure</th>
+          <th class="num">Period</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="metric">Waste cost</td>
+          <td class="num neg">₹{{ waste_totals.waste_cost|floatformat:0 }}</td>
+        </tr>
+        <tr>
+          <td class="metric">Weight thrown away</td>
+          <td class="num">{{ waste_totals.waste_quantity_kg|floatformat:1 }} kg</td>
+        </tr>
+        <tr>
+          <td class="metric">Dish records</td>
+          <td class="num">{{ waste_totals.records }}</td>
+        </tr>
+        <tr>
+          <td class="metric">Cost per service</td>
+          <td class="num">{% if waste_totals.records %}₹{{ waste_totals.waste_cost|floatformat:0 }}{% else %}₹0{% endif %}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{% if waste_by_week %}
+<section class="panel">
+  <div class="panelhead"><h2>Waste cost by week</h2></div>
+  <div class="panelbody">
+    {{ waste_by_week|json_script:"wasteByWeek" }}
+    <div class="chart" data-chart="bar" data-src="wasteByWeek" data-tone="loss"
+         data-value="waste_cost" data-label="week" data-prefix="₹" data-height="200"
+         data-title="Waste cost per week"></div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ===================== Forecast accuracy ===================== -->
+<section class="panel">
+  <div class="panelhead"><h2>Forecast accuracy (MAPE)</h2></div>
+  <div class="panelbody">
+    {{ mape_over_time|json_script:"mapeByWeek" }}
+    <div class="chart" data-chart="line" data-src="mapeByWeek" data-tone="model"
+         data-value="mape_pct" data-label="week" data-suffix="%" data-height="200"
+         data-title="Forecast error by week"></div>
+  </div>
+</section>
+
+<!-- ===================== Preparation plans ===================== -->
+<section class="panel">
+  <div class="panelhead"><h2>Preparation plans in window</h2></div>
+  <div class="table-wrap">
+    <table class="ledger">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Meal</th>
+          <th>Hall</th>
+          <th class="num">Portions</th>
+          <th class="num">Estimated cost</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in plans %}
+        <tr>
+          <td class="metric">{{ p.service.date|date:"d M Y" }}</td>
+          <td>{{ p.service.get_meal_display }}</td>
+          <td>{{ p.service.hall.name }}</td>
+          <td class="num">{{ p.portions_to_prepare }}</td>
+          <td class="num">₹{{ p.estimated_cost|floatformat:0 }}</td>
+          <td>{{ p.status }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="fill">No plans in this window.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ===================== Ingredient cost rates ===================== -->
+<section class="panel">
+  <div class="panelhead">
+    <h2>Ingredient cost rates</h2>
+    <span class="hint">Active rates, read-only</span>
+  </div>
+  <div class="table-wrap">
+    <table class="ledger">
+      <thead>
+        <tr>
+          <th>Ingredient</th>
+          <th>Unit</th>
+          <th>Hall</th>
+          <th class="num">Rate</th>
+          <th>Effective from</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cr in cost_rates %}
+        <tr>
+          <td class="metric">{{ cr.ingredient.name }}</td>
+          <td>{{ cr.ingredient.base_unit }}</td>
+          <td>{% if cr.hall %}{{ cr.hall.name }}{% else %}All halls{% endif %}</td>
+          <td class="num">₹{{ cr.unit_cost|floatformat:2 }}</td>
+          <td>{{ cr.effective_from|date:"d M Y" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="fill">No active ingredient cost rates recorded.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<p class="hint" style="margin-top:16px;">
+  Manage your profile: <a href="{% url 'profile-page' %}">your account</a>.
+</p>
+{% endblock %}

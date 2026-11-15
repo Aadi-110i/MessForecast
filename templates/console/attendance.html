@@ -1,0 +1,162 @@
+{% extends "console/base_console.html" %}
+{% load static filter_extras %}{% load capabilities %}
+
+{% block title %}Attendance · {{ app_name }}{% endblock %}
+
+{% block console_content %}
+{% include "components/page_head.html" with title="Attendance" lede="Who turned up, how it was captured, and whether the tablets are syncing. The number that matters is the turnout against registered strength, because that is what the forecast is scored against." %}
+
+<form class="toolbar" method="get">
+  <div class="field field--inline">
+    <label for="f-start">From</label>
+    <input type="date" id="f-start" name="start" value="{{ start|date:'Y-m-d' }}">
+  </div>
+  <div class="field field--inline">
+    <label for="f-end">To</label>
+    <input type="date" id="f-end" name="end" value="{{ end|date:'Y-m-d' }}">
+  </div>
+  <div class="field field--inline">
+    <label for="f-hall">Hall</label>
+    <select id="f-hall" name="hall">
+      <option value="">All halls</option>
+      {% for h in halls %}<option value="{{ h.id }}"{% if hall and h.id == h.id %} selected{% endif %}>{{ h.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="toolbar-actions">
+    <button class="btn" type="submit">Apply</button>
+    {% if user|can:"RECORD_ATTENDANCE" %}
+    <a class="btn btn-ghost" href="{% url 'console-export-attendance' %}">Download the sync log</a>
+    {% endif %}
+  </div>
+</form>
+
+<!-- ===================== The figures ===================== -->
+{% include "components/figures.html" with figures=figures %}
+
+<div class="c-split">
+  <div class="c-stack">
+
+    <!-- ===================== Per service ===================== -->
+    <section class="panel">
+  <div class="panelhead">
+    <h2>Service by service</h2>
+    <span class="hint">{{ services|length }}</span>
+  </div>
+{% if services %}
+  <div class="table-wrap">
+    <table class="ledger is-pinned">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Hall</th>
+          <th>Meal</th>
+          <th class="num">Turned up</th>
+          <th class="num">Registered</th>
+          <th class="num">Rate</th>
+          <th class="num">Forecast</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in services %}
+          <tr>
+            <td>{{ s.date|date:"D d M" }}</td>
+            <td class="metric">{{ s.hall.name }}</td>
+            <td>{{ s.get_meal_display }}</td>
+            <td class="num">{{ s.attendance_count }}</td>
+            <td class="num">{{ s.registered_strength }}</td>
+            <td class="num">
+              {% widthratio s.attendance_count s.registered_strength 1 as rate %}
+              {% if s.registered_strength %}
+                <span class="{% if rate < 60 %}neg{% endif %}">{{ rate }}%</span>
+              {% else %}
+                <span class="fill">No registered strength</span>
+              {% endif %}
+            </td>
+            <td class="num">
+              {% if s.forecast %}{{ s.forecast.predicted_attendance|floatformat:0 }}{% else %}<span class="fill">No forecast</span>{% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  {% include "components/state.html" with kind="empty" title="No services in this window" body="Widen the dates, or capture a service to see it here." %}
+{% endif %}
+</section>
+
+    <!-- ===================== Sync health ===================== -->
+    <section class="panel">
+  <div class="panelhead">
+    <h2>Tablet sync health</h2>
+    <span class="hint">{{ audits|length }}</span>
+  </div>
+{% if audits %}
+  <div class="table-wrap">
+    <table class="ledger">
+      <thead>
+        <tr>
+          <th>Device</th>
+          <th class="num">Received</th>
+          <th class="num">Created</th>
+          <th class="num">Duplicates</th>
+          <th class="num">Failed</th>
+          <th>Finished</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in audits %}
+          <tr>
+            <td class="metric">{{ a.device_id|default:"unknown device" }}</td>
+            <td class="num">{{ a.received }}</td>
+            <td class="num">{{ a.created }}</td>
+            <td class="num">{{ a.duplicates }}</td>
+            <td class="num{% if a.failed %} neg{% endif %}">{{ a.failed }}</td>
+            <td>{% if a.batch_finished_at %}{{ a.batch_finished_at|date:"D d M, H:i" }}{% else %}<span class="state is-open">Still running</span>{% endif %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  {% include "components/state.html" with kind="empty" title="No sync batches" body="When a tablet synns its queued scans, the batch appears here with what it sent and what it created." %}
+{% endif %}
+</section>
+
+  </div>
+
+  <!-- ===================== Context ===================== -->
+  <aside class="c-context">
+    <section class="panel">
+  <div class="panelhead">
+    <h2>How it was captured</h2>
+  </div>
+<div class="panelbody">
+  {% if by_method %}
+    <ul class="c-list">
+      {% for m in by_method %}
+        <li>
+          <div>
+            <dt>{{ method_labels|get_item:m.method|default:m.method }}</dt>
+            <dd>{{ m.count }} scans</dd>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="hint">No scans captured in this window.</p>
+  {% endif %}
+</div>
+</section>
+
+    <section class="panel">
+  <div class="panelhead">
+    <h2>Batches</h2>
+  </div>
+<div class="panelbody">
+  {% include "components/spec_list.html" with specs=audit_specs %}
+</div>
+</section>
+  </aside>
+</div>
+{% endblock %}

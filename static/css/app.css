@@ -1,0 +1,799 @@
+/* Hallmark · shape: app screen · genre: modern-minimal · theme: Dusk (by request) · redesign: full
+ * nav: glass topbar over a slate rail of ruled destinations · footer: one method line
+ * signature: the service reconciliation, forecast against the published band, row by row
+ * states: loading, empty, error, full · dusk: fog/periwinkle-apricot/glass
+ * axes: dark/grotesk-sans/cool · posture: committed · contrast: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S5 R4 V4 · weakest: R, the day range sat in a coloured band
+   that read as decoration; it now sits in the filter row where it is an input, and the tally lost
+   its four tinted tiles for one ruled row */
+/* Hallmark · waive 39b · every kitchen control is a 72px or larger touch target, past the 44px floor · the kitchen screen is worked with wet gloves */
+/* Hallmark · waive 69 · a ledger whose rows repeat a value by nature · each plan lists its own dishes, so the same dish repeats its standard weight across the hundred plans */
+/* Hallmark · answered F25 · the wide reconciliation table scrolls sideways with its naming column and its outcome column pinned, so the row is never lost */
+/* Hallmark · dropped {{ u_home }}, {{ u_waste }}, {{ u_acc }}, {{ u_dq }}, {{ u_plan }}, {{ u_kitchen }}, {{ u_scan }} · these were undefined template variables, so every navigation link rendered as href="" and went nowhere; each is now a real url tag */
+/* Hallmark · dismissed 29 · smoked glass is the Dusk material; the top bar blurs the ledger scrolling under it */
+/* Hallmark · answered F4 · one filled periwinkle pill a page; the ghost beside it carries no fill */
+@import url("./fonts.css");
+@import url("./tokens.css");
+@import url("./base.css");
+@import url("./components.css");
+
+/* =========================================================================
+   MessForecast — application shell
+   -------------------------------------------------------------------------
+   Hallmark's Dusk theme, adapted to what this product does. The ground is
+   slate, the chrome is smoked glass, and two signals carry the whole
+   vocabulary: periwinkle for the model and anything that matched, apricot
+   for loss and anything still open. Figures live in a ruled tally, a ledger
+   or a table, never in a grid of stat tiles.
+   ========================================================================= */
+
+/* =========================================================================
+   Shell
+   ========================================================================= */
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* A way past the chrome. */
+.skip {
+  position: absolute;
+  left: var(--space-md);
+  top: calc(-1 * var(--space-2xl));
+  z-index: var(--z-toast);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-control);
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  font-size: var(--text-sm);
+  text-decoration: none;
+}
+.skip:focus-visible { top: var(--space-md); outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+/* --- top bar: smoked glass over the slate ground ----------------------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky-nav);
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+  box-shadow: var(--glass-hi);
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.topbar-inner {
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  min-height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+  text-decoration: none;
+  color: var(--color-ink);
+  padding-block: var(--space-xs);
+}
+.brand-mark {
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: var(--text-lg);
+  letter-spacing: var(--tracking-display);
+}
+.brand-sub {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+.navtoggle {
+  display: none;
+  margin-left: auto;
+  min-height: var(--control-h);
+  padding-inline: var(--space-md);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-pill);
+  background: var(--color-wash);
+  color: var(--color-ink);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+.navtoggle:hover { background: var(--color-wash-strong); }
+.navtoggle:active { transform: translateY(1px); }
+.navtoggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+.userbox {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--text-sm);
+  color: var(--color-ink-2);
+}
+.user-role {
+  padding-inline: var(--space-xs);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-control);
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+/* --- the rail: a ruled list of destinations ----------------------------- */
+.shell-body {
+  flex: 1;
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  display: grid;
+  grid-template-columns: var(--rail-w) minmax(0, 1fr);
+  gap: var(--gap-columns);
+  align-items: start;
+}
+.rail {
+  position: sticky;
+  top: var(--topbar-h);
+  padding-block: var(--space-xl) var(--space-lg);
+  max-height: calc(100vh - var(--topbar-h));
+  overflow-y: auto;
+}
+
+.rail-heading {
+  margin: 0 0 var(--space-xs);
+  padding-inline: var(--space-md);
+  font-size: var(--text-xs);
+  color: var(--color-ink-3);
+}
+.rail-heading + .rail-list { margin-bottom: var(--space-lg); }
+
+.rail-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rail-link {
+  display: grid;
+  grid-template-columns: 0.5rem minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  border-bottom: 1px solid var(--color-hair);
+  text-decoration: none;
+  color: var(--color-ink-2);
+  font-size: var(--text-md);
+  transition: color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out);
+}
+.rail-link::before {
+  content: "";
+  width: 0.375rem;
+  height: 0.375rem;
+  margin-top: var(--space-xs);
+  border-radius: 50%;
+  background: transparent;
+}
+.rail-link:hover { color: var(--color-ink); background: var(--color-wash); }
+.rail-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+.rail-link[aria-current="page"] { color: var(--color-ink); }
+.rail-link[aria-current="page"]::before { background: var(--color-accent); }
+
+/* The chosen destination opens to one line of context. */
+.rail-note {
+  grid-column: 2;
+  display: none;
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+.rail-link[aria-current="page"] .rail-note { display: block; }
+
+/* --- the page ----------------------------------------------------------- */
+.page {
+  min-width: 0;
+  padding-block: var(--space-xl) var(--space-2xl);
+}
+/* Centred without auto margins: an auto margin on a grid item takes the item
+   out of the track and lets it size to its content, which overflows on a
+   phone. */
+.page-narrow { width: 100%; max-width: 34rem; justify-self: center; }
+
+/* A focused sign-in carries no rail. */
+.is-auth .rail { display: none; }
+.is-auth .shell-body { grid-template-columns: minmax(0, 1fr); }
+
+/* --- the offline notice ------------------------------------------------- */
+.netbar {
+  display: none;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--gutter);
+  background: var(--color-accent-2-wash);
+  border-bottom: 1px solid var(--color-accent-2-deep);
+  color: var(--color-accent-2);
+  font-size: var(--text-sm);
+}
+.netbar.show { display: flex; }
+.netbar .dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background: var(--color-accent-2);
+  flex: none;
+}
+
+/* --- the footer: one line, no columns ----------------------------------- */
+.foot {
+  border-top: 1px solid var(--color-rule);
+  padding-block: var(--space-lg) var(--space-xl);
+}
+.foot-inner {
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  flex-wrap: wrap;
+}
+.foot p {
+  margin: 0;
+  max-width: 62ch;
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+.foot code {
+  font-family: ui-monospace, "Cascadia Mono", "Consolas", monospace;
+  font-size: 0.9em;
+  color: var(--color-ink-2);
+}
+
+/* =========================================================================
+   Page header
+   ========================================================================= */
+.pagehead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-lg);
+}
+.pagehead h1 { max-width: 24ch; }
+.pagehead .lede {
+  margin-top: var(--space-xs);
+  max-width: 62ch;
+  font-size: var(--text-md);
+  color: var(--color-ink-2);
+}
+.pagehead-side {
+  display: grid;
+  gap: var(--space-2xs);
+  justify-items: end;
+  text-align: right;
+}
+.pagehead-side .hint {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+/* =========================================================================
+   The ruled tally: figures in a row, never in tiles
+   ========================================================================= */
+.tally {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 1px solid var(--color-rule);
+  border-bottom: 1px solid var(--color-rule);
+  margin-bottom: var(--space-xl);
+}
+.tally-item {
+  min-width: 0;
+  padding: var(--space-md) var(--space-lg);
+  border-left: 1px solid var(--color-hair);
+}
+.tally-item:first-child { border-left: 0; padding-left: 0; }
+.tally-label {
+  display: block;
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+.tally-value {
+  display: block;
+  margin-top: var(--space-2xs);
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: var(--text-3xl);
+  line-height: 1.05;
+  letter-spacing: var(--tracking-display);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink);
+}
+.tally-value.is-loss { color: var(--color-accent-2); }
+.tally-note {
+  display: block;
+  margin-top: var(--space-2xs);
+  font-size: var(--text-xs);
+  color: var(--color-ink-3);
+}
+.tally-note .u { color: var(--color-muted); }
+
+/* =========================================================================
+   Panels
+   ========================================================================= */
+.panel {
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-card);
+  background: var(--color-panel);
+  color: var(--color-ink);
+  box-shadow: inset 0 1px 0 var(--color-edge-lit);
+}
+.panel + .panel, .panel + .grid-2, .grid-2 + .panel, .grid-2 + .grid-2 { margin-top: var(--space-lg); }
+
+.panelhead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--color-hair);
+}
+.panelhead h2 { font-size: var(--text-title); max-width: none; }
+.panelhead .hint { font-size: var(--text-sm); color: var(--color-muted); }
+.panelbody { padding: var(--space-lg); color: var(--color-ink-2); }
+
+/* A label inside a panel, in the body face a step smaller. */
+.subhead {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-muted);
+  margin-bottom: var(--space-sm);
+}
+
+/* Spacing after a table, before the action that follows it. */
+.after-table { margin-top: var(--space-md); margin-bottom: 0; }
+
+/* A brief that arrives with its own line breaks. */
+.preserve-lines { white-space: pre-line; }
+
+/* A plan: a headed block, not a card, so the brief below it can be a well. */
+.plan + .plan {
+  margin-top: var(--space-2xl);
+  padding-top: var(--space-2xl);
+  border-top: 1px solid var(--color-rule);
+}
+.plan-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-lg);
+}
+.plan-head h2 { font-size: var(--text-lg); }
+.plan-head .hint { display: block; margin-top: var(--space-2xs); max-width: 62ch; }
+.plan-tags { display: flex; gap: var(--space-xs); flex-wrap: wrap; }
+.plan .tally { margin-bottom: var(--space-lg); }
+
+/* The sign-in form, one column. */
+.signin {
+  display: grid;
+  gap: var(--space-md);
+  justify-items: start;
+  max-width: 26rem;
+}
+.signin input { width: 100%; }
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gap-columns);
+  align-items: start;
+}
+
+/* =========================================================================
+   The ledger: tables carry the product
+   ========================================================================= */
+.table-wrap { width: 100%; overflow-x: auto; }
+
+.ledger {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+.ledger th, .ledger td {
+  padding: var(--space-sm) var(--space-md);
+  text-align: left;
+  vertical-align: baseline;
+}
+.ledger thead th {
+  font-weight: 500;
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+  border-bottom: 1px solid var(--color-rule);
+  white-space: nowrap;
+}
+.ledger tbody td {
+  border-bottom: 1px solid var(--color-hair);
+  color: var(--color-ink-2);
+}
+.ledger tbody tr:last-child td { border-bottom: 0; }
+.ledger tbody tr:hover td { background: var(--color-wash); }
+.ledger tfoot th, .ledger tfoot td {
+  padding: var(--space-sm) var(--space-md);
+  border-top: 1px solid var(--color-rule);
+  color: var(--color-ink);
+  font-weight: 500;
+}
+.ledger .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink);
+  white-space: nowrap;
+}
+.ledger .metric { color: var(--color-ink); }
+.ledger .neg { color: var(--color-accent-2); }
+.ledger .pos { color: var(--color-accent); }
+.ledger .rank { width: 2.5rem; color: var(--color-ink-3); }
+.ledger .fill { color: var(--color-ink-3); font-style: normal; }
+/* A cell holding one name, which must not break across three lines when a
+   neighbouring column grows. */
+.ledger .nowrap { white-space: nowrap; }
+/* A table with many columns: the horizontal padding halves so the last
+   column is not pushed out of the panel and has to scroll. */
+.ledger.is-tight th,
+.ledger.is-tight td { padding-inline: var(--space-sm); }
+
+/* The share of waste a dish accounts for. */
+.rankbar {
+  display: block;
+  height: 0.25rem;
+  border-radius: var(--radius-control);
+  background: var(--color-wash-strong);
+  overflow: hidden;
+}
+.rankbar i {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-control);
+  background: var(--color-accent-2);
+}
+
+/* =========================================================================
+   The filter row
+   ========================================================================= */
+.toolbar {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  margin-bottom: var(--space-xl);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-card);
+  background: var(--color-panel);
+  box-shadow: inset 0 1px 0 var(--color-edge-lit);
+}
+.toolbar-actions {
+  display: flex;
+  gap: var(--space-xs);
+  margin-left: auto;
+}
+
+.field { display: grid; gap: var(--space-2xs); min-width: 0; }
+.field label {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+.field--inline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
+select, textarea {
+  min-height: var(--control-h);
+  padding: 0 var(--space-sm);
+  border: 1px solid var(--color-field-edge);
+  border-radius: var(--radius-control);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font: var(--text-sm)/1.2 var(--font-body);
+}
+textarea { padding-block: var(--space-xs); min-height: 6rem; }
+input:hover, select:hover, textarea:hover { border-color: var(--color-muted); }
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+input:disabled, select:disabled, textarea:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: var(--color-paper-2);
+}
+input::placeholder, textarea::placeholder { color: var(--color-ink-3); }
+
+/* =========================================================================
+   Buttons
+   ========================================================================= */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  min-height: var(--control-h);
+  padding: 0 var(--space-md);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  font: 500 var(--text-sm)/1 var(--font-body);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--dur-short) var(--ease-out);
+}
+.btn:hover { background: var(--color-accent-hi); }
+.btn:active { transform: translateY(1px); }
+.btn:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.btn:disabled, .btn[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+.btn[aria-busy="true"] { cursor: progress; }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-ink);
+  border-color: var(--color-rule);
+}
+.btn-ghost:hover { background: var(--color-wash); }
+
+.btn-quiet {
+  background: transparent;
+  color: var(--color-ink-2);
+  border-color: transparent;
+  padding-inline: var(--space-sm);
+}
+.btn-quiet:hover { background: var(--color-wash); color: var(--color-ink); }
+
+/* =========================================================================
+   Chips and state marks
+   ========================================================================= */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  padding: 0 var(--space-xs);
+  min-height: 1.5rem;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-ink-2);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+/* Matched, done, on. */
+.chip.is-match {
+  border-color: var(--color-accent-deep);
+  background: var(--color-accent-wash);
+  color: var(--color-accent);
+}
+/* Open, owed, waiting. */
+.chip.is-open {
+  border-color: var(--color-accent-2-deep);
+  background: var(--color-accent-2-wash);
+  color: var(--color-accent-2);
+}
+.chip.is-error {
+  border-color: var(--color-error);
+  background: var(--color-error-wash);
+  color: var(--color-error-ink);
+}
+
+/* A live state, marked by one dot. */
+.state {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--text-xs);
+  color: var(--color-ink-2);
+  white-space: nowrap;
+}
+.state::before {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  flex: none;
+  background: var(--color-ink-3);
+}
+.state.is-match { color: var(--color-accent); }
+.state.is-match::before { background: var(--color-accent); }
+.state.is-open { color: var(--color-accent-2); }
+.state.is-open::before { background: var(--color-accent-2); }
+
+/* =========================================================================
+   Wells: the hand-off, set on bone
+   ========================================================================= */
+/* The well holds a hand-off of any length, so it grows with its content
+   rather than fixing a height it could spill over. */
+.well {
+  display: grid;
+  place-items: center;
+  min-height: 20rem;
+  padding: var(--space-xl);
+  border-radius: var(--radius-card);
+  background: var(--color-well);
+  color: var(--color-well-ink);
+  box-shadow: var(--shadow-card);
+}
+.well-inner {
+  width: 100%;
+  max-width: 36rem;
+  padding: var(--space-lg);
+  border-radius: var(--radius-inner);
+  background: var(--color-card);
+  color: var(--color-well-ink);
+}
+.well-inner h3 { color: var(--color-well-ink); }
+.well-inner p { color: var(--color-well-muted); }
+.well-inner strong { color: var(--color-well-ink); font-weight: 600; }
+
+/* A note that is not a hand-off stays on the slate. */
+.note {
+  padding: var(--space-md) var(--space-lg);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-control);
+  background: var(--color-panel);
+  color: var(--color-ink-2);
+  font-size: var(--text-sm);
+}
+.note strong { color: var(--color-ink); font-weight: 500; }
+.note.is-error {
+  border-color: var(--color-error);
+  background: var(--color-error-wash);
+  color: var(--color-error-ink);
+}
+
+/* =========================================================================
+   Empty, loading and error regions
+   ========================================================================= */
+.empty {
+  display: grid;
+  gap: var(--space-xs);
+  justify-items: start;
+  padding: var(--space-2xl) var(--space-lg);
+  max-width: 46ch;
+}
+.empty h3 { font-size: var(--text-title); color: var(--color-ink); }
+.empty p { color: var(--color-muted); }
+.empty .btn { margin-top: var(--space-xs); }
+
+.skeleton {
+  display: grid;
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+}
+.skeleton-line {
+  height: 0.75rem;
+  border-radius: var(--radius-control);
+  background: var(--color-wash-strong);
+}
+.skeleton-line.is-short { width: 55%; }
+.skeleton-line.is-tall { height: 2.25rem; }
+
+/* =========================================================================
+   Charts, drawn as inline SVG by app.js
+   ========================================================================= */
+.chart { width: 100%; }
+.chart svg.chart { width: 100%; height: auto; display: block; }
+.chart .grid-line { stroke: var(--color-hair); stroke-width: 1; }
+.chart .axis-text {
+  fill: var(--color-muted);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.chart .bar-label {
+  fill: var(--color-muted);
+  font-family: var(--font-body);
+  font-size: 12px;
+}
+.chart .bar { fill: var(--color-accent); }
+.chart .line { fill: none; stroke: var(--color-accent); stroke-width: 2; stroke-linejoin: round; }
+.chart .area { fill: var(--color-accent-wash); }
+.chart .dot { fill: var(--color-accent); }
+
+/* The forecast band: the range is the point of the chart, so it is filled
+   harder than a line chart's area, and it is scaled to the range rather than
+   to zero, so the room around the prediction is actually visible. */
+.chart.band .area { fill: var(--color-accent-band); }
+
+/* Loss charts carry the apricot. */
+.chart[data-tone="loss"] .bar { fill: var(--color-accent-2); }
+.chart[data-tone="loss"] .line { stroke: var(--color-accent-2); }
+.chart[data-tone="loss"] .area { fill: var(--color-accent-2-wash); }
+.chart[data-tone="loss"] .dot { fill: var(--color-accent-2); }
+
+/* =========================================================================
+   Responsive
+   ========================================================================= */
+@media (max-width: 60rem) {
+  .shell-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .navtoggle { display: inline-flex; align-items: center; }
+  .userbox { margin-left: 0; }
+  .rail {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    padding-block: var(--space-md) 0;
+    border-bottom: 1px solid var(--color-rule);
+    margin-bottom: var(--space-lg);
+  }
+  .rail[hidden] { display: none; }
+  html:not(.js) .rail { display: block; }
+  .tally { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tally-item:nth-child(odd) { border-left: 0; padding-left: 0; }
+  .tally-item:nth-child(n + 3) { border-top: 1px solid var(--color-hair); }
+  .grid-2 { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 40rem) {
+  .tally { grid-template-columns: minmax(0, 1fr); }
+  .tally-item { border-left: 0; padding-left: 0; padding-right: 0; }
+  .tally-item + .tally-item { border-top: 1px solid var(--color-hair); }
+  .toolbar { padding: var(--space-md); }
+  .toolbar-actions { margin-left: 0; width: 100%; }
+  .pagehead { align-items: flex-start; }
+  .well { padding: var(--space-md); }
+  .well-inner { padding: var(--space-md); }
+  .brand-sub { display: none; }
+  .user-name { display: none; }
+  .topbar-inner { gap: var(--space-sm); }
+
+  /* The first column carries the row's identity, so it stays put while the
+     ledger scrolls sideways. */
+  .ledger thead th:first-child,
+  .ledger tbody td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: var(--z-sticky);
+    background: var(--color-panel);
+  }
+  .ledger thead th:first-child { z-index: var(--z-sticky-nav); }
+
+  /* Where a ledger ends in the column that acts on the row, that column is
+     pinned too, so the identity and the outcome are both always in view. */
+  .ledger.is-pinned thead th:last-child,
+  .ledger.is-pinned tbody td:last-child {
+    position: sticky;
+    right: 0;
+    z-index: var(--z-sticky);
+    background: var(--color-panel);
+  }
+  .ledger.is-pinned thead th:last-child { z-index: var(--z-sticky-nav); }
+}
+
+/* =========================================================================
+   Print: the waste report is meant to be printed and filed
+   ========================================================================= */
+@media print {
+  :root { color-scheme: light; }
+  body { background: var(--color-light); color: var(--color-print-ink); }
+  .topbar, .rail, .netbar, .toolbar, .foot { display: none; }
+  .panel { border-color: var(--color-print-rule); background: var(--color-light); box-shadow: none; }
+  .ledger thead th, .ledger tbody td { border-color: var(--color-print-hair); }
+}

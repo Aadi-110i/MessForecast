@@ -1,0 +1,11 @@
+﻿node : render tier: 5 screenshots in D:\Haswanth\college\assignments\MessForecast\.hallmark\shots (1280x800, 1440x900, 
+1920x1080 folds; 1440 and 375 full pages)
+At line:3 char:1
++ node "C:\Users\Dell\.agents\skills\hallmark\scripts\sloplint.mjs" sta ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (render tier: 5 ...375 full pages):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+static\css\app.css
+  DISMISSED 29 :59 glass panel: backdrop-filter blur over a translucent black on .topbar
+sloplint: 0 FAIL, 0 WARN, 1 DISMISSED across 3 file(s) and 1 URL(s).

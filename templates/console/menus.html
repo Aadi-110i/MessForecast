@@ -1,0 +1,214 @@
+{% extends "console/base_console.html" %}
+{% load static %}{% load capabilities %}
+
+{% block title %}Menus · {{ app_name }}{% endblock %}
+
+{% block console_content %}
+{% include "components/page_head.html" with title="Menu management" lede="The cycles the kitchen cooks from, and what is scheduled for the week. A cycle is a set of dishes per meal; a schedule row binds a cycle to a hall, a date and a meal." %}
+
+<div class="c-stack">
+
+  {% if form_error %}
+    <div class="c-banner is-error" role="alert">
+      <p>{{ form_error }}</p>
+    </div>
+  {% elif notice %}
+    <div class="c-banner is-match" role="status">
+      <p>{{ notice }}</p>
+    </div>
+  {% endif %}
+
+  <!-- ===================== The week board ===================== -->
+  <section class="panel">
+    <div class="panelhead">
+      <h2>This week's schedule</h2>
+      <span class="hint">{{ board.start|date:"d M" }} to {{ board.end|date:"d M Y" }}</span>
+    </div>
+    {% if board.cells %}
+      {% include "components/schedule_board.html" with board=board %}
+    {% else %}
+      <div class="panelbody">
+        {% include "components/state.html" with kind="empty" title="No schedule yet" body="Assign a cycle to a hall, date and meal to start filling the board." %}
+      </div>
+    {% endif %}
+  </section>
+
+  <div class="c-split">
+    <div class="c-stack">
+
+      <!-- ===================== The cycles ===================== -->
+      <section class="panel">
+        <div class="panelhead">
+          <h2>Menu cycles</h2>
+          <span class="hint">{{ cycles|length }} active</span>
+        </div>
+        {% if cycles %}
+          <div class="table-wrap">
+            <table class="ledger">
+              <thead>
+                <tr>
+                  <th>Cycle</th>
+                  <th>Meals</th>
+                  <th class="num">Dishes</th>
+                  <th class="num">Scheduled</th>
+                  <th class="num">Published</th>
+                  <th class="num">Open</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for s in cycles %}
+                  <tr>
+                    <td class="metric nowrap">{{ s.menu.name }}</td>
+                    <td>
+                      {% for meal in s.by_meal.values %}
+                        {% if meal.count %}<span class="chip">{{ meal.label }}</span>{% endif %}
+                      {% endfor %}
+                    </td>
+                    <td class="num">{{ s.total_dishes }}</td>
+                    <td class="num">{{ s.scheduled }}</td>
+                    <td class="num">{{ s.published }}</td>
+                    <td class="num">
+                      <a class="btn btn-quiet" href="{% url 'console-menu-detail' s.menu.id %}">Open</a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="panelbody">
+            {% include "components/state.html" with kind="empty" title="No cycles yet" body="A cycle holds the dishes for one menu rotation." %}
+          </div>
+        {% endif %}
+      </section>
+
+    </div>
+
+    <!-- ===================== Context column ===================== -->
+    <aside class="c-context">
+      {% if selected_cycle %}
+        <section class="panel">
+          <div class="panelhead">
+            <h2>{{ selected_cycle.menu.name }}</h2>
+            <span class="hint">{{ selected_cycle.menu.cycle_label }}</span>
+          </div>
+          <div class="panelbody">
+            {% include "components/spec_list.html" with specs=selected_cycle_specs %}
+          </div>
+          <div class="panelbody">
+            <a class="btn btn-ghost" href="{% url 'console-menu-detail' selected_cycle.menu.id %}">Open the cycle</a>
+          </div>
+        </section>
+      {% endif %}
+
+      <section class="panel">
+        <div class="panelhead">
+          <h2>Dishes not in any cycle</h2>
+          <span class="hint">{{ unassigned_dishes|length }}</span>
+        </div>
+        <div class="panelbody">
+          {% if unassigned_dishes %}
+            <ul class="c-list">
+              {% for d in unassigned_dishes %}
+                <li><div><dt>{{ d.name }}</dt><dd>{{ d.code }}</dd></div></li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="hint">Every active dish is in a cycle.</p>
+          {% endif %}
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <!-- ===================== Plan the menu ===================== -->
+  {% if user|can:"PLAN_MENU" %}
+  <section class="panel">
+    <div class="panelhead">
+      <h2>Assign a cycle</h2>
+      <span class="hint">One hall, date and meal</span>
+    </div>
+    <div class="panelbody">
+      <form class="c-form is-wide" method="post" action="{% url 'console-schedule-assign' %}">
+        {% csrf_token %}
+        <div class="c-form-grid">
+          {% include "components/field.html" with label="Cycle" name="menu" type="select" options=cycle_options option_value="id" option_label="name" required=True %}
+          {% include "components/field.html" with label="Hall" name="hall" type="select" options=halls option_value="id" option_label="name" required=True %}
+          {% include "components/field.html" with label="Date" name="date" type="date" value=today|date:"Y-m-d" %}
+          {% include "components/field.html" with label="Meal" name="meal" type="select" options=meal_choices option_value=0 option_label=1 required=True %}
+        </div>
+        <div class="c-actions">
+          <button class="btn" type="submit">Assign cycle</button>
+        </div>
+      </form>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- ===================== A daily menu ===================== -->
+  {% if user|can:"PLAN_MENU" %}
+  <section class="panel">
+    <div class="panelhead">
+      <h2>Create a daily menu</h2>
+      <span class="hint">Every meal of one hall on one date</span>
+    </div>
+    <div class="panelbody">
+      <form class="c-form is-wide" method="post" action="{% url 'console-schedule-day' %}">
+        {% csrf_token %}
+        <div class="c-form-grid">
+          {% include "components/field.html" with label="Cycle" name="menu" type="select" options=cycle_options option_value="id" option_label="name" required=True %}
+          {% include "components/field.html" with label="Hall" name="hall" type="select" options=halls option_value="id" option_label="name" required=True %}
+          {% include "components/field.html" with label="Date" name="date" type="date" value=today|date:"Y-m-d" %}
+        </div>
+        <p class="hint">
+          Breakfast, lunch, snacks and dinner all point at this cycle. A slot that already
+          holds another cycle is replaced, and a published slot stays published.
+        </p>
+        <div class="c-actions">
+          <button class="btn" type="submit">Write the day</button>
+        </div>
+      </form>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- ===================== A weekly menu ===================== -->
+  {% if user|can:"PLAN_MENU" %}
+  <section class="panel">
+    <div class="panelhead">
+      <h2>Create a weekly menu</h2>
+      <span class="hint">Seven days, one rotation</span>
+    </div>
+    <div class="panelbody">
+      <form class="c-form is-wide" method="post" action="{% url 'console-schedule-week' %}">
+        {% csrf_token %}
+        <div class="c-form-grid">
+          {% include "components/field.html" with label="Hall" name="hall" type="select" options=halls option_value="id" option_label="name" required=True %}
+          {% include "components/field.html" with label="The week starts on" name="start" type="date" value=board_start|date:"Y-m-d" %}
+        </div>
+        <fieldset class="c-fieldset">
+          <legend>The rotation</legend>
+          <div class="c-check-list">
+            {% for m in cycle_options %}
+              <label class="c-check">
+                <input type="checkbox" name="cycles" value="{{ m.id }}" data-name="{{ m.name }}" checked>
+                <span>{{ m.name }}</span>
+              </label>
+            {% endfor %}
+          </div>
+          <p class="hint">
+            The rotation follows the order above and then repeats. Three cycles give Monday the
+            first, Tuesday the second and Wednesday the first again. Every meal of every day
+            is written, so the week is planned in one go rather than cell by cell.
+          </p>
+        </fieldset>
+        <div class="c-actions">
+          <button class="btn" type="submit">Write the week</button>
+        </div>
+      </form>
+    </div>
+  </section>
+  {% endif %}
+
+</div>
+{% endblock %}

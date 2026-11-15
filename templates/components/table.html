@@ -1,0 +1,37 @@
+{% load filter_extras %}
+{% comment %}
+Component library — the data table.
+A ledger of rows with a head. When there are no rows, it says so in words
+rather than showing an empty frame.
+
+Usage:
+  {% include "components/table.html" with columns=columns rows=rows empty="No services yet" %}
+  Each column: {label, align}
+  Each row: a dict; columns look up row via column.key
+{% endcomment %}
+<div class="table-wrap">
+  <table class="ledger">
+    <thead>
+      <tr>
+        {% for c in columns %}
+          <th{% if c.align == 'right' %} class="num"{% elif c.align == 'center' %} class="mid"{% endif %}>{{ c.label }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+        <tr>
+          {% for c in columns %}
+            <td{% if c.align == 'right' %} class="num"{% elif c.align == 'center' %} class="mid"{% endif %}>
+              {% if c.key in r %}{{ r|get_item:c.key }}{% endif %}
+            </td>
+          {% endfor %}
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="{{ columns|length }}" class="empty">{{ empty|default:"Nothing to show yet." }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,177 @@
+{% extends "console/base_console.html" %}
+{% load static %}
+
+{% block title %}Preparation planning · {{ app_name }}{% endblock %}
+
+{% block console_content %}
+<header class="c-head">
+  <div>
+    <h1>Preparation planning</h1>
+    <p class="c-head-lede">
+      What the kitchen should cook and what it should buy. The portion count comes from the
+      forecast plus the over-preparation margin this hall allows; the ingredient list
+      comes from the recipes behind each dish.
+    </p>
+  </div>
+  <div class="c-head-side">
+    <span class="chip">{{ hall.name|default:"All halls" }}</span>
+    <span class="hint">{{ upcoming_count }} upcoming, {{ past_count }} already cooked</span>
+  </div>
+</header>
+
+<form class="toolbar" method="get">
+  <div class="field field--inline">
+    <label for="f-start">From</label>
+    <input type="date" id="f-start" name="start" value="{{ start|date:'Y-m-d' }}">
+  </div>
+  <div class="field field--inline">
+    <label for="f-end">To</label>
+    <input type="date" id="f-end" name="end" value="{{ end|date:'Y-m-d' }}">
+  </div>
+  <div class="field field--inline">
+    <label for="f-hall">Hall</label>
+    <select id="f-hall" name="hall">
+      <option value="">All halls</option>
+      {% for h in halls %}
+        <option value="{{ h.id }}" {% if hall and hall.id == h.id %}selected{% endif %}>{{ h.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="toolbar-actions">
+    <button class="btn" type="submit">Apply</button>
+    <a class="btn btn-ghost" href="{% url 'dashboard-planning' %}?when=upcoming{% if hall %}&amp;hall={{ hall.id }}{% endif %}">Upcoming</a>
+    <a class="btn btn-ghost" href="{% url 'dashboard-planning' %}?when=past{% if hall %}&amp;hall={{ hall.id }}{% endif %}">Already cooked</a>
+  </div>
+</form>
+
+{% if plans %}
+  {% for plan in plans %}
+    <section class="plan">
+      <div class="plan-head">
+        <div>
+          <h2>{{ plan.service.hall.name }}, {{ plan.service.get_meal_display }}</h2>
+          <span class="hint">
+            {{ plan.service.date|date:"l, d F Y" }}.
+            {% if plan.forecast %}Portions come from a forecast of {{ plan.forecast.predicted_attendance|floatformat:0 }}.{% else %}No forecast is attached to this plan.{% endif %}
+          </span>
+        </div>
+        <div class="plan-tags">
+          <span class="chip is-open">+{{ plan.safety_margin_pct|floatformat:1 }}% margin</span>
+          {% if plan.status == 'PUBLISHED' %}<span class="chip is-match">Published</span>{% else %}<span class="chip">{{ plan.status }}</span>{% endif %}
+        </div>
+      </div>
+
+      <div class="c-figrow">
+        <div class="c-fig">
+          <span class="c-fig-label">Expected turnout</span>
+          <span class="c-fig-value">{{ plan.attendance_target|floatformat:0 }}</span>
+          <span class="c-fig-note">The forecast this plan was built from</span>
+        </div>
+        <div class="c-fig">
+          <span class="c-fig-label">Portions to prepare</span>
+          <span class="c-fig-value">{{ plan.portions_to_prepare }}</span>
+          <span class="c-fig-note">{{ plan.over_preparation_pct|floatformat:1 }}% above the forecast</span>
+        </div>
+        <div class="c-fig">
+          <span class="c-fig-label">Over-preparation</span>
+          <span class="c-fig-value is-loss">{{ plan.over_preparation_pct|floatformat:1 }}%</span>
+          <span class="c-fig-note">The margin this hall allows</span>
+        </div>
+        <div class="c-fig">
+          <span class="c-fig-label">Estimated food cost</span>
+          <span class="c-fig-value">₹{{ plan.estimated_cost|floatformat:0 }}</span>
+          <span class="c-fig-note">At current ingredient prices</span>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <section class="panel">
+          <div class="panelhead">
+            <h2>Portions per dish</h2>
+            <span class="hint">share of the plan</span>
+          </div>
+          <div class="table-wrap">
+            <table class="ledger">
+              <thead>
+                <tr><th>Dish</th><th class="num">Share</th><th class="num">Portions</th><th class="num">Cost</th></tr>
+              </thead>
+              <tbody>
+                {% for line in plan.lines.all %}
+                  <tr>
+                    <td class="metric">{{ line.dish.name }}</td>
+                    <td class="num">{{ line.expected_share|floatformat:3 }}</td>
+                    <td class="num">{{ line.portions }}</td>
+                    <td class="num">₹{{ line.estimated_cost|floatformat:0 }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panelhead">
+            <h2>Ingredient indent</h2>
+            <span class="hint">what to buy</span>
+          </div>
+          {% with indent=plan.indent %}
+            {% if indent %}
+              <div class="table-wrap">
+                <table class="ledger">
+                  <thead>
+                    <tr><th>Ingredient</th><th class="num">Qty</th><th class="num">Packs</th><th class="num">Cost</th></tr>
+                  </thead>
+                  <tbody>
+                    {% for line in indent.lines.all %}
+                      <tr>
+                        <td class="metric">{{ line.ingredient.name }}</td>
+                        <td class="num">{{ line.quantity|floatformat:2 }} {{ line.unit }}</td>
+                        <td class="num">{{ line.packs|floatformat:1 }}</td>
+                        <td class="num">₹{{ line.estimated_cost|floatformat:0 }}</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th>Total</th>
+                      <th class="num"></th>
+                      <th class="num"></th>
+                      <th class="num">₹{{ indent.total_estimated_cost|floatformat:0 }}</th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+              <p class="after-table">
+                <a class="btn btn-ghost" href="{% url 'export-indent' plan.id %}">Download indent (CSV)</a>
+              </p>
+            {% else %}
+              <div class="empty">
+                <h3>No indent yet</h3>
+                <p>Generate the plan to produce the procurement list.</p>
+              </div>
+            {% endif %}
+          {% endwith %}
+        </section>
+      </div>
+
+      {% if plan.guidance_text %}
+        <div class="well">
+          <div class="well-inner">
+            <h3>The brief for the kitchen</h3>
+            <p class="preserve-lines">{{ plan.guidance_text }}</p>
+          </div>
+        </div>
+      {% endif %}
+    </section>
+  {% endfor %}
+{% else %}
+  <section class="panel">
+    <div class="empty">
+      <h3>No preparation plans in this period</h3>
+      <p>Plans are produced from the daily forecast. Run
+         <code>manage.py run_forecasts --days 7</code> and then
+         <code>manage.py build_plans --days 2</code>.</p>
+    </div>
+  </section>
+{% endif %}
+{% endblock %}

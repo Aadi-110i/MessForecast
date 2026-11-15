@@ -1,0 +1,69 @@
+{% extends "console/base_console.html" %}
+{% load static %}
+
+{% block title %}Recipes · {{ app_name }}{% endblock %}
+
+{% block console_content %}
+{% include "components/page_head.html" with title="Recipe management" lede="What each dish is made of, and what one portion costs. A recipe is versioned: when the kitchen changes a proportion, that is a new version, and the old one stays so a dish served in March can still be costed." %}
+
+<!-- ===================== The figures ===================== -->
+{% include "components/figures.html" with figures=figures %}
+
+<!-- ===================== The dishes ===================== -->
+<section class="panel">
+  <div class="panelhead">
+    <h2>Dishes</h2>
+    <span class="hint">{{ total_dishes }}</span>
+  </div>
+{% if rows %}
+  <div class="table-wrap">
+    <table class="ledger">
+      <thead>
+        <tr>
+          <th>Dish</th>
+          <th>Category</th>
+          <th class="num">Recipe</th>
+          <th class="num">Ingredients</th>
+          <th class="num">Cost per portion</th>
+          <th>Served in</th>
+          <th class="num">Open</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+          <tr>
+            <td class="metric">{{ r.dish.name }}</td>
+            <td>{{ r.dish.get_category_display }}</td>
+            <td class="num">
+              {% if r.recipe %}
+                v{{ r.recipe.version }}
+              {% else %}
+                <span class="state is-open">No recipe</span>
+              {% endif %}
+            </td>
+            <td class="num">{{ r.line_count }}</td>
+            <td class="num">₹{{ r.cost|floatformat:2 }}</td>
+            <td>
+              {% for m in r.usage.menus %}
+                <span class="chip">{{ m }}</span>
+              {% empty %}
+                <span class="fill">Not on a menu</span>
+              {% endfor %}
+            </td>
+            <td class="num">
+              <a class="btn btn-quiet" href="{% url 'console-recipe-detail' r.dish.id %}">Open</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  {% include "components/state.html" with kind="empty" title="No dishes yet" body="Dishes are the things the kitchen cooks and the platform measures." %}
+{% endif %}
+</section>
+
+{% if unversioned %}
+  {% include "components/notice.html" with tone="open" title="Some dishes have no recipe" body="A dish with no recipe has no cost, so it cannot be costed into a preparation plan. Open it and add a version." %}
+{% endif %}
+{% endblock %}

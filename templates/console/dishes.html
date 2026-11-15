@@ -1,0 +1,158 @@
+{% extends "console/base_console.html" %}
+{% load static filter_extras %}{% load capabilities %}
+
+{% block title %}Dishes · {{ app_name }}{% endblock %}
+
+{% block console_content %}
+{% if editing %}
+  {% include "components/page_head.html" with title="Edit a dish" lede=editing.name %}
+{% else %}
+  {% include "components/page_head.html" with title="Dishes" lede="What the kitchen can cook. A dish is a portion of something: a staple, a curry, a daal, a salad, a sweet. Adding one here makes it available to the cycles and the recipes." %}
+{% endif %}
+
+<div class="c-stack">
+
+  {% include "components/figures.html" with figures=figures %}
+
+  <div class="c-split">
+    <div class="c-stack">
+
+      <!-- ===================== The catalogue ===================== -->
+      <section class="panel">
+        <div class="panelhead">
+          <h2>{% if editing %}Dishes on the menu{% else %}The catalogue{% endif %}</h2>
+          <span class="hint">{{ active|length }} active</span>
+        </div>
+        {% if active %}
+          <div class="table-wrap">
+            <table class="ledger is-tight">
+              <thead>
+                <tr>
+                  <th>Dish</th>
+                  <th>Code</th>
+                  <th>Category</th>
+                  <th class="num">Portion</th>
+                  <th>In use</th>
+                  <th class="num">Edit</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in active %}
+                  <tr>
+                    <td class="metric nowrap">{{ r.dish.name }}</td>
+                    <td>{{ r.dish.code }}</td>
+                    <td>{{ r.category }}</td>
+                    <td class="num">{{ r.dish.serving_size_g|floatformat:0 }} g</td>
+                    <td>
+                      {% if r.in_use %}
+                        <span class="state is-match">{{ r.total }} records</span>
+                      {% else %}
+                        <span class="state">Not cooked</span>
+                      {% endif %}
+                    </td>
+                    <td class="num">
+                      {% if user|can:"MANAGE_MASTERS" %}
+                      <a class="btn btn-quiet" href="{% url 'console-dish-update' r.dish.id %}">Edit</a>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="panelbody">
+            {% include "components/state.html" with kind="empty" title="No dishes yet" body="A dish is one thing the kitchen cooks. Add the first one on the right." %}
+          </div>
+        {% endif %}
+      </section>
+
+      <!-- ===================== Retired ===================== -->
+      {% if retired %}
+        <section class="panel">
+          <div class="panelhead">
+            <h2>Retired</h2>
+            <span class="hint">{{ retired|length }}</span>
+          </div>
+          <div class="panelbody">
+            <p class="hint">
+              A dish that has been cooked cannot be deleted, because the plans, the actuals and
+              the waste records that mention it are the record of what the kitchen did. Retiring
+              takes it off the menus and keeps the history.
+            </p>
+          </div>
+          <div class="table-wrap">
+            <table class="ledger">
+              <thead>
+                <tr>
+                  <th>Dish</th>
+                  <th>Code</th>
+                  <th>Category</th>
+                  <th class="num">Records</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in retired %}
+                  <tr>
+                    <td class="metric nowrap">{{ r.dish.name }}</td>
+                    <td>{{ r.dish.code }}</td>
+                    <td>{{ r.dish.get_category_display }}</td>
+                    <td class="num">{{ r.total }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      {% endif %}
+
+    </div>
+
+    <!-- ===================== The form ===================== -->
+    <aside class="c-context">
+      {% if user|can:"MANAGE_MASTERS" %}
+      <section class="panel">
+        <div class="panelhead">
+          <h2>{% if editing %}Edit {{ editing.name }}{% else %}Add a dish{% endif %}</h2>
+        </div>
+        <div class="panelbody">
+          {% if form_error %}
+            <div class="c-banner is-error" role="alert">
+              <p>{{ form_error }}</p>
+            </div>
+          {% endif %}
+          <form class="c-form" method="post"
+                action="{% if editing %}{% url 'console-dish-update' editing.id %}{% else %}{% url 'console-dish-create' %}{% endif %}">
+            {% csrf_token %}
+            {% include "components/field.html" with label="Name" name="name" required=True value=values.name errors=errors.name|as_list %}
+            {% include "components/field.html" with label="Code" name="code" required=True value=values.code errors=errors.code|as_list %}
+            {% include "components/field.html" with label="Category" name="category" type="select" options=category_choices option_value=0 option_label=1 selected=values.category required=True errors=errors.category|as_list %}
+            {% include "components/field.html" with label="Portion size (g)" name="serving_size_g" type="number" value=values.serving_size_g errors=errors.serving_size_g|as_list %}
+            {% include "components/field.html" with label="Cost per portion" name="direct_unit_cost" type="number" value=values.direct_unit_cost errors=errors.direct_unit_cost|as_list %}
+            <p class="hint">
+              Leave the cost empty and the cost is worked out from the recipe and the current
+              price of every ingredient in it.
+            </p>
+            <div class="c-actions">
+              <button class="btn" type="submit">{% if editing %}Save the dish{% else %}Add the dish{% endif %}</button>
+              {% if editing %}
+                <a class="btn btn-ghost" href="{% url 'console-dishes' %}">Cancel</a>
+              {% endif %}
+            </div>
+          </form>
+        </div>
+        {% if not editing %}
+          <div class="panelbody">
+            <p class="hint">
+              To take a dish off the menus, open it and delete it. A dish that has never been
+              cooked is deleted; one that has is retired instead.
+            </p>
+          </div>
+        {% endif %}
+      </section>
+      {% endif %}
+    </aside>
+  </div>
+
+</div>
+{% endblock %}

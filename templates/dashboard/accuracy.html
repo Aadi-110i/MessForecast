@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Forecast accuracy · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="pagehead">
+  <div>
+    <h1>Forecast accuracy</h1>
+    <p class="lede">
+      Each forecast is compared with the attendance that actually turned up. MAPE is the
+      mean absolute percentage error, the average size of the miss whether the forecast
+      was too high or too low.
+    </p>
+  </div>
+  <div><span class="chip">{{ hall.name|default:"All halls" }}</span></div>
+</div>
+
+<form class="toolbar" method="get">
+  <div class="field field--inline">
+    <label for="f-start">From</label>
+    <input type="date" id="f-start" name="start" value="{{ start|date:'Y-m-d' }}">
+  </div>
+  <div class="field field--inline">
+    <label for="f-end">To</label>
+    <input type="date" id="f-end" name="end" value="{{ end|date:'Y-m-d' }}">
+  </div>
+  <div class="field field--inline">
+    <label for="f-hall">Hall</label>
+    <select id="f-hall" name="hall">
+      <option value="">All halls</option>
+      {% for h in halls %}
+        <option value="{{ h.id }}" {% if hall and hall.id == h.id %}selected{% endif %}>{{ h.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="toolbar-actions">
+    <button class="btn" type="submit">Apply</button>
+  </div>
+</form>
+
+<section class="tally" aria-label="Headline figures">
+  <div class="tally-item">
+    <span class="tally-label">MAPE, exact mean</span>
+    <span class="tally-value{% if exact_mape >= 20 %} is-loss{% endif %}">{{ exact_mape|floatformat:1 }}%</span>
+    <span class="tally-note">mean of every individual percentage error</span>
+  </div>
+  <div class="tally-item">
+    <span class="tally-label">Forecasts scored</span>
+    <span class="tally-value">{{ summary.forecasts }}</span>
+    <span class="tally-note">forecasts that have a matching service</span>
+  </div>
+  <div class="tally-item">
+    <span class="tally-label">Range coverage</span>
+    <span class="tally-value{% if summary.coverage_pct < 80 %} is-loss{% endif %}">{{ summary.coverage_pct|floatformat:0 }}%</span>
+    <span class="tally-note">{{ summary.within_range }} of {{ summary.forecasts }} actuals landed inside the published range</span>
+  </div>
+  <div class="tally-item">
+    <span class="tally-label">Mean bias</span>
+    <span class="tally-value">{{ summary.mean_bias|floatformat:0 }}</span>
+    <span class="tally-note">
+      {% if summary.mean_bias < 0 %}the forecast runs high by this much{% else %}the forecast runs low by this much{% endif %}
+    </span>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panelhead">
+    <h2>Error by week</h2>
+    <span class="hint">is the forecast getting better?</span>
+  </div>
+  <div class="panelbody">
+    {% if over_time %}
+      {{ over_time|json_script:"mapeWeek" }}
+      <div class="chart" data-chart="line" data-src="mapeWeek" data-tone="model"
+           data-value="mape_pct" data-label="week" data-suffix="%" data-height="220"
+           data-title="Forecast error by week"></div>
+    {% else %}
+      <div class="empty">
+        <h3>No forecasts scored in this period</h3>
+        <p>Accuracy appears once a forecast has been made for a service that has since
+           happened.</p>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panelhead">
+    <h2>Accuracy by meal and hall</h2>
+    <span class="hint">where the model is weakest</span>
+  </div>
+  {% if by_meal_and_hall %}
+    <div class="table-wrap">
+      <table class="ledger">
+        <thead>
+          <tr>
+            <th>Meal</th><th>Hall</th>
+            <th class="num">Forecasts</th>
+            <th class="num">Mean predicted</th>
+            <th class="num">Mean actual</th>
+            <th class="num">MAPE</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in by_meal_and_hall %}
+            <tr>
+              <td class="metric">{{ r.meal }}</td>
+              <td>{{ r.hall }}</td>
+              <td class="num">{{ r.forecasts }}</td>
+              <td class="num">{{ r.avg_predicted|floatformat:0 }}</td>
+              <td class="num">{{ r.avg_actual|floatformat:0 }}</td>
+              <td class="num {% if r.mape_pct < 10 %}pos{% elif r.mape_pct < 20 %}neg{% else %}neg{% endif %}">
+                {{ r.mape_pct|floatformat:1 }}%
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty">
+      <h3>No breakdown available yet</h3>
+      <p>Accuracy by meal and hall appears once forecasts have been scored against
+         actual turnout.</p>
+    </div>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <div class="panelhead">
+    <h2>Forecast against actual</h2>
+    <span class="hint">the last 200 services, with the reasoning that produced each number</span>
+  </div>
+  {% if rows %}
+    <div class="table-wrap">
+      <table class="ledger is-pinned">
+        <thead>
+          <tr>
+            <th>Date</th><th>Hall</th><th>Meal</th>
+            <th class="num">Predicted</th><th class="num">Range</th><th class="num">Actual</th>
+            <th class="num">Error</th><th class="num">APE</th><th>Reconciled</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+            <tr>
+              <td class="num">{{ r.date|date:"d M" }}</td>
+              <td>{{ r.hall }}</td>
+              <td>{{ r.meal }}</td>
+              <td class="num">{{ r.predicted|floatformat:0 }}</td>
+              <td class="num">{{ r.lower_bound|floatformat:0 }} to {{ r.upper_bound|floatformat:0 }}</td>
+              <td class="num metric">{{ r.actual }}</td>
+              <td class="num {% if r.error < 0 %}neg{% else %}pos{% endif %}">{{ r.error|floatformat:0 }}</td>
+              <td class="num">{{ r.ape_pct|floatformat:1 }}%</td>
+              <td>
+                {% if r.within_range %}
+                  <span class="state is-match">In range</span>
+                {% else %}
+                  <span class="state is-open">Out of range</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty">
+      <h3>No scored forecasts yet</h3>
+      <p>Generate forecasts with <code>manage.py run_forecasts</code> and they will be
+         scored here as services complete.</p>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

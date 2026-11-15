@@ -1,0 +1,194 @@
+{% extends "console/base_console.html" %}
+{% load static %}{% load capabilities %}
+
+{% block title %}{{ dish.name }} · {{ app_name }}{% endblock %}
+
+{% block console_content %}
+{% include "components/page_head.html" with title=dish.name lede=dish.notes|default:"The dish, its recipe versions, and what one portion of it costs." %}
+
+<nav class="c-crumbs" aria-label="Breadcrumb">
+  <a href="{% url 'console-recipes' %}">Recipes</a>
+  <span>{{ dish.code }}</span>
+</nav>
+
+<div class="c-split">
+  <div class="c-stack">
+
+    <!-- ===================== The active recipe ===================== -->
+    <section class="panel">
+      <div class="panelhead">
+        <h2>Recipe in force</h2>
+        {% if active %}<span class="hint">Version {{ active.recipe.version }}</span>{% endif %}
+      </div>
+      {% if active %}
+        <div class="table-wrap">
+          <table class="ledger">
+            <thead>
+              <tr>
+                <th>Ingredient</th>
+                <th class="num">Quantity</th>
+                <th class="num">Trim loss</th>
+                <th class="num">Gross</th>
+                <th class="num">Unit cost</th>
+                <th class="num">Cost</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for line in active.lines %}
+                <tr>
+                  <td class="metric">{{ line.ingredient.name }}</td>
+                  <td class="num">{{ line.quantity|floatformat:3 }} {{ line.ingredient.base_unit }}</td>
+                  <td class="num">{{ line.item.trim_loss_pct|floatformat:1 }}%</td>
+                  <td class="num">{{ line.gross|floatformat:3 }}</td>
+                  <td class="num">₹{{ line.unit_cost|floatformat:2 }}</td>
+                  <td class="num">₹{{ line.cost_with_trim|floatformat:2 }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+            <tfoot>
+              <tr>
+                <th>Cost of one portion</th>
+                <th class="num" colspan="4"></th>
+                <th class="num">₹{{ active.portion_cost_with_trim|floatformat:2 }}</th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div class="panelbody">
+          <p class="hint">
+            Gross quantity is what has to be bought: {{ active.lines|length }} ingredients,
+            {{ active.grams|floatformat:0 }} g of usable food per portion.
+          </p>
+        </div>
+      {% else %}
+        <div class="panelbody">
+          {% include "components/state.html" with kind="empty" title="No recipe in force" body="Add a version on the right to give this dish a cost." %}
+        </div>
+      {% endif %}
+    </section>
+
+    <!-- ===================== The version history ===================== -->
+    <section class="panel">
+      <div class="panelhead">
+        <h2>Version history</h2>
+        <span class="hint">{{ versions|length }} versions</span>
+      </div>
+      {% if versions %}
+        <div class="table-wrap">
+          <table class="ledger">
+            <thead>
+              <tr>
+                <th>Version</th>
+                <th>Effective from</th>
+                <th>Effective to</th>
+                <th class="num">Ingredients</th>
+                <th class="num">Cost per portion</th>
+                <th>State</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for v in versions %}
+                <tr>
+                  <td class="metric">v{{ v.recipe.version }}</td>
+                  <td>{{ v.recipe.effective_from|date:"d M Y" }}</td>
+                  <td>{% if v.recipe.effective_to %}{{ v.recipe.effective_to|date:"d M Y" }}{% else %}<span class="fill">Open</span>{% endif %}</td>
+                  <td class="num">{{ v.lines|length }}</td>
+                  <td class="num">₹{{ v.portion_cost_with_trim|floatformat:2 }}</td>
+                  <td>
+                    {% if active and v.recipe.pk == active.recipe.pk %}
+                      <span class="state is-match">In force</span>
+                    {% else %}
+                      <span class="state">Superseded</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="panelbody">
+          {% include "components/state.html" with kind="empty" title="No versions yet" body="This dish has never had a recipe." %}
+        </div>
+      {% endif %}
+    </section>
+
+    <!-- ===================== A new version ===================== -->
+    {% if user|can:"MANAGE_MASTERS" %}
+    <section class="panel">
+      <div class="panelhead">
+        <h2>New version</h2>
+        <span class="hint">Version {{ next_version }}</span>
+      </div>
+      <div class="panelbody">
+        <form class="c-form" method="post" action="{% url 'console-recipe-version' dish.id %}">
+          {% csrf_token %}
+          <p class="hint">A new version starts today and closes the current one. Leave a row blank to skip it.</p>
+          <div class="table-wrap">
+            <table class="ledger">
+              <thead>
+                <tr>
+                  <th>Ingredient</th>
+                  <th class="num">Quantity</th>
+                  <th class="num">Trim %</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in ingredient_rows %}
+                  <tr>
+                    <td>
+                      <select name="line_ingredient" aria-label="Ingredient for line {{ forloop.counter }}">
+                        <option value="">Choose</option>
+                        {% for ing in ingredients %}<option value="{{ ing.id }}">{{ ing.name }}</option>{% endfor %}
+                      </select>
+                    </td>
+                    <td class="num">
+                      <input type="number" step="0.001" min="0" name="line_quantity" aria-label="Quantity for line {{ forloop.counter }}">
+                    </td>
+                    <td class="num">
+                      <input type="number" step="0.1" min="0" max="99" name="line_trim" value="0" aria-label="Trim loss for line {{ forloop.counter }}">
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% include "components/field.html" with label="Notes" name="notes" type="textarea" rows=2 %}
+          <div class="c-actions">
+            <button class="btn" type="submit">Create version</button>
+          </div>
+        </form>
+      </div>
+    </section>
+    {% endif %}
+
+  </div>
+
+  <!-- ===================== Context ===================== -->
+  <aside class="c-context">
+    <section class="panel">
+      <div class="panelhead"><h2>At a glance</h2></div>
+      <div class="panelbody">
+        {% include "components/spec_list.html" with specs=dish_specs %}
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panelhead">
+        <h2>Served in</h2>
+        <span class="hint">{{ usage.count }} places</span>
+      </div>
+      <div class="panelbody">
+        {% if usage.menus %}
+          <ul class="c-list">
+            {% for m in usage.menus %}<li><div><dt>{{ m }}</dt><dd></dd></div></li>{% endfor %}
+          </ul>
+        {% else %}
+          <p class="hint">This dish is not on any cycle.</p>
+        {% endif %}
+      </div>
+    </section>
+
+  </aside>
+</div>
+{% endblock %}

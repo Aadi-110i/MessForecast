@@ -1,0 +1,41 @@
+{% load filter_extras %}
+{% comment %}
+Component library — a field.
+Label, control, help. The help line keeps its height so a form does not
+jump when a validation message appears.
+
+Usage:
+  {% include "components/field.html" with label="Email" name="email" type="email" %}
+  {% include "components/field.html" with label="Hall" name="hall" options=halls option_value="id" option_label="name" %}
+  {% include "components/field.html" with label="Notes" name="notes" type="textarea" rows=3 %}
+
+Types: text (default) | email | password | number | date | select | textarea
+{% endcomment %}
+<div class="c-field{% if errors %} is-error{% endif %}">
+  <label for="{{ id|default:name }}">{{ label }}</label>
+
+  {% if type == "select" %}
+    <select id="{{ id|default:name }}" name="{{ name }}"{% if required %} required{% endif %}{% if disabled %} disabled{% endif %}>
+      {% if placeholder %}<option value="">{{ placeholder }}</option>{% endif %}
+      {% for opt in options %}
+        <option value="{{ opt|get_item:option_value }}"{% if selected and opt|get_item:option_value == selected %} selected{% endif %}>{{ opt|get_item:option_label }}</option>
+      {% endfor %}
+    </select>
+  {% elif type == "textarea" %}
+    <textarea id="{{ id|default:name }}" name="{{ name }}" rows="{{ rows|default:3 }}"{% if placeholder %} placeholder="{{ placeholder }}"{% endif %}{% if required %} required{% endif %}{% if disabled %} disabled{% endif %}>{{ value|default:"" }}</textarea>
+  {% else %}
+    <input id="{{ id|default:name }}" type="{{ type|default:'text' }}" name="{{ name }}" value="{{ value|default:'' }}"
+           {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+           {% if required %}required{% endif %}
+           {% if disabled %}disabled{% endif %}
+           {% if maxlength %}maxlength="{{ maxlength }}"{% endif %}
+           {% if min %}min="{{ min }}"{% endif %}
+           {% if max %}max="{{ max }}"{% endif %}
+           {% if step %}step="{{ step }}"{% endif %}
+           {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}
+           {% if inputmode %}inputmode="{{ inputmode }}"{% endif %}>
+  {% endif %}
+
+  {% if errors %}<span class="c-field-error">{{ errors|join:", " }}</span>{% endif %}
+  {% if help %}<span class="c-field-help">{{ help }}</span>{% endif %}
+</div>

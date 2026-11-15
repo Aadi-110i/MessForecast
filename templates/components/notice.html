@@ -1,0 +1,14 @@
+{% comment %}
+Component library — a notice.
+Carries a fact the reader did not have: a warning, a confirmation, or an error.
+
+Usage:
+  {% include "components/notice.html" with tone="open" title="..." body="..." %}
+  tone: open (needs attention) | match (good news) | error | plain
+{% endcomment %}
+<div class="c-banner{% if tone and tone != 'plain' %} is-{{ tone }}{% endif %}"{% if tone == 'error' %} role="alert"{% endif %}>
+  <div>
+    {% if title %}<strong>{{ title }}</strong>{% endif %}
+    {% if body %}<p>{{ body }}</p>{% endif %}
+  </div>
+</div>

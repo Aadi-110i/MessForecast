@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}MessForecast, meal demand forecasting for campus messes{% endblock %}
+{% block body_class %}lp{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/landing.css' %}">
+{% endblock %}
+
+{% block shell %}
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="lp-mast">
+  <div class="container lp-mast-inner">
+    <a class="lp-word" href="{% url 'landing' %}">MessForecast</a>
+    <a class="lp-mast-signin" href="{% url 'login' %}">Sign in</a>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="lp-hero">
+    <div class="container lp-hero-grid">
+      <div class="lp-hero-text">
+        <h1>Cook for who<br>turns up.</h1>
+        <p class="lead">Forecast the turnout, set the portions, measure what was thrown away.</p>
+        <p class="lp-actions">
+          <a class="btn" href="{% url 'login' %}?next={% url 'dashboard-home' %}">Sign in to your mess</a>
+          <a class="lp-more" href="#method">What the number is made of</a>
+        </p>
+      </div>
+      <figure class="lp-shot lp-shot-hero" data-slot="kitchen" data-kind="product"
+              data-alt="The kitchen tablet: the expected turnout, the portions to cook, the cost of the service and the reason for the number">
+        <img src="{% static 'img/landing/kitchen.png' %}" width="2048" height="1380" fetchpriority="high"
+             alt="The kitchen tablet for North Block Mess breakfast: expected turnout 279, a range of 267 to 292, cook this much 483 portions, cost of the service 4566 rupees, and the reason for the number underneath.">
+      </figure>
+    </div>
+  </section>
+
+  <section class="lp-band">
+    <div class="container lp-row lp-row-wide">
+      <div class="lp-row-text" data-reveal>
+        <h2>Attendance is scanned at the door.</h2>
+        <p>Every service is counted as students pass the gate, and the count lands against the hall, the day and the meal. Twelve weeks of those counts is what the forecaster learns from.</p>
+      </div>
+      <figure class="lp-shot lp-shot-phone" data-slot="scan" data-kind="product" data-reveal
+              data-alt="The attendance capture screen at the gate of the mess">
+        <img src="{% static 'img/landing/scan.png' %}" width="780" height="1320" loading="lazy"
+             alt="The attendance capture screen: North Block Mess breakfast, 277 students scanned so far, against 180 registered.">
+      </figure>
+    </div>
+  </section>
+
+  <section class="lp-band lp-band-rule" id="method">
+    <div class="container lp-row">
+      <div class="lp-row-text" data-reveal>
+        <h2>Twelve weeks, and three corrections.</h2>
+        <p>One recency-weighted average of what the hall has actually served, with three corrections laid over it.</p>
+      </div>
+      <dl class="lp-inputs" data-reveal>
+        <div>
+          <dt>The last twelve weeks</dt>
+          <dd>Every service at that hall, weighted towards the recent ones.</dd>
+        </div>
+        <div>
+          <dt>The weekday</dt>
+          <dd>Fridays run busier than the rest of the week, so the day is taken out of the average.</dd>
+        </div>
+        <div>
+          <dt>Weeks an event pulled apart</dt>
+          <dd>Exams and festivals are removed before the average is taken.</dd>
+        </div>
+        <div>
+          <dt>The trend</dt>
+          <dd>A hall that is growing is not averaged against one that is shrinking.</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  {% if rows %}
+  <section class="lp-band lp-band-paper">
+    <div class="container">
+      <div class="lp-results" data-reveal>
+        <h2>Before the forecast, and after.</h2>
+        <p class="lead">{{ measured.baseline_weeks }} weeks of cooking against the registered strength, then {{ measured.live_weeks }} weeks cooking to the forecast. These figures were read from the database when this page loaded.</p>
+        <div class="lp-well">
+          <table class="lp-table">
+            <caption class="lp-caption">The seeded demonstration mess: {{ measured.halls }} halls, {{ measured.services }} services over {{ measured.days }} days.</caption>
+            <tbody>
+              {% for row in rows %}
+              <tr>
+                <th scope="row">{{ row.label }}</th>
+                <td class="num"><span class="lp-fig" data-fig="{{ row.raw }}" data-decimals="{{ row.decimals }}" data-prefix="{{ row.prefix }}" data-suffix="{{ row.suffix }}">{{ row.text }}</span></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="lp-band">
+    <div class="container lp-row lp-row-wide">
+      <div class="lp-row-text" data-reveal>
+        <h2>What your mess already knows.</h2>
+        <dl class="lp-inputs">
+          <div>
+            <dt>Attendance</dt>
+            <dd>One count per service, taken at the gate.</dd>
+          </div>
+          <div>
+            <dt>The menu</dt>
+            <dd>Dishes, recipes and the weight of a portion.</dd>
+          </div>
+          <div>
+            <dt>Ingredient prices</dt>
+            <dd>Current rates, so a wasted portion carries a cost.</dd>
+          </div>
+          <div>
+            <dt>The service calendar</dt>
+            <dd>Which services run, and when the exams do.</dd>
+          </div>
+        </dl>
+      </div>
+      <figure class="lp-shot lp-shot-photo" data-slot="dough" data-kind="photo" data-reveal
+              data-alt="Hands rolling flatbread dough on a floured board">
+        <img src="{% static 'img/landing/dough.jpg' %}" width="1200" height="902" loading="lazy"
+             alt="Hands rolling flatbread dough on a floured board with a wooden rolling pin.">
+      </figure>
+    </div>
+  </section>
+
+  <section class="lp-close">
+    <div class="container lp-close-inner" data-reveal>
+      <div>
+        <h2>Your mess's numbers.</h2>
+        <p>Services, preparation plans, measured waste and forecast error, for the halls you manage.</p>
+      </div>
+      <a class="btn" href="{% url 'login' %}?next={% url 'dashboard-home' %}">Sign in to your mess</a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="lp-foot">
+  <div class="container">
+    <p class="lp-foot-mark">MessForecast</p>
+    <ul class="lp-foot-links">
+      <li><a href="{% url 'dashboard-home' %}">Dashboard</a></li>
+      <li><a href="{% url 'kitchen-dashboard' %}">Kitchen screen</a></li>
+      <li><a href="{% url 'scan-screen' %}">Attendance capture</a></li>
+      <li><a href="{% url 'login' %}">Sign in</a></li>
+    </ul>
+    <p class="lp-foot-credits" data-credits>Photographs: hands rolling flatbread dough on a floured board, Ssemmanda will, CC BY-SA 4.0, via Wikimedia Commons.</p>
+  </div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/vendor/gsap.min.js' %}"></script>
+<script src="{% static 'js/vendor/ScrollTrigger.min.js' %}"></script>
+<script src="{% static 'js/landing.js' %}" defer></script>
+<script>window.hallmarkSlots = (m) => { for (const [k, v] of Object.entries(m)) { const s = document.querySelector(`[data-slot="${k}"]`); if (!s) continue; const im = new Image(); im.src = typeof v === 'string' ? v : v.src; im.alt = (typeof v === 'object' && v.alt) || s.dataset.alt || ''; s.querySelectorAll(':scope > img').forEach((o) => o.remove()); s.prepend(im); } };
+document.querySelectorAll('[data-slot] img').forEach((i) => { if (i.complete && !i.naturalWidth) i.remove(); else i.addEventListener('error', () => i.remove(), { once: true }); });</script>
+{% endblock %}

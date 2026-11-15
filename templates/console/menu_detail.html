@@ -1,0 +1,130 @@
+{% extends "console/base_console.html" %}
+{% load static filter_extras capabilities %}
+
+{% block title %}{{ summary.menu.name }} · {{ app_name }}{% endblock %}
+
+{% block console_content %}
+{% include "components/page_head.html" with title=summary.menu.name lede=summary.menu.description %}
+
+<nav class="c-crumbs" aria-label="Breadcrumb">
+  <a href="{% url 'console-menus' %}">Menus</a>
+  <span>{{ summary.menu.code }}</span>
+</nav>
+
+<div class="c-split">
+  <div class="c-stack">
+
+    <!-- ===================== The dishes, meal by meal ===================== -->
+    {% for code, label in meal_choices %}
+      {% with items=grouped|get_item:code %}
+        <section class="panel">
+          <div class="panelhead">
+            <h2>{{ label }}</h2>
+            <span class="hint">{{ items|length }} dishes</span>
+          </div>
+          {% if items %}
+            <div class="table-wrap">
+              <table class="ledger">
+                <thead>
+                  <tr>
+                    <th class="rank">#</th>
+                    <th>Dish</th>
+                    <th>Code</th>
+                    <th class="num">Expected share</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item in items %}
+                    <tr>
+                      <td class="rank">{{ forloop.counter }}</td>
+                      <td class="metric">{{ item.dish.name }}</td>
+                      <td>{{ item.dish.code }}</td>
+                      <td class="num">{{ item.expected_share|floatformat:2 }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="panelbody">
+              {% include "components/state.html" with kind="empty" title="No dishes for this meal" body="Add the dishes the kitchen cooks for this meal in this cycle." %}
+            </div>
+          {% endif %}
+        </section>
+      {% endwith %}
+    {% endfor %}
+
+    <!-- ===================== Where it runs ===================== -->
+    <section class="panel">
+      <div class="panelhead">
+        <h2>Where this cycle runs</h2>
+        <span class="hint">{{ schedules|length }} rows</span>
+      </div>
+      {% if schedules %}
+        <div class="table-wrap">
+          <table class="ledger">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Hall</th>
+                <th>Meal</th>
+                <th>State</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for s in schedules %}
+                <tr>
+                  <td>{{ s.date|date:"D d M Y" }}</td>
+                  <td class="metric">{{ s.hall.name }}</td>
+                  <td>{{ s.get_meal_display }}</td>
+                  <td>
+                    {% if s.is_published %}
+                      <span class="state is-match">Published</span>
+                    {% else %}
+                      <span class="state is-open">Draft</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="panelbody">
+          {% include "components/state.html" with kind="empty" title="Not scheduled anywhere yet" body="Assign this cycle to a hall, date and meal to put it on the board." %}
+        </div>
+      {% endif %}
+    </section>
+
+  </div>
+
+  <!-- ===================== Context ===================== -->
+  <aside class="c-context">
+    <section class="panel">
+      <div class="panelhead"><h2>At a glance</h2></div>
+      <div class="panelbody">
+        {% include "components/spec_list.html" with specs=cycle_specs %}
+      </div>
+    </section>
+
+    {% if user|can:"PLAN_MENU" %}
+    <section class="panel">
+      <div class="panelhead">
+        <h2>Replace a meal</h2>
+        <span class="hint">One meal</span>
+      </div>
+      <div class="panelbody">
+        <form class="c-form" method="post" action="{% url 'console-menu-items' summary.menu.id %}">
+          {% csrf_token %}
+          {% include "components/field.html" with label="Meal" name="meal" type="select" options=meal_choices option_value=0 option_label=1 required=True %}
+          {% include "components/field.html" with label="Dish" name="dish_ids" type="select" options=unassigned_dishes option_value="id" option_label="name" help="One dish at a time. The list is the dishes not yet in any cycle." %}
+          <div class="c-actions">
+            <button class="btn" type="submit">Replace dishes</button>
+          </div>
+        </form>
+      </div>
+    </section>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

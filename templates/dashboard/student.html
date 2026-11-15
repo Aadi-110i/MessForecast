@@ -1,0 +1,241 @@
+{% extends "console/base_console.html" %}
+{% load static %}
+
+{% block title %}My dashboard · {{ app_name }}{% endblock %}
+
+{% block console_content %}
+{% include "components/page_head.html" with title="My dashboard" lede="Your menu, your attendance, and the notices the mess office has published for students." %}
+
+{% if figures %}
+{% include "components/figures.html" with figures=figures %}
+{% endif %}
+
+{% if todays_schedules %}
+<!-- ===================== Today's menu ===================== -->
+<section class="panel">
+  <div class="panelhead"><h2>Today's menu</h2></div>
+  <div class="table-wrap">
+    <table class="ledger">
+      <thead>
+        <tr>
+          <th>Hall</th>
+          <th>Meal</th>
+          <th>Dishes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in todays_schedules %}
+        <tr>
+          <td class="metric">{{ s.hall.name }}</td>
+          <td>{{ s.get_meal_display }}</td>
+          <td>
+            {% for name in s.dish_names %}
+              {{ name }}{% if not forloop.last %}, {% endif %}
+            {% empty %}
+              <span class="fill">No dishes published</span>
+            {% endfor %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% else %}
+<div class="empty">
+  <h3>No menu published for today</h3>
+  <p>Once the mess office publishes today's schedule, what is being served appears here.</p>
+</div>
+{% endif %}
+
+<!-- ===================== Upcoming menus ===================== -->
+{% if upcoming %}
+<section class="panel">
+  <div class="panelhead"><h2>Coming up</h2></div>
+  <div class="table-wrap">
+    <table class="ledger">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Meal</th>
+          <th>Hall</th>
+          <th>Dishes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in upcoming %}
+        <tr>
+          <td class="metric">{{ s.date|date:"d M" }}</td>
+          <td>{{ s.get_meal_display }}</td>
+          <td>{{ s.hall.name }}</td>
+          <td>
+            {% for name in s.dish_names %}
+              {{ name }}{% if not forloop.last %}, {% endif %}
+            {% empty %}
+              <span class="fill">No dishes published</span>
+            {% endfor %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+
+<div class="grid-2">
+  <!-- ===================== My attendance ===================== -->
+  <section class="panel">
+    <div class="panelhead">
+      <h2>My attendance</h2>
+      <span class="hint">{{ attendance_count }} records</span>
+    </div>
+    <div class="panelbody">
+      {% if recent_attendance %}
+        <div class="table-wrap">
+          <table class="ledger">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Meal</th>
+                <th>Hall</th>
+                <th class="num">Method</th>
+                <th>Captured</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for a in recent_attendance %}
+              <tr>
+                <td class="metric">{{ a.service.date|date:"d M Y" }}</td>
+                <td>{{ a.service.get_meal_display }}</td>
+                <td>{{ a.service.hall.name }}</td>
+                <td class="num">{{ a.method }}</td>
+                <td>{{ a.captured_at|date:"H:i" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty">
+          <h3>No attendance recorded yet</h3>
+          <p>Your scans appear here once you swipe in at a meal.</p>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- ===================== Announcements ===================== -->
+  <section class="panel">
+    <div class="panelhead"><h2>Announcements</h2></div>
+    <div class="panelbody">
+      {% if notifications %}
+        <div class="table-wrap">
+          <table class="ledger">
+            <thead>
+              <tr><th>Notice</th><th class="num">Posted</th></tr>
+            </thead>
+            <tbody>
+              {% for n in notifications %}
+              <tr>
+                <td class="metric">{{ n.subject }}</td>
+                <td class="num">{{ n.created_at|date:"d M Y" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty">
+          <h3>No announcements</h3>
+          <p>Notices from the mess office appear here.</p>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+
+<!-- ===================== Mark attendance by QR ===================== -->
+<section class="panel" id="student-qr-panel">
+  <div class="panelhead">
+    <h2>Mark attendance by QR</h2>
+    <span class="hint">Camera or QR image file</span>
+  </div>
+  <div class="panelbody">
+    {% csrf_token %}
+    <div id="student-qr-reader" style="max-width:420px;"></div>
+    <div id="student-qr-result" class="c-banner" role="status" hidden style="margin-top:12px;"></div>
+  </div>
+</section>
+
+<p class="hint" style="margin-top:16px;">
+  Manage your profile: <a href="{% url 'profile-page' %}">your account</a>.
+</p>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/vendor/html5-qrcode.min.js' %}"></script>
+<script>
+(function () {
+  'use strict';
+  var readerEl = document.getElementById('student-qr-reader');
+  var resultBox = document.getElementById('student-qr-result');
+  if (!readerEl || !resultBox || typeof Html5QrcodeScanner === 'undefined') { return; }
+
+  var lastScanned = '';
+  var lastTime = 0;
+
+  function showResult(message, isError) {
+    resultBox.className = 'c-banner ' + (isError ? 'is-error' : 'is-notice');
+    resultBox.textContent = message;
+    resultBox.hidden = false;
+  }
+
+  function onScanSuccess(decodedText) {
+    var now = Date.now();
+    if (decodedText === lastScanned && now - lastTime < 3000) {
+      return;
+    }
+    lastScanned = decodedText;
+    lastTime = now;
+
+    fetch("{% url 'student-qr-checkin' %}", {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': window.MessForecast.csrfToken(),
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify({ qr_text: decodedText })
+    }).then(function (res) {
+      return res.json().then(function (data) {
+        if (!res.ok) {
+          showResult((data && data.detail) || 'Could not mark attendance from this QR code.', true);
+          return;
+        }
+        showResult(data.detail || 'Attendance marked.', false);
+        if (!data.already_marked) {
+          setTimeout(function () { window.location.reload(); }, 1200);
+        }
+      });
+    }).catch(function () {
+      showResult('Network error while marking attendance. Please try again.', true);
+    });
+  }
+
+  var config = {
+    fps: 10,
+    qrbox: { width: 250, height: 250 },
+    rememberLastUsedCamera: true,
+    showTorchButtonIfSupported: true
+  };
+  if (typeof Html5QrcodeSupportedFormats !== 'undefined') {
+    config.formatsToSupport = [Html5QrcodeSupportedFormats.QR_CODE];
+  }
+
+  var scanner = new Html5QrcodeScanner('student-qr-reader', config, false);
+  scanner.render(onScanSuccess);
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Data quality · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="pagehead">
+  <div>
+    <h1>Data quality</h1>
+    <p class="lede">
+      Waste cannot be measured for a service whose actuals were never recorded, and a forecast
+      cannot be judged without an actual turnout. This page lists the services that are still
+      missing their numbers.
+    </p>
+  </div>
+</div>
+
+<form class="toolbar" method="get">
+  <div class="field field--inline">
+    <label for="f-start">From</label>
+    <input type="date" id="f-start" name="start" value="{{ start|date:'Y-m-d' }}">
+  </div>
+  <div class="field field--inline">
+    <label for="f-end">To</label>
+    <input type="date" id="f-end" name="end" value="{{ end|date:'Y-m-d' }}">
+  </div>
+  <div class="toolbar-actions">
+    <button class="btn" type="submit">Apply</button>
+  </div>
+</form>
+
+<section class="tally" aria-label="Headline figures">
+  <div class="tally-item">
+    <span class="tally-label">Actuals completion</span>
+    <span class="tally-value{% if completion_pct < 90 %} is-loss{% endif %}">{{ completion_pct|floatformat:0 }}%</span>
+    <span class="tally-note">{{ recorded }} of {{ total }} services recorded</span>
+  </div>
+  <div class="tally-item">
+    <span class="tally-label">Missing actuals</span>
+    <span class="tally-value is-loss">{{ missing|length }}</span>
+    <span class="tally-note">services without prepared, served or leftover</span>
+  </div>
+  <div class="tally-item">
+    <span class="tally-label">Forecasts generated</span>
+    <span class="tally-value">{{ forecast_count }}</span>
+    <span class="tally-note">in this window</span>
+  </div>
+  <div class="tally-item">
+    <span class="tally-label">Services in window</span>
+    <span class="tally-value">{{ total }}</span>
+    <span class="tally-note">every service scheduled between the two dates</span>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panelhead">
+    <h2>Services missing their actuals</h2>
+    <span class="hint">the kitchen is reminded automatically</span>
+  </div>
+  {% if missing %}
+    <div class="table-wrap">
+      <table class="ledger is-pinned">
+        <thead>
+          <tr><th>Date</th><th>Hall</th><th>Meal</th><th class="num">Turned up</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          {% for s in missing %}
+            <tr>
+              <td>{{ s.date|date:"d M Y" }}</td>
+              <td class="metric">{{ s.hall.name }}</td>
+              <td>{{ s.get_meal_display }}</td>
+              <td class="num">{{ s.attendance_count }}</td>
+              <td><span class="state is-open">Not recorded</span></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty">
+      <h3>Every service in this window has its actuals</h3>
+      <p>Nothing is missing. Waste costing and forecast accuracy are working on complete data.</p>
+    </div>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <div class="panelhead">
+    <h2>Service-level configuration</h2>
+    <span class="hint">how much over-preparation each hall tolerates</span>
+  </div>
+  {% if level_configs %}
+    <div class="table-wrap">
+      <table class="ledger">
+        <thead>
+          <tr>
+            <th>Scope</th><th>Meal</th>
+            <th class="num">Acceptable over-prep</th>
+            <th class="num">Hard ceiling</th>
+            <th class="num">Minimum buffer</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in level_configs %}
+            <tr>
+              <td class="metric">{{ c.hall.name|default:"All halls" }}</td>
+              <td>{{ c.meal|default:"All meals" }}</td>
+              <td class="num">+{{ c.acceptable_overprep_pct|floatformat:1 }}%</td>
+              <td class="num">+{{ c.max_overprep_pct|floatformat:1 }}%</td>
+              <td class="num">{{ c.min_buffer_portions }} portions</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty">
+      <h3>No service-level configuration set</h3>
+      <p>Until one is configured the platform falls back to its default: 8% acceptable
+         over-preparation, an 18% hard ceiling and a 10-portion buffer.</p>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,66 @@
+[
+ {
+  "shape": "Split Studio",
+  "theme": "dusk",
+  "axes": "dark/grotesk-sans/cool",
+  "hero": "Stage, the head on four and a half columns and the kitchen tablet on seven and a half",
+  "nav": "a masthead, the wordmark centred over a rule",
+  "footer": "a mast, the wordmark large over the links",
+  "imagery": "screenshots of the product 2, library photograph 1",
+  "photos": [
+   "kneading-chapati-dough-04"
+  ],
+  "entry": "a new public landing page on an existing Django application",
+  "fingerprint": "dusk-mess-kitchen-brief",
+  "sections": "hero (the kitchen tablet), attendance capture, twelve weeks and three corrections, the measured comparison, what the mess already knows, the close on the sign in",
+  "signature": "the kitchen tablet, the turnout, the portions and the reason for the number on one screen",
+  "waived": [
+   "29 the hero picture is a screenshot of the product, not a bloom"
+  ],
+  "prompt": "create a landing page for MessForecast with GSAP motion",
+  "date": "2026-11-06",
+  "mode": "build"
+ },
+ {
+  "shape": "app screen",
+  "theme": "dusk",
+  "axes": "dark/grotesk-sans/cool",
+  "hero": "none, an app screen",
+  "nav": "glass topbar over a slate rail of ruled destinations",
+  "footer": "one method line",
+  "imagery": "none, an operations console",
+  "photos": [],
+  "entry": "full redesign of an existing Django application",
+  "fingerprint": "dusk-mess-reconciliation",
+  "sections": "headline tally, baseline reconciliation, trend charts, service reconciliation, weekday pattern, waste ranking, method well",
+  "signature": "the service reconciliation, forecast against the published band, row by row",
+  "waived": [
+   "39b kitchen touch targets",
+   "29 smoked glass is the theme material"
+  ],
+  "prompt": "redesign the whole existing MessForecast Django application in Hallmark Dusk",
+  "date": "2026-11-05",
+  "mode": "build"
+ },
+ {
+  "shape": "app screen",
+  "theme": "dusk",
+  "axes": "dark/grotesk-sans/cool",
+  "hero": "none, an operations console",
+  "nav": "glass topbar over a slate rail of ruled destinations, grouped console, administration and operations",
+  "footer": "one method line",
+  "imagery": "none, an operations console",
+  "photos": [],
+  "entry": "phase two of the interface: eleven screens and a reusable component library on an existing Django application",
+  "fingerprint": "dusk-mess-component-library",
+  "sections": "the console shell and the rail, the figure row, the menu board, the forecast band, the portion stepper, the registration code, the component catalogue",
+  "signature": "the forecast band, the range drawn as an area with the prediction as a line through it",
+  "waived": [
+   "39b kitchen touch targets",
+   "29 smoked glass is the theme material"
+  ],
+  "prompt": "design the interface for the MessForecast Django platform: a console and a kitchen tablet, plus a reusable component library",
+  "date": "2026-11-11",
+  "mode": "build"
+ }
+]

@@ -1,0 +1,16 @@
+{
+  "shape": "app screen",
+  "theme": "dusk",
+  "axes": "dark/grotesk-sans/cool",
+  "hero": "none, an app screen",
+  "nav": "glass topbar over a slate rail of ruled destinations",
+  "footer": "one method line",
+  "imagery": "none, an operations console",
+  "photos": [],
+  "entry": "full redesign of an existing Django application",
+  "fingerprint": "dusk-mess-reconciliation",
+  "sections": "headline tally, baseline reconciliation, trend charts, service reconciliation, weekday pattern, waste ranking, method well",
+  "signature": "the service reconciliation, forecast against the published band, row by row",
+  "waived": ["39b kitchen touch targets", "29 smoked glass is the theme material"],
+  "prompt": "redesign the whole existing MessForecast Django application in Hallmark Dusk"
+}

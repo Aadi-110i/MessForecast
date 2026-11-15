@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Register · {{ app_name }}{% endblock %}
+
+{% block body_class %}is-auth{% endblock %}
+{% block page_class %}page-narrow{% endblock %}
+
+{% block content %}
+<div class="pagehead">
+  <div>
+    <h1>Create an account</h1>
+    <p class="lede">
+      Accounts are created against a code issued by the mess office. The code carries the
+      role, so you do not choose it yourself.
+    </p>
+  </div>
+</div>
+
+<section class="panel">
+  <div class="panelbody">
+    <div id="register-error" class="c-banner is-error" role="alert" hidden>
+      <div>
+        <strong>That did not work</strong>
+        <p></p>
+      </div>
+    </div>
+
+    <form method="post" action="{% url 'register-submit' %}" class="signin" id="register-form">
+      {% csrf_token %}
+      <div class="c-field">
+        <label for="code">Code from the mess office</label>
+        <input type="text" name="code" id="code" required autocomplete="off"
+               autocapitalize="characters" spellcheck="false" placeholder="ABCD-1234">
+        <span class="c-field-help">It looks like ABCD-1234.</span>
+      </div>
+      <div class="c-field">
+        <label for="id_username">Username</label>
+        <input type="text" name="username" id="id_username" autocomplete="username"
+               autocapitalize="none" spellcheck="false" required>
+        <span class="c-field-help">The name you sign in with.</span>
+      </div>
+      <div class="c-field">
+        <label for="id_password">Password</label>
+        <input type="password" name="password" id="id_password" autocomplete="new-password" required>
+        <span class="c-field-help">At least 8 characters.</span>
+      </div>
+      <div class="c-field">
+        <label for="id_password_confirm">Confirm password</label>
+        <input type="password" name="password_confirm" id="id_password_confirm"
+               autocomplete="new-password" required>
+      </div>
+      <div class="c-actions">
+        <button class="btn" type="submit" id="register-submit">Create account</button>
+        <a class="btn btn-ghost" href="{% url 'login' %}">I already have an account</a>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panelhead"><h2>How an account is made</h2></div>
+  <div class="panelbody">
+    <p>
+      The mess office issues a code against the person's name, and the role is attached to
+      that code. When the code is redeemed it is spent, so it makes exactly one account.
+    </p>
+    <div class="table-wrap">
+      <table class="ledger">
+        <thead><tr><th>Role</th><th>What that person sees</th></tr></thead>
+        <tbody>
+          <tr><td class="metric">Student</td><td>The published menu and their own attendance</td></tr>
+          <tr><td class="metric">Kitchen Staff</td><td>The kitchen tablet and the capture screen</td></tr>
+          <tr><td class="metric">Mess Manager</td><td>The console, planning, waste and accuracy</td></tr>
+          <tr><td class="metric">Mess Administrator</td><td>The masters: menus, recipes, ingredients, halls</td></tr>
+          <tr><td class="metric">Finance Officer</td><td>Waste cost and procurement, read only</td></tr>
+          <tr><td class="metric">Administrator</td><td>Everything, including the forecast settings</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  'use strict';
+  var form = document.getElementById('register-form');
+  var box = document.getElementById('register-error');
+  var button = document.getElementById('register-submit');
+  if (!form || !box) { return; }
+
+  function fail(message) {
+    box.querySelector('p').textContent = message;
+    box.hidden = false;
+    button.removeAttribute('aria-busy');
+    button.textContent = 'Create account';
+  }
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    box.hidden = true;
+    button.setAttribute('aria-busy', 'true');
+    button.textContent = 'Creating';
+
+    var body = new URLSearchParams(new FormData(form)).toString();
+    fetch(form.action, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': window.MessForecast.csrfToken(),
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: body
+    }).then(function (res) {
+      return res.text().then(function (text) {
+        var data = null;
+        try { data = text ? JSON.parse(text) : null; } catch (e) { data = null; }
+        if (!res.ok) {
+          fail((data && (data.detail || data.message)) || 'The account could not be created.');
+          return;
+        }
+        window.location.href = (data && data.redirect) || '/dashboard/';
+      });
+    }).catch(function () {
+      fail('The server could not be reached. Check the connection and try again.');
+    });
+  });
+})();
+</script>
+{% endblock %}

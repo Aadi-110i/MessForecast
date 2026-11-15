@@ -1,0 +1,292 @@
+{% extends "console/base_console.html" %}
+{% load static filter_extras %}{% load capabilities %}
+
+{% block title %}Settings · {{ app_name }}{% endblock %}
+
+{% block console_content %}
+{% include "components/page_head.html" with title="Settings" lede="The halls, the service levels they cook to, the people who use the platform, and who is allowed to do what. Every rule the platform applies is set here." %}
+
+<div class="c-split">
+  <div class="c-stack">
+
+    <!-- ===================== Halls ===================== -->
+    <section class="panel">
+  <div class="panelhead">
+    <h2>Dining halls</h2>
+    <span class="hint">{{ halls|length }}</span>
+  </div>
+<div class="table-wrap">
+  <table class="ledger">
+    <thead>
+      <tr>
+        <th>Hall</th>
+        <th>Code</th>
+        <th>Location</th>
+        <th class="num">Capacity</th>
+        <th class="num">Registered</th>
+        <th>State</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for h in halls %}
+        <tr>
+          <td class="metric nowrap">{{ h.name }}</td>
+          <td>{{ h.code }}</td>
+          <td>{{ h.location|default:"—" }}</td>
+          <td class="num">{{ h.capacity }}</td>
+          <td class="num">{{ h.registered_strength }}</td>
+          <td>
+            {% if h.is_active %}
+              <span class="state is-match">Active</span>
+            {% else %}
+              <span class="state">Retired</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+</section>
+
+    <!-- ===================== Service levels ===================== -->
+    <section class="panel">
+  <div class="panelhead">
+    <h2>Service levels</h2>
+    <span class="hint">{{ level_configs|length }}</span>
+  </div>
+{% if level_configs %}
+  <div class="table-wrap">
+    <table class="ledger">
+      <thead>
+        <tr>
+          <th>Applies to</th>
+          <th class="num">Overprep</th>
+          <th class="num">Ceiling</th>
+          <th class="num">Buffer</th>
+          <th class="num">Portions each</th>
+          <th>Effective from</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in level_configs %}
+          <tr>
+            <td class="metric">
+              {{ c.hall.code|default:"All halls" }}, {{ c.meal|default:"All meals"|title }}
+            </td>
+            <td class="num">+{{ c.acceptable_overprep_pct|floatformat:1 }}%</td>
+            <td class="num">{{ c.max_overprep_pct|floatformat:1 }}%</td>
+            <td class="num">{{ c.min_buffer_portions }}</td>
+            <td class="num">{{ c.portions_per_student|floatformat:2 }}</td>
+            <td>{{ c.effective_from|date:"d M Y" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="panelbody">
+    <p class="hint">
+      Overprep is the allowance above the forecast. The ceiling is the most the kitchen
+      may exceed it. Portions each is how much one student is served.
+    </p>
+    <p class="hint">
+      The most specific row wins: a hall and a meal beats a hall and any meal,
+      which beats any hall and a meal, which beats the global default.
+    </p>
+  </div>
+{% else %}
+  {% include "components/state.html" with kind="empty" title="No service levels set" body="Without a service level, the preparation plan falls back to a default over-preparation." %}
+{% endif %}
+</section>
+
+    <!-- ===================== The calendar ===================== -->
+    <section class="panel">
+  <div class="panelhead">
+    <h2>Events on the calendar</h2>
+    <span class="hint">{{ events|length }}</span>
+  </div>
+{% if events %}
+  <div class="table-wrap">
+    <table class="ledger">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Type</th>
+          <th class="num">Effect</th>
+          <th>Dates</th>
+          <th class="num">Edit</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in events %}
+          <tr>
+            <td class="metric">{{ e.name }}</td>
+            <td>{{ e.get_event_type_display }}</td>
+            <td class="num">×{{ e.impact_factor|floatformat:2 }}</td>
+            <td>{{ e.start_date|date:"d M" }} to {{ e.end_date|date:"d M Y" }}</td>
+            <td class="num">
+              {% if user|can:"PLAN_MENU" %}
+              <a class="btn btn-quiet" href="{% url 'console-event-update' e.id %}">Edit</a>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  {% include "components/state.html" with kind="empty" title="No events" body="An exam period or a festival moves demand in a way the weekday pattern cannot explain." %}
+{% endif %}
+</section>
+
+    <!-- ===================== People ===================== -->
+    <section class="panel">
+  <div class="panelhead">
+    <h2>People</h2>
+    <span class="hint">{{ people|length }}</span>
+  </div>
+<div class="table-wrap">
+  <table class="ledger">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Username</th>
+        <th>Role</th>
+        <th>Hall</th>
+        <th>State</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in people|slice:":60" %}
+        <tr>
+          <td class="metric">{{ p.get_full_name|default:p.username }}</td>
+          <td>{{ p.username }}</td>
+          <td>{{ p.get_role_display }}</td>
+          <td>{{ p.hall.code|default:"—" }}</td>
+          <td>
+            {% if p.is_active %}
+              <span class="state is-match">Active</span>
+            {% else %}
+              <span class="state">Disabled</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if people|length > 60 %}
+  <div class="panelbody">
+    <p class="hint">{{ people|length }} accounts in total. The first 60 are shown.</p>
+  </div>
+{% endif %}
+</section>
+
+  </div>
+
+  <!-- ===================== Context ===================== -->
+  <aside class="c-context">
+    <section class="panel">
+  <div class="panelhead">
+    <h2>{{ event_heading }}</h2>
+    <span class="hint">to the calendar</span>
+  </div>
+<div class="panelbody">
+  {% if form_error %}
+    <div class="c-banner is-error" role="alert">
+      <p>{{ form_error }}</p>
+    </div>
+  {% elif notice %}
+    <div class="c-banner is-match" role="status">
+      <p>{{ notice }}</p>
+    </div>
+  {% endif %}
+  {% if user|can:"PLAN_MENU" %}
+  <form class="c-form" method="post" action="{{ event_action }}">
+    {% csrf_token %}
+    {% include "components/field.html" with label="Name" name="name" required=True value=event_values.name errors=event_errors.name|as_list %}
+    {% include "components/field.html" with label="Kind" name="event_type" type="select" options=event_type_choices option_value=0 option_label=1 required=True errors=event_errors.event_type|as_list %}
+    {% include "components/field.html" with label="First day" name="start_date" type="date" value=event_values.start_date errors=event_errors.start_date|as_list %}
+    {% include "components/field.html" with label="Last day" name="end_date" type="date" value=event_values.end_date errors=event_errors.end_date|as_list %}
+    {% include "components/field.html" with label="Effect on demand" name="impact_factor" type="number" step="0.01" value=event_values.impact_factor errors=event_errors.impact_factor|as_list %}
+    <fieldset class="c-fieldset">
+      <legend>Meals it touches</legend>
+      <div class="c-check-list">
+        {% for code, label in meal_choices %}
+          <label class="c-check">
+            <input type="checkbox" name="affects_meals" value="{{ code }}">
+            <span>{{ label }}</span>
+          </label>
+        {% endfor %}
+      </div>
+      <p class="hint">None ticked means every meal. An examination period moves all of them; a
+      late registration hour moves one.</p>
+    </fieldset>
+    <div class="c-actions">
+      <button class="btn" type="submit">{{ event_button }}</button>
+      {% if editing_event %}
+        <a class="btn btn-ghost" href="{% url 'console-settings' %}">Cancel</a>
+      {% endif %}
+    </div>
+  </form>
+  {% else %}
+    <p class="hint">Calendar event editing requires the <code>PLAN_MENU</code> capability.</p>
+  {% endif %}
+</div>
+<div class="panelbody">
+  <p class="hint">
+    The effect is a multiplier on expected demand: 1.00 is a normal day, 1.20 is a fifth more
+    people, 0.30 is almost nobody. Overlapping events multiply.
+  </p>
+</div>
+</section>
+
+    <section class="panel">
+  <div class="panelhead">
+    <h2>The window</h2>
+  </div>
+<div class="panelbody">
+  {% include "components/spec_list.html" with specs=window_specs %}
+</div>
+</section>
+
+    <section class="panel">
+  <div class="panelhead">
+    <h2>Who can do what</h2>
+  </div>
+<div class="panelbody">
+  <ul class="c-list">
+    {% for row in capability_rows %}
+      <li>
+        <div>
+          <dt>{{ row.role }}</dt>
+          <dd>{{ row.caps|length }} capabilities</dd>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+  <p class="hint">The full matrix is defined in one place, so the API, the templates and the management commands all agree.</p>
+</div>
+</section>
+
+
+    <section class="panel">
+  <div class="panelhead">
+    <h2>Registration codes</h2>
+    <span class="hint">{{ open_count }}</span>
+  </div>
+<div class="panelbody">
+  <p class="hint">
+    New accounts are created against a code issued by the mess office, so the
+    role comes from whoever vouched for the account.
+  </p>
+  <div class="c-actions is-top">
+    {% if user|can:"MANAGE_USERS" %}
+    <a class="btn btn-ghost" href="{% url 'registration-console' %}">Manage codes</a>
+    {% endif %}
+  </div>
+</div>
+</section>
+  </aside>
+</div>
+{% endblock %}

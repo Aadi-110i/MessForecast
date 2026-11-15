@@ -1,0 +1,17 @@
+{% comment %}
+Component library — the page head.
+A screen's name, one sentence of orientation, and the actions that belong
+to that name. No eyebrow, no tracked capitals.
+
+Usage:
+  {% include "components/page_head.html" with title="Attendance" lede="..." %}
+{% endcomment %}
+<header class="c-head">
+  <div>
+    <h1>{{ title }}</h1>
+    {% if lede %}<p class="c-head-lede">{{ lede }}</p>{% endif %}
+  </div>
+  {% if actions %}
+    <div class="c-head-actions">{{ actions }}</div>
+  {% endif %}
+</header>

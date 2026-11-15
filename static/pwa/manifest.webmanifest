@@ -1,0 +1,35 @@
+{
+  "name": "MessForecast — Meal Demand & Waste",
+  "short_name": "MessForecast",
+  "description": "Forecast attendance for every mess service, turn it into preparation quantities and an ingredient indent, and measure what was actually wasted.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0E1017",
+  "theme_color": "#0E1017",
+  "lang": "en-in",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/static/pwa/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Kitchen screen",
+      "short_name": "Kitchen",
+      "description": "Record prepared, served and leftover portions",
+      "url": "/kitchen/"
+    },
+    {
+      "name": "Attendance capture",
+      "short_name": "Capture",
+      "description": "Scan student attendance",
+      "url": "/scan/"
+    }
+  ]
+}

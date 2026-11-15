@@ -1,0 +1,79 @@
+{% extends "console/base_console.html" %}
+{% load static %}{% load capabilities %}
+
+{% block title %}Reports · {{ app_name }}{% endblock %}
+
+{% block console_content %}
+{% include "components/page_head.html" with title="Reports" lede="Everything the platform can produce, and what each report covers. Every export is a real dataset drawn from recorded services." %}
+
+<!-- ===================== The figures ===================== -->
+{% include "components/figures.html" with figures=figures %}
+
+<div class="c-split">
+  <div class="c-stack">
+
+    <!-- ===================== The catalogue ===================== -->
+    <section class="panel">
+      <div class="panelhead">
+        <h2>Report catalogue</h2>
+        <span class="hint">{{ reports|length }} reports</span>
+      </div>
+      <div class="table-wrap">
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th>Report</th>
+              <th>What it answers</th>
+              <th class="num">Rows</th>
+              <th>Format</th>
+              <th class="num">Open</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in reports %}
+              <tr>
+                <td class="metric">{{ r.name }}</td>
+                <td>{{ r.answers }}</td>
+                <td class="num">{{ r.rows }}</td>
+                <td>{{ r.format }}</td>
+                <td class="num">
+                  {% if user|can:r.capability %}
+                  <a class="btn btn-quiet" href="{{ r.url }}">Open</a>
+                  {% else %}
+                  <span class="fill">Not permitted</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===================== What is in the window ===================== -->
+    <section class="panel">
+      <div class="panelhead">
+        <h2>What is in the window</h2>
+        <span class="hint">{{ start|date:"d M" }} to {{ end|date:"d M Y" }}</span>
+      </div>
+      <div class="panelbody">
+        {% include "components/spec_list.html" with specs=window_specs %}
+      </div>
+    </section>
+
+  </div>
+
+  <aside class="c-context">
+    <section class="panel">
+      <div class="panelhead"><h2>The method</h2></div>
+      <div class="panelbody">
+        <p class="hint">
+          Forecasts come from a recency-weighted moving average adjusted for the day of
+          the week, the calendar and the trend. The baseline stays statistical until a
+          term of real data has been collected.
+        </p>
+      </div>
+    </section>
+  </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,719 @@
+/* Hallmark · shape: app screen · genre: modern-minimal · theme: Dusk · scope: the reusable component library
+ * nav: none, a component carries no navigation of its own · footer: none
+ * signature: one figure contract at two scales — the same turnout, portions, leftover and cost read densely on the console and large on the tablet
+ * states: loading, empty, error, full · dusk: fog/periwinkle-apricot/glass
+ * axes: dark/grotesk-sans/cool · posture: committed · contrast: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P5 H4 E4 S5 R5 V5 · weakest: E, the first pass repeated the tally pattern on every screen, so the library
+   earns its own components — the schedule board, the forecast band, the report ledger — instead of one row of figures everywhere */
+
+/* =========================================================================
+   MessForecast — component library
+   -------------------------------------------------------------------------
+   Every screen in this product is assembled from the primitives below, and
+   the catalogue at /design-system/ renders each one in every state it has.
+
+   Two families share one token layer:
+
+     .c-*   the console family. Dense. Controls are 32 to 40px, tables come
+            before cards, figures are ruled rather than tiled. Read on a
+            manager's desk, often printed.
+
+     .k-*   the tablet family. 72px targets, 20px text, contrast pushed past
+            AA, no typing and no hover. Worked with wet gloves in a hot room.
+
+   They are not two design systems. They are one system at two scales, and
+   the same figure reads in both: turnout, portions to cook, leftover, cost.
+   That shared figure contract is the point of the library.
+
+   The existing shell classes (.panel, .ledger, .btn, .tally, .field, .chip)
+   are the console family's older half and are kept as they are; everything
+   new here extends that vocabulary rather than replacing it.
+   ========================================================================= */
+
+/* =========================================================================
+   Layout
+   ========================================================================= */
+
+.c-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  min-width: 0;
+}
+.c-stack.is-tight { gap: var(--space-md); }
+.c-stack.is-loose { gap: var(--space-xl); }
+
+.c-cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.c-cluster.is-tight { gap: var(--space-xs); }
+
+/* A block that needs air above it, without an inline style. */
+.c-spaced { margin-top: var(--space-lg); }
+
+/* Two equal columns, then one on a narrow screen. */
+.c-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gap-columns);
+  align-items: start;
+}
+.c-grid.is-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.c-grid.is-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+/* The workbench: content, then a context column that sticks beside it. */
+.c-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 21rem;
+  gap: var(--gap-columns);
+  align-items: start;
+}
+.c-context {
+  position: sticky;
+  top: calc(var(--topbar-h) + var(--space-md));
+  display: grid;
+  gap: var(--space-md);
+  min-width: 0;
+}
+
+@media (max-width: 72rem) {
+  .c-split { grid-template-columns: minmax(0, 1fr); }
+  .c-context { position: static; }
+}
+@media (max-width: 60rem) {
+  .c-grid, .c-grid.is-3, .c-grid.is-4 { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* =========================================================================
+   Page head
+   ========================================================================= */
+
+.c-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-lg);
+}
+.c-head h1 { max-width: 26ch; }
+.c-head-lede {
+  margin-top: var(--space-xs);
+  max-width: 62ch;
+  font-size: var(--text-md);
+  color: var(--color-ink-2);
+}
+.c-head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  align-items: center;
+}
+/* The quiet right-hand column of a page head: a chip and one line of
+   orientation, set against the title. */
+.c-head-side {
+  display: grid;
+  gap: var(--space-2xs);
+  justify-items: end;
+  text-align: right;
+}
+.c-head-side .hint {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+/* =========================================================================
+   Navigation within a screen
+   ========================================================================= */
+
+/* A tab strip scrolls sideways rather than wrapping. */
+.c-tabs {
+  display: flex;
+  gap: var(--space-xs);
+  border-bottom: 1px solid var(--color-rule);
+  overflow-x: auto;
+  margin-bottom: var(--space-lg);
+}
+.c-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  min-height: var(--control-h);
+  padding: 0 var(--space-md);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--color-ink-2);
+  font: var(--text-sm)/1 var(--font-body);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--dur-short) var(--ease-out), border-color var(--dur-short) var(--ease-out);
+}
+.c-tab:hover { color: var(--color-ink); background: var(--color-wash); }
+.c-tab:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+.c-tab[aria-current="page"] { color: var(--color-ink); border-bottom-color: var(--color-accent); }
+.c-tab-count { color: var(--color-ink-3); font-variant-numeric: tabular-nums; }
+
+/* A segmented control picks one of a few views of the same thing. */
+.c-segment {
+  display: inline-flex;
+  gap: var(--space-2xs);
+  padding: var(--space-2xs);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-control);
+  background: var(--color-paper-2);
+}
+.c-segment a,
+.c-segment button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2rem;
+  padding: 0 var(--space-sm);
+  border: 0;
+  border-radius: var(--radius-inner);
+  background: transparent;
+  color: var(--color-ink-2);
+  font: var(--text-sm)/1 var(--font-body);
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.c-segment a:hover,
+.c-segment button:hover { color: var(--color-ink); }
+.c-segment a:focus-visible,
+.c-segment button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; }
+.c-segment [aria-current="true"],
+.c-segment [aria-pressed="true"] {
+  background: var(--color-panel-2);
+  color: var(--color-ink);
+}
+
+/* A breadcrumb separates its steps with a rule, not with punctuation. */
+.c-crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-sm);
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+.c-crumbs a { color: var(--color-ink-2); text-decoration-color: var(--color-hair); }
+.c-crumbs a:hover { color: var(--color-ink); }
+.c-crumbs > * + * {
+  padding-left: var(--space-sm);
+  border-left: 1px solid var(--color-hair);
+}
+
+/* =========================================================================
+   Type specimens
+   -------------------------------------------------------------------------
+   The three voices the product has. A screen uses these, never a raw font
+   declaration, so the type scale stays one scale.
+   ========================================================================= */
+
+.c-type-display {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: var(--text-4xl);
+  line-height: 1.02;
+  letter-spacing: var(--tracking-display);
+  color: var(--color-ink);
+}
+.c-type-body {
+  margin: 0;
+  font-size: var(--text-md);
+  color: var(--color-ink);
+}
+.c-type-label {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+/* =========================================================================
+   Figures
+   ========================================================================= */
+
+/* One figure, set large, with its label under it. */
+.c-fig { min-width: 0; }
+.c-fig-label {
+  display: block;
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+.c-fig-value {
+  display: block;
+  margin-top: var(--space-2xs);
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: var(--text-4xl);
+  line-height: 1.02;
+  letter-spacing: var(--tracking-display);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink);
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+.c-fig-value.is-loss { color: var(--color-accent-2); }
+.c-fig-value.is-match { color: var(--color-accent); }
+.c-fig-value.is-muted { color: var(--color-ink-3); }
+/* A figure whose value is a phrase rather than a number. It steps down a size
+   so the words stay whole instead of breaking across three lines. */
+.c-fig-value.is-text {
+  font-size: var(--text-xl);
+  line-height: 1.14;
+}
+.c-fig-note {
+  display: block;
+  margin-top: var(--space-2xs);
+  font-size: var(--text-xs);
+  color: var(--color-ink-3);
+}
+
+/* A row of figures separated by hairlines, never by tiles. */
+.c-figrow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 1px solid var(--color-rule);
+  border-bottom: 1px solid var(--color-rule);
+}
+.c-figrow > * {
+  min-width: 0;
+  padding: var(--space-md) var(--space-lg);
+  border-left: 1px solid var(--color-hair);
+}
+.c-figrow > *:first-child { border-left: 0; padding-left: 0; }
+@media (max-width: 60rem) {
+  .c-figrow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .c-figrow > *:nth-child(odd) { border-left: 0; padding-left: 0; }
+  .c-figrow > *:nth-child(n + 3) { border-top: 1px solid var(--color-hair); }
+}
+@media (max-width: 40rem) {
+  .c-figrow { grid-template-columns: minmax(0, 1fr); }
+  .c-figrow > * { border-left: 0; padding-left: 0; padding-right: 0; }
+  .c-figrow > * + * { border-top: 1px solid var(--color-hair); }
+}
+
+/* =========================================================================
+   Feedback
+   ========================================================================= */
+/* A region with nothing in it. The frame says what happened and what to do
+   next, so a blank panel never stands in for a fact. */
+.c-state {
+  display: grid;
+  gap: var(--space-xs);
+  justify-items: start;
+  padding: var(--space-lg) 0;
+  text-align: left;
+}
+.c-state-title {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 500;
+  color: var(--color-ink);
+}
+.c-state p { margin: 0; font-size: var(--text-sm); color: var(--color-ink-2); }
+.c-state.is-error .c-state-title { color: var(--color-error-ink); }
+
+/* A notice that carries a fact the reader did not have. */
+.c-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-control);
+  background: var(--color-panel);
+  color: var(--color-ink-2);
+  font-size: var(--text-sm);
+}
+.c-banner strong { color: var(--color-ink); font-weight: 500; }
+.c-banner.is-open {
+  border-color: var(--color-accent-2-deep);
+  background: var(--color-accent-2-wash);
+  color: var(--color-accent-2);
+}
+.c-banner.is-open strong { color: var(--color-accent-2); }
+.c-banner.is-match {
+  border-color: var(--color-accent-deep);
+  background: var(--color-accent-wash);
+  color: var(--color-accent);
+}
+.c-banner.is-match strong { color: var(--color-accent); }
+.c-banner.is-error {
+  border-color: var(--color-error);
+  background: var(--color-error-wash);
+  color: var(--color-error-ink);
+}
+.c-banner.is-error strong { color: var(--color-error-ink); }
+
+/* A proportion, as a bar on a track. */
+.c-meter { display: grid; gap: var(--space-2xs); min-width: 0; }
+.c-meter-track {
+  height: var(--space-2xs);
+  border-radius: var(--radius-inner);
+  background: var(--color-wash-strong);
+  overflow: hidden;
+}
+.c-meter-fill {
+  display: block;
+  height: 100%;
+  width: var(--fill, 0%);
+  border-radius: var(--radius-inner);
+  background: var(--color-accent);
+}
+.c-meter.is-loss .c-meter-fill { background: var(--color-accent-2); }
+.c-meter-label {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+}
+
+/* =========================================================================
+   Forms
+   ========================================================================= */
+
+.c-form {
+  display: grid;
+  gap: var(--space-md);
+  max-width: 34rem;
+}
+.c-form.is-wide { max-width: none; }
+.c-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
+}
+@media (max-width: 40rem) { .c-form-grid { grid-template-columns: minmax(0, 1fr); } }
+
+.c-field { display: grid; gap: var(--space-2xs); min-width: 0; }
+.c-field > label { font-size: var(--text-sm); color: var(--color-muted); }
+.c-field-help {
+  font-size: var(--text-xs);
+  color: var(--color-ink-3);
+  min-height: 1lh;
+}
+.c-field-error { font-size: var(--text-xs); color: var(--color-error-ink); }
+.c-field-error + .c-field-help { display: none; }
+.c-fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--space-md);
+}
+.c-fieldset > legend {
+  padding: 0;
+  margin-bottom: var(--space-sm);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-ink);
+}
+
+/* A list of choices where more than one may be picked. The whole line is
+   the target, so the reader does not have to find the small box. */
+.c-check-list { display: grid; gap: var(--space-2xs); }
+.c-check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-height: var(--control-h);
+  padding: 0 var(--space-sm);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  color: var(--color-ink-2);
+}
+.c-check:hover { background: var(--color-wash); }
+.c-check input[type="checkbox"] {
+  width: 1.05rem;
+  height: 1.05rem;
+  flex: none;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+.c-check input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* A toggle. The track and the thumb are separate elements so the control
+   still reads when the browser cannot paint the native checkbox. */
+.c-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-height: var(--control-h);
+  cursor: pointer;
+}
+.c-switch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.c-switch-track {
+  position: relative;
+  flex: none;
+  width: 2.75rem;
+  height: 1.5rem;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-pill);
+  background: var(--color-wash-strong);
+  transition: background-color var(--dur-short) var(--ease-out), border-color var(--dur-short) var(--ease-out);
+}
+.c-switch-thumb {
+  position: absolute;
+  top: 50%;
+  left: var(--space-3xs);
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 50%;
+  background: var(--color-ink-3);
+  transform: translateY(-50%);
+  transition: transform var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out);
+}
+.c-switch input:checked ~ .c-switch-track {
+  background: var(--color-accent-wash);
+  border-color: var(--color-accent-deep);
+}
+.c-switch input:checked ~ .c-switch-track .c-switch-thumb {
+  transform: translate(1.25rem, -50%);
+  background: var(--color-accent);
+}
+.c-switch input:focus-visible ~ .c-switch-track {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+.c-switch input:disabled ~ .c-switch-track { opacity: 0.55; cursor: not-allowed; }
+.c-switch-label { font-size: var(--text-sm); color: var(--color-ink-2); }
+
+/* =========================================================================
+   Data
+   ========================================================================= */
+
+/* A definition list, used where a table would be overkill.
+   The row is the grid. The markup is ul > li > div > (dt, dd), so the rule
+   has to reach through the list item to the div that holds the pair. */
+.c-list { margin: 0; padding: 0; list-style: none; }
+.c-list > li { margin: 0; padding: 0; }
+.c-list > li > div,
+.c-list > div {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-md);
+  align-items: baseline;
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-hair);
+}
+.c-list > li:last-child > div,
+.c-list > div:last-child { border-bottom: 0; }
+.c-list dt { font-size: var(--text-sm); color: var(--color-muted); }
+.c-list dd {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* A named row: a label on the left, a figure on the right. */
+.c-spec {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-md);
+  align-items: center;
+  padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--color-hair);
+}
+.c-spec:last-child { border-bottom: 0; }
+.c-spec-name {
+  font-size: var(--text-md);
+  color: var(--color-ink);
+}
+.c-spec-note {
+  display: block;
+  margin-top: var(--space-2xs);
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+.c-spec-value {
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: var(--text-xl);
+  letter-spacing: var(--tracking-display);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink);
+  text-align: right;
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+.c-spec-value.is-loss { color: var(--color-accent-2); }
+
+/* =========================================================================
+   The schedule board
+   -------------------------------------------------------------------------
+   The menu calendar: seven days across, three meals down, one cell per
+   hall-meal-date. It is the answer to "what is on tomorrow", so it is a
+   board rather than a list.
+   ========================================================================= */
+
+.c-board {
+  display: grid;
+  grid-template-columns: 7rem repeat(7, minmax(0, 1fr));
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-card);
+  background: var(--color-panel);
+  overflow: hidden;
+}
+.c-board-head {
+  padding: var(--space-sm) var(--space-md);
+  border-bottom: 1px solid var(--color-rule);
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+  min-width: 0;
+}
+.c-board-head.is-date { color: var(--color-ink); }
+.c-board-head small {
+  display: block;
+  color: var(--color-ink-3);
+  font-size: var(--text-xs);
+}
+.c-board-meal {
+  padding: var(--space-sm) var(--space-md);
+  border-right: 1px solid var(--color-hair);
+  border-bottom: 1px solid var(--color-hair);
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+.c-board-cell {
+  padding: var(--space-xs);
+  border-bottom: 1px solid var(--color-hair);
+  border-left: 1px solid var(--color-hair);
+  min-width: 0;
+}
+.c-board-menu {
+  display: block;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-control);
+  background: var(--color-wash);
+  color: var(--color-ink-2);
+  font-size: var(--text-sm);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out);
+}
+.c-board-menu:hover { background: var(--color-wash-strong); color: var(--color-ink); }
+.c-board-menu:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.c-board-menu.is-published {
+  background: var(--color-accent-wash);
+  color: var(--color-accent);
+  box-shadow: inset 0 0 0 1px var(--color-accent-deep);
+}
+.c-board-menu small {
+  display: block;
+  color: var(--color-ink-3);
+  font-size: var(--text-xs);
+}
+.c-board-menu.is-published small { color: var(--color-accent); }
+.c-board-empty {
+  display: block;
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px dashed var(--color-hair);
+  border-radius: var(--radius-control);
+  font-size: var(--text-xs);
+  color: var(--color-ink-3);
+  text-decoration: none;
+}
+.c-board-empty:hover { border-color: var(--color-muted); color: var(--color-ink-2); }
+.c-board-empty:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+@media (max-width: 60rem) {
+  .c-board { grid-template-columns: 5rem repeat(7, minmax(0, 1fr)); }
+  .c-board-head, .c-board-meal { padding: var(--space-xs); }
+}
+
+/* =========================================================================
+   The forecast band
+   -------------------------------------------------------------------------
+   A forecast is not a number, it is a number with a range around it. The
+   band chart draws the range as an area and the prediction as a line, so
+   the manager sees how much room the kitchen has, not just a point.
+
+   The SVG reuses the chart vocabulary in app.css, so the area, the line
+   and the dots take their colour from the same rules as every other chart.
+   ========================================================================= */
+
+.c-band { width: 100%; }
+.c-band svg { width: 100%; height: auto; display: block; }
+
+/* The range on a single line: a track, the published band, the prediction. */
+.c-range {
+  position: relative;
+  height: var(--space-2xs);
+  min-width: 6rem;
+  border-radius: var(--radius-inner);
+  background: var(--color-wash-strong);
+}
+.c-range-band {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--band-lo, 0%);
+  width: var(--band-hi, 0%);
+  background: var(--color-accent-wash);
+  border-radius: var(--radius-inner);
+}
+.c-range-mid {
+  position: absolute;
+  top: 50%;
+  left: var(--band-mid, 0%);
+  width: var(--space-xs);
+  height: var(--space-xs);
+  border-radius: 50%;
+  background: var(--color-accent);
+  transform: translate(-50%, -50%);
+}
+
+/* =========================================================================
+   Actions
+   ========================================================================= */
+
+.c-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  align-items: center;
+  margin-top: var(--space-lg);
+}
+.c-actions.is-top { margin-top: 0; }
+
+.c-pager {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding-top: var(--space-md);
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+.c-pager a { color: var(--color-ink-2); }
+
+/* =========================================================================
+   Print
+   ========================================================================= */
+
+@media print {
+  .c-tabs, .c-actions, .c-pager { display: none; }
+  .c-context { position: static; }
+}

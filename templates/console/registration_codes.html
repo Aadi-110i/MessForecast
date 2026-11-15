@@ -1,0 +1,85 @@
+{% extends "console/base_console.html" %}
+{% load static filter_extras %}
+
+{% block title %}Registration codes · {{ app_name }}{% endblock %}
+
+{% block console_content %}
+{% include "components/page_head.html" with title="Registration codes" lede="A code is issued to the person who will use the account, and it carries the role. That keeps a student from registering themselves as an administrator, and it means the platform knows who vouched for an account." %}
+
+<!-- ===================== The figures ===================== -->
+{% include "components/figures.html" with figures=figures %}
+
+<div class="c-split">
+  <div class="c-stack">
+
+    <section class="panel">
+      <div class="panelhead">
+        <h2>Codes</h2>
+        <span class="hint">{{ codes|length }} most recent</span>
+      </div>
+      {% if codes %}
+        <div class="table-wrap">
+          <table class="ledger">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Role</th>
+                <th>Hall</th>
+                <th>Name</th>
+                <th>Expires</th>
+                <th>State</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for c in codes %}
+                <tr>
+                  <td class="metric">{{ c.code }}</td>
+                  <td>{{ role_labels|get_item:c.role }}</td>
+                  <td>{{ c.hall.code|default:"—" }}</td>
+                  <td>{{ c.full_name|default:"—" }}</td>
+                  <td>{{ c.expires_on|date:"d M Y" }}</td>
+                  <td>
+                    {% if c.status == 'REDEEMED' %}
+                      <span class="state is-match">Redeemed</span>
+                    {% elif c.status == 'REVOKED' %}
+                      <span class="state is-open">Revoked</span>
+                    {% elif c.is_usable %}
+                      <span class="state">Open</span>
+                    {% else %}
+                      <span class="state">Expired</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="panelbody">
+          {% include "components/state.html" with kind="empty" title="No codes yet" body="Issue one on the right to let someone register." %}
+        </div>
+      {% endif %}
+    </section>
+
+  </div>
+
+  <aside class="c-context">
+    <section class="panel">
+      <div class="panelhead"><h2>Issue a code</h2></div>
+      <div class="panelbody">
+        <form class="c-form" method="post" action="{% url 'registration-code-issue' %}">
+          {% csrf_token %}
+          {% include "components/field.html" with label="Role" name="role" type="select" options=roles option_value=0 option_label=1 required=True %}
+          {% include "components/field.html" with label="Hall" name="hall" type="select" options=halls option_value="id" option_label="name" placeholder="No hall" help="Only for kitchen staff and students." %}
+          {% include "components/field.html" with label="Name" name="full_name" help="Pre-fills the account for the person you issue it to." %}
+          {% include "components/field.html" with label="Student identifier" name="student_identifier" help="The credential on the student card or tag." %}
+          {% include "components/field.html" with label="Notes" name="notes" type="textarea" rows=2 %}
+          <div class="c-actions">
+            <button class="btn" type="submit">Issue code</button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </aside>
+</div>
+{% endblock %}

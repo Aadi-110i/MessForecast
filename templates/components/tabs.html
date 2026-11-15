@@ -1,0 +1,14 @@
+{% comment %}
+Component library — the tab strip.
+Switches between views of the same subject. It scrolls sideways on a narrow
+screen rather than wrapping.
+
+Usage:
+  {% include "components/tabs.html" with tabs=tabs %}
+  Each tab: {label, url, count, current}
+{% endcomment %}
+<nav class="c-tabs" aria-label="{{ aria_label|default:'Sections' }}">
+  {% for t in tabs %}
+    <a class="c-tab" href="{{ t.url }}"{% if t.current %} aria-current="page"{% endif %}>{{ t.label }}{% if t.count is not None %}<span class="c-tab-count">{{ t.count }}</span>{% endif %}</a>
+  {% endfor %}
+</nav>

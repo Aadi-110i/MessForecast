@@ -1,0 +1,18 @@
+{% comment %}
+Component library — figure row.
+Four figures separated by hairlines. Never a grid of stat tiles.
+
+Usage:
+  {% include "components/figures.html" with figures=figures %}
+  Each figure: {label, value, note, tone, kind}
+  tone is loss or match. kind is text when the value is a phrase, not a number.
+{% endcomment %}
+<div class="c-figrow">
+  {% for f in figures %}
+    <div class="c-fig">
+      <span class="c-fig-label">{{ f.label }}</span>
+      <span class="c-fig-value{% if f.tone == 'loss' %} is-loss{% elif f.tone == 'match' %} is-match{% endif %}{% if f.kind == 'text' %} is-text{% endif %}">{{ f.value }}</span>
+      {% if f.note %}<span class="c-fig-note">{{ f.note }}</span>{% endif %}
+    </div>
+  {% endfor %}
+</div>

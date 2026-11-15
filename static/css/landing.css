@@ -1,0 +1,399 @@
+/* Hallmark · shape: Split Studio · genre: modern-minimal · theme: Dusk (by request) · job: sign up · draw: 4e9e26
+ * hero: Stage, swapped from the drawn Counter: the material is a tablet screen that wants a column, not an action set large · nav: a masthead, the wordmark centred over a rule · footer: a mast, the wordmark large over the links · imagery: screenshots 2, library 1 · signature: the kitchen tablet, the turnout, the portions and the reason for the number on one screen · dusk: fog/periwinkle-apricot/glass
+ * axes: dark/grotesk-sans/cool · posture: restrained · contrast: pass · fold: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S5 R4 V5 · weakest: R, a page of product captures can drift towards a gallery; the method and the results are set as a ruled list and a table, so the page keeps two kinds of body */
+/* Hallmark · waived 29 · the hero picture is a screenshot of the product, not a bloom; depth comes from the rule around the frame and the weight of the type beside it */
+/* Hallmark · answered F3 · the display heads balance their lines, and the hero head breaks on a phrase · answered F8 · one reveal and one number tick, nothing scrubs · answered 47b · the one frame is the tablet the kitchen is worked on, and the product is inside it */
+
+/* =========================================================================
+   MessForecast — landing page
+   -------------------------------------------------------------------------
+   The public face of the platform. A diptych: the claim on one side, the
+   product on the other, and the product keeps its side all the way down.
+   Every figure on the page is read from the database when the page is
+   served, so the copy never claims more than the records carry.
+   ========================================================================= */
+
+.lp {
+  --lp-nav-h: 5rem;
+  /* The hero's picture runs to the edge of the window: past the container on
+     a wide screen, and into the container's own margin below that. */
+  --lp-bleed: calc(var(--gutter) + max(0px, (100vw - var(--container)) / 2));
+  background: var(--color-paper);
+}
+
+/* =========================================================================
+   The masthead: the wordmark centred, over a rule
+   ========================================================================= */
+.lp-mast {
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.lp-mast-inner {
+  min-height: var(--lp-nav-h);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+}
+
+.lp-word {
+  grid-column: 2;
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: var(--lp-mast);
+  line-height: 1.1;
+  letter-spacing: var(--tracking-display);
+  color: var(--color-ink);
+  text-decoration: none;
+}
+.lp-word:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; }
+
+.lp-mast-signin {
+  grid-column: 3;
+  justify-self: end;
+  white-space: nowrap;
+  padding: var(--space-2xs) var(--space-sm);
+  border-radius: var(--radius-control);
+  font-size: var(--text-sm);
+  color: var(--color-ink-2);
+  text-decoration: none;
+  transition: color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out);
+}
+.lp-mast-signin:hover { color: var(--color-ink); background: var(--color-wash); }
+.lp-mast-signin:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+/* =========================================================================
+   The hero: the product on the right, at three fifths of the screen
+   ========================================================================= */
+.lp-hero {
+  min-height: calc(100svh - var(--lp-nav-h) - var(--space-2xs));
+  padding-block: var(--space-2xl);
+  display: flex;
+  align-items: center;
+}
+
+.lp-hero-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 4.5fr 7.5fr;
+  gap: var(--space-2xl);
+  align-items: center;
+}
+
+.lp-hero-text h1 {
+  font-size: var(--lp-display);
+  line-height: 1.02;
+  max-width: 18ch;
+  text-wrap: balance;
+}
+
+.lp-hero-text .lead {
+  margin-top: var(--space-md);
+  max-width: 46ch;
+  font-size: var(--lp-lead);
+  color: var(--color-ink-2);
+}
+
+.lp-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-lg);
+  margin-top: var(--space-xl);
+}
+
+.lp-more {
+  font-size: var(--text-md);
+  color: var(--color-ink-2);
+  text-decoration: underline;
+  text-decoration-color: var(--color-rule);
+  text-underline-offset: 0.16em;
+  transition: color var(--dur-short) var(--ease-out);
+}
+.lp-more:hover { color: var(--color-ink); }
+.lp-more:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+/* =========================================================================
+   The frame every picture sits in
+   ========================================================================= */
+.lp-shot {
+  margin: 0;
+  min-width: 0;
+  border-radius: var(--radius-card);
+  outline: 1px solid var(--color-edge-lit);
+  outline-offset: -1px;
+}
+
+/* A screenshot of the product is not a photograph: it is not retouched. */
+.lp-shot[data-kind="product"] > img { filter: none; }
+
+/* The hero picture runs off the right edge of the window, so it is the one
+   thing on the page that is allowed past the container. */
+.lp-shot-hero {
+  aspect-ratio: 1.48;
+  width: calc(100% + var(--lp-bleed));
+  margin-right: calc(var(--lp-bleed) * -1);
+}
+
+.lp-shot-phone { aspect-ratio: 0.59; }
+.lp-shot-photo { aspect-ratio: 4 / 5; }
+
+.lp-shot-phone > img { object-position: 50% 0%; }
+.lp-shot-photo > img { object-position: 55% 35%; }
+
+/* =========================================================================
+   The rows: text on one side, proof on the other, proof on the same side
+   ========================================================================= */
+.lp-band {
+  padding-block: var(--space-2xl);
+}
+
+/* One ruled seam between the two product bands, so the page does not part
+   the same way all the way down. */
+.lp-band-rule {
+  border-top: 1px solid var(--color-rule);
+}
+
+.lp-band-paper {
+  background: var(--color-paper-2);
+  color: var(--color-ink);
+}
+
+.lp-row {
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  gap: var(--space-2xl);
+  align-items: center;
+}
+
+/* The wide row turns the ratio, never the side. */
+.lp-row-wide {
+  grid-template-columns: 7fr 5fr;
+}
+
+.lp-row-text h2 {
+  font-size: var(--lp-section);
+  max-width: 18ch;
+  text-wrap: balance;
+}
+
+.lp-row-text p {
+  margin-top: var(--space-md);
+  max-width: 58ch;
+  font-size: var(--lp-body);
+  color: var(--color-ink-2);
+}
+
+/* =========================================================================
+   The results: five measured figures, set as a table
+   ========================================================================= */
+.lp-results h2 {
+  font-size: var(--lp-section);
+  max-width: 22ch;
+  text-wrap: balance;
+}
+
+.lp-results .lead {
+  margin-top: var(--space-md);
+  max-width: 62ch;
+  font-size: var(--lp-lead);
+  color: var(--color-ink-2);
+}
+
+/* The figures sit in a well, so the band behind them is a ground and not a
+   card. */
+.lp-well {
+  margin-top: var(--space-2xl);
+  padding: var(--space-lg) var(--space-xl) var(--space-md);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-card);
+  background: var(--color-panel);
+}
+
+.lp-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.lp-table caption {
+  caption-side: bottom;
+  margin-top: var(--space-md);
+  text-align: left;
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+.lp-table th,
+.lp-table td {
+  padding: var(--space-md) 0;
+  text-align: left;
+  vertical-align: baseline;
+  border-bottom: 1px solid var(--color-hair);
+}
+
+.lp-table th {
+  font-weight: 500;
+  font-size: var(--lp-body);
+  color: var(--color-ink-2);
+}
+
+.lp-table td.num {
+  width: 30%;
+  text-align: right;
+  font-family: var(--font-display);
+  font-size: var(--lp-title);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink);
+}
+
+.lp-table tbody tr:last-child th,
+.lp-table tbody tr:last-child td { border-bottom: 0; }
+
+/* =========================================================================
+   What the mess already has to hand
+   ========================================================================= */
+.lp-inputs {
+  margin: var(--space-lg) 0 0;
+  display: grid;
+}
+
+.lp-inputs > div {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  gap: var(--space-md);
+  padding-block: var(--space-md);
+  border-top: 1px solid var(--color-hair);
+}
+
+.lp-inputs dt {
+  font-weight: 500;
+  color: var(--color-ink);
+}
+
+.lp-inputs dd {
+  margin: 0;
+  max-width: 46ch;
+  color: var(--color-ink-2);
+}
+
+/* =========================================================================
+   The close: the action, in a card on the ground
+   ========================================================================= */
+.lp-close {
+  padding-block: var(--space-lg) var(--space-2xl);
+}
+
+.lp-close-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-2xl);
+  align-items: end;
+  padding: var(--space-xl);
+  border: 1px solid var(--color-accent-2-deep);
+  border-radius: var(--radius-card);
+  background: var(--color-panel);
+}
+
+.lp-close h2 {
+  font-size: var(--lp-section);
+  max-width: 18ch;
+  text-wrap: balance;
+}
+
+.lp-close p {
+  max-width: 58ch;
+  color: var(--color-ink-2);
+}
+
+.lp-close .btn { margin-bottom: 0; }
+
+/* =========================================================================
+   The mast footer: the wordmark large, over the links
+   ========================================================================= */
+.lp-foot {
+  border-top: 1px solid var(--color-rule);
+  padding-block: var(--space-2xl) var(--space-xl);
+}
+
+.lp-foot-mark {
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: 2.75rem;
+  line-height: 1.1;
+  letter-spacing: var(--tracking-display);
+  color: var(--color-ink);
+}
+
+.lp-foot-links {
+  list-style: none;
+  margin: var(--space-md) 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-lg);
+}
+
+.lp-foot-links a {
+  font-size: var(--text-md);
+  color: var(--color-ink-2);
+  text-decoration: none;
+  transition: color var(--dur-short) var(--ease-out);
+}
+.lp-foot-links a:hover { color: var(--color-ink); }
+.lp-foot-links a:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+.lp-foot-credits {
+  margin-top: var(--space-lg);
+  max-width: 70ch;
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+/* =========================================================================
+   Narrow screens: the rows stack in reading order
+   ========================================================================= */
+@media (max-width: 60rem) {
+  .lp-hero-grid,
+  .lp-row,
+  .lp-row-wide {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-xl);
+  }
+  .lp-shot-hero {
+    width: 100%;
+    margin-right: 0;
+  }
+  .lp-close-inner {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
+  .lp-shot-phone,
+  .lp-shot-photo { max-width: 20rem; }
+  .lp-inputs > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2xs);
+  }
+  .lp-table td.num { width: 34%; }
+}
+
+@media (max-width: 40rem) {
+  .lp { --lp-nav-h: 4.25rem; }
+  .lp-word { font-size: var(--text-xl); }
+  .lp-mast-signin { font-size: var(--text-md); }
+  .lp-hero { min-height: auto; }
+  /* On a phone the whole tablet is too small to read, so the hero shows the
+     three figures the kitchen actually cooks from. */
+  .lp-shot-hero { aspect-ratio: 3 / 1; }
+  .lp-shot-hero > img { object-position: 50% 0%; }
+  .lp-close-inner { padding: var(--space-lg); }
+  .lp-well { padding: var(--space-md) var(--space-lg) var(--space-xs); }
+}
+
+/* =========================================================================
+   Reduced motion: nothing moves, and nothing is left half done
+   ========================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  .lp-mast-signin,
+  .lp-more,
+  .lp-foot-links a { transition: none; }
+}

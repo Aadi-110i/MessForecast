@@ -1,0 +1,20 @@
+{% comment %}
+Component library — a named figure row.
+A label on the left, a figure on the right, with an optional note. Used where
+a table would be too heavy and a figure row would be too light.
+
+Usage:
+  {% include "components/spec_list.html" with specs=specs %}
+  Each spec: {name, value, note, tone}
+{% endcomment %}
+<div class="c-specs">
+  {% for s in specs %}
+    <div class="c-spec">
+      <div>
+        <span class="c-spec-name">{{ s.name }}</span>
+        {% if s.note %}<span class="c-spec-note">{{ s.note }}</span>{% endif %}
+      </div>
+      <span class="c-spec-value{% if s.tone == 'loss' %} is-loss{% endif %}">{{ s.value }}</span>
+    </div>
+  {% endfor %}
+</div>

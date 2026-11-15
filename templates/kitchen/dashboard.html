@@ -1,0 +1,112 @@
+{% load static %}{% load capabilities %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Kitchen · {{ app_name }}</title>
+  <meta name="description" content="Today's services for the kitchen: how much to cook and what is still to be written up.">
+  <meta name="theme-color" content="#0E1017">
+  <link rel="manifest" href="{% url 'pwa-manifest' %}">
+  <link rel="icon" href="{% static 'pwa/icon.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <link rel="stylesheet" href="{% static 'css/kitchen.css' %}">
+</head>
+<body class="k-shell">
+{% csrf_token %}
+
+<!-- ===================== The ticket ===================== -->
+<header class="k-ticket">
+  <div class="k-ticket-head">
+    <span class="k-mark">MessForecast</span>
+    <div class="k-where">
+      <div class="k-hall">Kitchen</div>
+      <div class="k-when">{{ today|date:"l, d F Y" }}</div>
+    </div>
+    <div class="k-head-right">
+      <span class="k-pill" id="net-pill"><span class="dot" aria-hidden="true"></span><span id="net-label">Online</span></span>
+      {% if user|can:"RECORD_ATTENDANCE" %}
+      <a class="k-pill" href="{% url 'scan-screen' %}">Capture</a>
+      {% endif %}
+      <a class="k-pill" href="{% url 'profile-page' %}">Profile</a>
+    </div>
+  </div>
+</header>
+
+<main class="k-main">
+
+  <!-- ===================== The day at a glance ===================== -->
+  <section class="k-day" aria-label="Today at a glance">
+    <div>
+      <span class="d-label">Services today</span>
+      <span class="d-value">{{ totals.services }}</span>
+      <span class="d-note">{% if totals.outstanding %}{{ totals.outstanding }} still to write up{% else %}All written up{% endif %}</span>
+    </div>
+    <div>
+      <span class="d-label">Turned up</span>
+      <span class="d-value">{{ totals.turnout }}</span>
+      <span class="d-note">Scans so far today</span>
+    </div>
+    <div>
+      <span class="d-label">Portions to cook</span>
+      <span class="d-value">{{ totals.to_prepare }}</span>
+      <span class="d-note">Across today's plans</span>
+    </div>
+    <div>
+      <span class="d-label">Left over</span>
+      <span class="d-value{% if totals.leftover %} is-loss{% endif %}">{{ totals.leftover }}</span>
+      <span class="d-note">Recorded portions</span>
+    </div>
+  </section>
+
+  {% if rows %}
+    <p class="k-brief-line">
+      {% if totals.outstanding %}
+        <strong>{{ totals.outstanding }}</strong> of {{ totals.services }} services still need writing up.
+      {% else %}
+        <strong>All done.</strong> Every service today has been written up.
+      {% endif %}
+    </p>
+
+    <!-- ===================== The services ===================== -->
+    <div class="k-services">
+      {% for r in rows %}
+        <a class="k-service" href="{% url 'kitchen-actuals' r.service.id %}">
+          <span class="sv-meal">{{ r.service.get_meal_display }}</span>
+          <span class="sv-hall">{{ r.service.hall.name }}</span>
+
+          <span class="sv-count">{{ r.turnout }}</span>
+          <span class="k-count-sub">turned up</span>
+
+          {% if r.target %}
+            <span class="sv-goal">Cook {{ r.target }} portions</span>
+          {% elif r.forecast %}
+            <span class="sv-goal">Expect {{ r.forecast.predicted_attendance|floatformat:0 }}</span>
+          {% else %}
+            <span class="sv-goal">No plan for this service</span>
+          {% endif %}
+
+          <span class="sv-state{% if r.state == 'done' %} is-done{% elif r.state == 'ready' %} is-live{% endif %}">{{ r.state_label }}</span>
+
+          <span class="sv-open{% if r.state == 'done' %} is-quiet{% endif %}">
+            {% if r.state == 'done' or not user|can:"RECORD_ACTUALS" %}View{% else %}Start{% endif %}
+          </span>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="k-card">
+      <div class="k-card-body">
+        <div class="k-empty">
+          <h3>No services scheduled today</h3>
+          <p>Publish a menu schedule for today so the kitchen has a service to prepare for.</p>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+</main>
+
+<script src="{% static 'js/app.js' %}" defer></script>
+<script src="{% static 'pwa/offline-queue.js' %}" defer></script>
+</body>
+</html>

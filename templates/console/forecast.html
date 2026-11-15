@@ -1,0 +1,172 @@
+{% extends "console/base_console.html" %}
+{% load static %}
+
+{% block title %}Forecast · {{ app_name }}{% endblock %}
+
+{% block console_content %}
+{% include "components/page_head.html" with title="Forecast dashboard" lede="What the engine expects for the week ahead, how much room there is around each number, and why it says what it says. Every forecast carries its own workings, so the number can be argued with." %}
+
+<form class="toolbar" method="get">
+  <div class="field field--inline">
+    <label for="f-hall">Hall</label>
+    <select id="f-hall" name="hall">
+      <option value="">All halls</option>
+      {% for h in halls %}<option value="{{ h.id }}"{% if hall and h.id == hall.id %} selected{% endif %}>{{ h.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="field field--inline">
+    <label for="f-days">Horizon</label>
+    <select id="f-days" name="days">
+      <option value="7"{% if horizon == 7 %} selected{% endif %}>Next 7 days</option>
+      <option value="14"{% if horizon == 14 %} selected{% endif %}>Next 14 days</option>
+      <option value="28"{% if horizon == 28 %} selected{% endif %}>Next 28 days</option>
+    </select>
+  </div>
+  <div class="toolbar-actions">
+    <button class="btn" type="submit">Apply</button>
+  </div>
+</form>
+
+<!-- ===================== The figures ===================== -->
+{% include "components/figures.html" with figures=figures %}
+
+<!-- ===================== The band ===================== -->
+<section class="panel">
+  <div class="panelhead">
+    <h2>Expected turnout, with the range</h2>
+    <span class="hint">students per service</span>
+  </div>
+{% if band %}
+  {{ band|json_script:"forecastBand" }}
+  <div class="panelbody">
+    <div class="chart" data-chart="band" data-src="forecastBand" data-height="240"
+         data-title="Expected turnout with the published range"></div>
+  </div>
+  <div class="panelbody">
+    <p class="hint">
+      The area is the published range. A service whose turnout lands inside it was
+      forecast correctly; one outside it was not.
+    </p>
+  </div>
+{% else %}
+  {% include "components/state.html" with kind="empty" title="No forecasts for this window" body="Run the forecasting engine to produce a forecast for each scheduled service." %}
+{% endif %}
+</section>
+
+<div class="c-split">
+  <div class="c-stack">
+
+    <!-- ===================== Service by service ===================== -->
+    <section class="panel">
+  <div class="panelhead">
+    <h2>Service by service</h2>
+    <span class="hint">{{ rows|length }}</span>
+  </div>
+{% if rows %}
+  <div class="table-wrap">
+    <table class="ledger">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Hall</th>
+          <th>Meal</th>
+          <th class="num">Predicted</th>
+          <th class="num">Range</th>
+          <th class="num">Width</th>
+          <th class="num">To cook</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+          <tr>
+            <td>{{ r.service.date|date:"D d M" }}</td>
+            <td class="metric">{{ r.service.hall.name }}</td>
+            <td>{{ r.service.get_meal_display }}</td>
+            <td class="num">
+              {% if r.forecast %}{{ r.forecast.predicted_attendance|floatformat:0 }}{% else %}<span class="fill">Not forecast</span>{% endif %}
+            </td>
+            <td class="num">
+              {% if r.forecast %}{{ r.forecast.lower_bound|floatformat:0 }} to {{ r.forecast.upper_bound|floatformat:0 }}{% else %}&mdash;{% endif %}
+            </td>
+            <td class="num">
+              {% if r.forecast %}{{ r.forecast.interval_width|floatformat:0 }}{% else %}&mdash;{% endif %}
+            </td>
+            <td class="num">
+              {% if r.service.preparation_plan %}{{ r.service.preparation_plan.portions_to_prepare }}{% else %}<span class="fill">No plan</span>{% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  {% include "components/state.html" with kind="empty" title="No services scheduled" body="Publish a menu schedule so there is something to forecast." %}
+{% endif %}
+</section>
+
+    <!-- ===================== Why ===================== -->
+    <section class="panel">
+  <div class="panelhead">
+    <h2>Why this number</h2>
+    <span class="hint">the engine's own workings</span>
+  </div>
+{% if rows %}
+  <div class="c-stack is-tight">
+    {% for r in rows %}
+      {% if r.forecast %}
+        {% if r.forecast.explanation %}
+          <div class="c-spec">
+            <div>
+              <span class="c-spec-name">{{ r.service.date|date:"D d M" }}, {{ r.service.hall.code }}, {{ r.service.get_meal_display }}</span>
+              <span class="c-spec-note">{{ r.forecast.explanation }}</span>
+            </div>
+            <span class="c-spec-value">{{ r.forecast.predicted_attendance|floatformat:0 }}</span>
+          </div>
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  </div>
+{% else %}
+  {% include "components/state.html" with kind="empty" title="Nothing to explain yet" body="Each forecast stores the base level, the weekday factor, the event factor and the trend it used." %}
+{% endif %}
+</section>
+
+  </div>
+
+  <!-- ===================== Context ===================== -->
+  <aside class="c-context">
+    <section class="panel">
+  <div class="panelhead">
+    <h2>Coverage</h2>
+  </div>
+<div class="panelbody">
+  {% include "components/spec_list.html" with specs=coverage_specs %}
+</div>
+</section>
+
+    <section class="panel">
+  <div class="panelhead">
+    <h2>Events in the window</h2>
+    <span class="hint">{{ events|length }}</span>
+  </div>
+<div class="panelbody">
+  {% if events %}
+    <ul class="c-list">
+      {% for e in events %}
+        <li>
+          <div>
+            <dt>{{ e.name }}</dt>
+            <dd>×{{ e.factor }}</dd>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+    <p class="hint">Events multiply the base level, so they move the forecast.</p>
+  {% else %}
+    <p class="hint">No events in this window, so the weekday pattern is doing all the work.</p>
+  {% endif %}
+</div>
+</section>
+  </aside>
+</div>
+{% endblock %}

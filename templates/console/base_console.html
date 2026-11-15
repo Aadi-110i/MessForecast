@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% comment %}
+The console shell.
+
+Every administrative screen extends this rather than base.html directly, so
+the console keeps one frame.
+
+There is deliberately no second navigation here. The rail in the shell is
+the navigation, and it carries every destination with a line saying what
+it answers. A tab strip repeating the same names beside it would be two
+answers to one question, so the console has one.
+{% endcomment %}
+
+{% block content %}
+{% block console_content %}{% endblock %}
+{% endblock %}
