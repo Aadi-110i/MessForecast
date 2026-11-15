@@ -54,7 +54,7 @@
       <ul class="rail-list">
         {% if user|can:"VIEW_MENU" %}
         <li>
-          <a class="rail-link" href="{% url 'dashboard-home' %}" {% if request.resolver_match.url_name == 'dashboard-home' or request.resolver_match.url_name == 'home' %}aria-current="page"{% endif %}>
+          <a class="rail-link" href="{% url 'dashboard-home' %}" {% if request.resolver_match.url_name == 'dashboard-home' %}aria-current="page"{% endif %}>
             Overview
             <span class="rail-note">Waste, error and today’s services</span>
           </a>
