@@ -6,15 +6,18 @@
      navigations (HTML)  network-first, fall back to the cached page, then to
                          the offline notice. Fresh data wins when there is a
                          connection; the kitchen still works when there is not.
-     static assets       cache-first against a versioned cache. Assets are
-                         fingerprinted by name, so a new version is a new URL.
+     static assets       the cached copy is served straight away, and refreshed
+                         in the background. The tablet works without a network,
+                         and a change to the stylesheet still reaches it on the
+                         next load instead of waiting for the cache to be
+                         thrown away by hand.
      API reads          network only. Caching attendance numbers would be
                          actively misleading.
      API writes         never intercepted. The IndexedDB queue owns those.
    ========================================================================= */
 'use strict';
 
-var VERSION = 'v3';
+var VERSION = 'v4';
 var SHELL_CACHE = 'messforecast-shell-' + VERSION;
 var PAGE_CACHE = 'messforecast-pages-' + VERSION;
 
@@ -103,17 +106,28 @@ self.addEventListener('fetch', function (event) {
     return;
   }
 
-  // --- Static assets: cache-first against the versioned cache ----------
+  // --- Static assets: the cached copy now, a fresh one in the background ---
   if (isStaticAsset(url)) {
     event.respondWith(
       caches.match(request).then(function (cached) {
+        // The copy on the tablet is served straight away, because the kitchen
+        // works without a network. The same copy is refreshed in the
+        // background, so a change to the stylesheet reaches the tablet on the
+        // next load rather than waiting for someone to remember to throw the
+        // cache away by hand.
+        var refreshed = fetch(request)
+          .then(function (response) {
+            if (response && response.ok) {
+              var copy = response.clone();
+              caches.open(SHELL_CACHE).then(function (cache) { cache.put(request, copy); });
+            }
+            return response;
+          })
+          .catch(function () { return cached; });
+
         if (cached) { return cached; }
-        return fetch(request).then(function (response) {
-          if (response && response.ok) {
-            var copy = response.clone();
-            caches.open(SHELL_CACHE).then(function (cache) { cache.put(request, copy); });
-          }
-          return response;
+        return refreshed.then(function (response) {
+          return response || new Response('', { status: 504, statusText: 'Offline' });
         });
       })
     );
