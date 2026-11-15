@@ -15,7 +15,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(join(HERE, 'noop.js'));
 const puppeteer = require(join(HERE, 'rendertools', 'node_modules', 'puppeteer-core'));
 
-const BASE = 'http://127.0.0.1:8414';
+const BASE = process.env.BASE || 'http://127.0.0.1:8414';
 const CHROME = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 
 const PAGES = [
@@ -40,6 +40,9 @@ const PAGES = [
   ['admin-narrow', '/dashboard/', 390],
   ['forecast-narrow', '/console/forecast/', 390],
   ['kitchen-narrow', '/kitchen/', 768],
+  ['landing', '/landing/', 1440],
+  ['landing-narrow', '/landing/', 390],
+  ['capture-narrow', '/scan/', 390],
 ];
 
 const AUDIT = () => {
