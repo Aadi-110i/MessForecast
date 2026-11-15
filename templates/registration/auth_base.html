@@ -1,0 +1,56 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}{{ app_name }}{% endblock %}</title>
+  <meta name="description" content="Sign in to MessForecast, the platform that forecasts attendance for every mess service, turns it into preparation quantities, and measures the food that was wasted.">
+  <meta name="theme-color" content="#0E1017">
+  <link rel="icon" href="{% static 'pwa/icon.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+</head>
+<body class="auth-shell">
+{% csrf_token %}
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="auth">
+
+  <!-- ===================== The column that says who this is for ===================== -->
+  <header class="auth-side">
+    <a class="auth-mark" href="{% url 'home' %}">
+      <span class="auth-mark-dot" aria-hidden="true"></span>
+      <span translate="no">MessForecast</span>
+    </a>
+
+    <p class="auth-claim">{% block claim %}Cook for who turns up.{% endblock %}</p>
+
+    <p class="auth-side-note">{% block note %}{% endblock %}</p>
+
+    <hr class="auth-rule">
+
+    <div class="auth-block">
+      <p class="auth-block-head">{% block list_head %}{% endblock %}</p>
+      {% block list %}{% endblock %}
+    </div>
+
+    <p class="auth-method">
+      Forecasting method: <code>recency-weighted moving average with weekday, event and
+      trend adjustment</code>. The baseline stays statistical until a term of real data
+      has been collected.
+    </p>
+  </header>
+
+  <!-- ===================== The column that asks for the thing ===================== -->
+  <main class="auth-main" id="main">
+    <div class="auth-form">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+</div>
+
+<script src="{% static 'js/app.js' %}" defer></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

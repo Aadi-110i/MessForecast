@@ -147,27 +147,27 @@ def register_submit(request):
     confirm = request.POST.get("password_confirm") or ""
 
     if not code_text:
-        return JsonResponse({"detail": "Enter the code from the mess office"}, status=400)
+        return JsonResponse({"detail": "Enter the code from the mess office", "field": "code"}, status=400)
     if not username:
-        return JsonResponse({"detail": "Choose a username"}, status=400)
+        return JsonResponse({"detail": "Choose a username", "field": "username"}, status=400)
     if len(password) < 8:
-        return JsonResponse({"detail": "Use at least 8 characters"}, status=400)
+        return JsonResponse({"detail": "Use at least 8 characters", "field": "password"}, status=400)
     if password != confirm:
-        return JsonResponse({"detail": "The two passwords do not match"}, status=400)
+        return JsonResponse({"detail": "The two passwords do not match", "field": "password_confirm"}, status=400)
     if User.objects.filter(username__iexact=username).exists():
-        return JsonResponse({"detail": "That username is taken"}, status=400)
+        return JsonResponse({"detail": "That username is taken", "field": "username"}, status=400)
 
     try:
         code = RegistrationCode.objects.get(code=code_text)
     except RegistrationCode.DoesNotExist:
-        return JsonResponse({"detail": "That code was not recognised"}, status=400)
+        return JsonResponse({"detail": "That code was not recognised", "field": "code"}, status=400)
 
     if not code.is_usable:
         if code.status == RegistrationCode.Status.REDEEMED:
-            return JsonResponse({"detail": "That code has already been used"}, status=400)
+            return JsonResponse({"detail": "That code has already been used", "field": "code"}, status=400)
         if code.status == RegistrationCode.Status.REVOKED:
-            return JsonResponse({"detail": "That code was revoked"}, status=400)
-        return JsonResponse({"detail": "That code has expired"}, status=400)
+            return JsonResponse({"detail": "That code was revoked", "field": "code"}, status=400)
+        return JsonResponse({"detail": "That code has expired", "field": "code"}, status=400)
 
     name_parts = (code.full_name or "").strip().split(None, 1)
     first_name = name_parts[0] if name_parts else ""
