@@ -2,7 +2,8 @@
 
 Five surfaces:
 
-* ``/landing/`` — public landing page for the platform.
+* ``/``         — the public landing page for the platform. Opening the site
+                  shows the landing page; ``/landing/`` still serves the same page.
 * ``/api/``      — REST API consumed by the PWA and by integrations (ERP, RFID, procurement).
 * ``/kitchen/``  — tablet-first kitchen screen used to record post-service actuals.
 * ``/console/``  — the administrative console: menus, recipes, attendance, forecast, reports, settings.
@@ -26,7 +27,6 @@ from apps.accounts.views import (
 )
 from apps.core.views import manifest_view, service_worker_view
 from apps.landing.views import landing_index
-from apps.reporting.views import dashboard_home
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -63,5 +63,9 @@ urlpatterns = [
     path("sw.js", service_worker_view, name="service-worker"),
     path("manifest.webmanifest", manifest_view, name="pwa-manifest"),
     path("landing/", landing_index, name="landing"),
-    path("", dashboard_home, name="home"),
+    # The front door. Opening the site shows the public landing page, which
+    # is where a visitor lands and where a signed-in mess is sent from. The
+    # console lives under /dashboard/ and is reached from the page, not from
+    # the root.
+    path("", landing_index, name="home"),
 ]
