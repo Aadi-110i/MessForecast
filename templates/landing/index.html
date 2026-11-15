@@ -13,7 +13,10 @@
 
 <header class="lp-mast">
   <div class="container lp-mast-inner">
-    <a class="lp-word" href="{% url 'home' %}">MessForecast</a>
+    <a class="lp-word" href="{% url 'home' %}">
+      <span class="lp-word-dot" aria-hidden="true"></span>
+      <span class="lp-word-text">MessForecast</span>
+    </a>
     <a class="lp-mast-signin" href="{% url 'login' %}">Sign in</a>
   </div>
 </header>
