@@ -2,7 +2,7 @@
   "name": "MessForecast — Meal Demand & Waste",
   "short_name": "MessForecast",
   "description": "Forecast attendance for every mess service, turn it into preparation quantities and an ingredient indent, and measure what was actually wasted.",
-  "start_url": "/",
+  "start_url": "/dashboard/",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
