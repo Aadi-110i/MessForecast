@@ -80,12 +80,17 @@
   text-decoration: none;
   color: var(--color-ink);
   padding-block: var(--space-xs);
+  /* The brand yields first when the bar runs out of room. */
+  min-width: 0;
 }
 .brand-mark {
   font-family: var(--font-display);
   font-weight: var(--display-weight);
   font-size: var(--text-lg);
   letter-spacing: var(--tracking-display);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .brand-sub {
   font-size: var(--text-sm);
@@ -551,6 +556,15 @@ input::placeholder, textarea::placeholder { color: var(--color-ink-3); }
 }
 .btn[aria-busy="true"] { cursor: progress; }
 
+/* The small button, for the chrome rather than for a page. The bar over the
+   console carries Profile and Sign out, and a full-size button on each of
+   them is what pushes the bar past the edge of a phone. */
+.btn--small {
+  min-height: 2rem;
+  padding-inline: var(--space-sm);
+  font-size: var(--text-xs);
+}
+
 .btn-ghost {
   background: transparent;
   color: var(--color-ink);
@@ -762,6 +776,11 @@ input::placeholder, textarea::placeholder { color: var(--color-ink-3); }
   .well-inner { padding: var(--space-md); }
   .brand-sub { display: none; }
   .user-name { display: none; }
+  /* A phone has no room for the role in the bar. It is on the profile page,
+     and the bar must never run past the edge of the screen: the page clips
+     sideways overflow, so anything past the edge cannot be reached. */
+  .user-role { display: none; }
+  .brand-mark { font-size: var(--text-md); }
   .topbar-inner { gap: var(--space-sm); }
 
   /* The first column carries the row's identity, so it stays put while the
