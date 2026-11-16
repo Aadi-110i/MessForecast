@@ -17,7 +17,7 @@
    ========================================================================= */
 'use strict';
 
-var VERSION = 'v4';
+var VERSION = 'v5';
 var SHELL_CACHE = 'messforecast-shell-' + VERSION;
 var PAGE_CACHE = 'messforecast-pages-' + VERSION;
 
@@ -28,6 +28,7 @@ var SHELL_ASSETS = [
   '/static/css/fonts.css',
   '/static/css/kitchen.css',
   '/static/css/landing.css',
+  '/static/css/auth.css',
   '/static/fonts/WixMadeforDisplay-latin.woff2',
   '/static/fonts/WixMadeforDisplay-latin-ext.woff2',
   '/static/fonts/WixMadeforText-400-latin.woff2',

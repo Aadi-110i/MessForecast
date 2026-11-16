@@ -1,84 +1,80 @@
-{% extends "base.html" %}
+{% extends "registration/auth_base.html" %}
 
-{% block title %}Register · {{ app_name }}{% endblock %}
+{% block title %}Create an account · {{ app_name }}{% endblock %}
 
-{% block body_class %}is-auth{% endblock %}
-{% block page_class %}page-narrow{% endblock %}
+{% block claim %}One code, one account.{% endblock %}
+{% block note %}
+  Accounts are made against a code issued by the mess office. The code carries the
+  role, so you do not choose it yourself.
+{% endblock %}
+{% block list_head %}The role the code carries{% endblock %}
+
+{% block list %}
+<dl class="auth-list">
+  <div><dt>Student</dt><dd>The published menu and their own attendance</dd></div>
+  <div><dt>Kitchen Staff</dt><dd>The kitchen tablet and the capture screen</dd></div>
+  <div><dt>Mess Manager</dt><dd>The console, planning, waste and accuracy</dd></div>
+  <div><dt>Mess Administrator</dt><dd>The masters: menus, recipes, ingredients, halls</dd></div>
+  <div><dt>Finance Officer</dt><dd>Waste cost and procurement, read only</dd></div>
+  <div><dt>Administrator</dt><dd>Everything, including the forecast settings</dd></div>
+</dl>
+{% endblock %}
 
 {% block content %}
-<div class="pagehead">
-  <div>
-    <h1>Create an account</h1>
-    <p class="lede">
-      Accounts are created against a code issued by the mess office. The code carries the
-      role, so you do not choose it yourself.
-    </p>
-  </div>
-</div>
+<p class="auth-eyebrow">Mess account</p>
+<h1>Create an account</h1>
+<p class="auth-lede">
+  The mess office issues a code against your name. Redeeming it spends the code, so it
+  makes exactly one account.
+</p>
 
-<section class="panel">
-  <div class="panelbody">
-    <div id="register-error" class="c-banner is-error" role="alert" hidden>
-      <div>
-        <strong>That did not work</strong>
-        <p></p>
-      </div>
-    </div>
+<form method="post" action="{% url 'register-submit' %}" id="register-form" novalidate>
+  {% csrf_token %}
 
-    <form method="post" action="{% url 'register-submit' %}" class="signin" id="register-form">
-      {% csrf_token %}
-      <div class="c-field">
-        <label for="code">Code from the mess office</label>
-        <input type="text" name="code" id="code" required autocomplete="off"
-               autocapitalize="characters" spellcheck="false" placeholder="ABCD-1234">
-        <span class="c-field-help">It looks like ABCD-1234.</span>
-      </div>
-      <div class="c-field">
-        <label for="id_username">Username</label>
-        <input type="text" name="username" id="id_username" autocomplete="username"
-               autocapitalize="none" spellcheck="false" required>
-        <span class="c-field-help">The name you sign in with.</span>
-      </div>
-      <div class="c-field">
-        <label for="id_password">Password</label>
-        <input type="password" name="password" id="id_password" autocomplete="new-password" required>
-        <span class="c-field-help">At least 8 characters.</span>
-      </div>
-      <div class="c-field">
-        <label for="id_password_confirm">Confirm password</label>
-        <input type="password" name="password_confirm" id="id_password_confirm"
-               autocomplete="new-password" required>
-      </div>
-      <div class="c-actions">
-        <button class="btn" type="submit" id="register-submit">Create account</button>
-        <a class="btn btn-ghost" href="{% url 'login' %}">I already have an account</a>
-      </div>
-    </form>
+  <div class="auth-field" data-field="code">
+    <label for="id_code">Code from the mess office</label>
+    <input type="text" name="code" id="id_code" required autocomplete="off"
+           autocapitalize="characters" spellcheck="false" placeholder="ABCD-1234"
+           aria-describedby="id_code-help">
+    <span class="auth-field-help" id="id_code-help">Issued against your name, and spent once it is redeemed.</span>
+    <span class="auth-field-error" data-error role="status" aria-live="polite" hidden></span>
   </div>
-</section>
 
-<section class="panel">
-  <div class="panelhead"><h2>How an account is made</h2></div>
-  <div class="panelbody">
-    <p>
-      The mess office issues a code against the person's name, and the role is attached to
-      that code. When the code is redeemed it is spent, so it makes exactly one account.
-    </p>
-    <div class="table-wrap">
-      <table class="ledger">
-        <thead><tr><th>Role</th><th>What that person sees</th></tr></thead>
-        <tbody>
-          <tr><td class="metric">Student</td><td>The published menu and their own attendance</td></tr>
-          <tr><td class="metric">Kitchen Staff</td><td>The kitchen tablet and the capture screen</td></tr>
-          <tr><td class="metric">Mess Manager</td><td>The console, planning, waste and accuracy</td></tr>
-          <tr><td class="metric">Mess Administrator</td><td>The masters: menus, recipes, ingredients, halls</td></tr>
-          <tr><td class="metric">Finance Officer</td><td>Waste cost and procurement, read only</td></tr>
-          <tr><td class="metric">Administrator</td><td>Everything, including the forecast settings</td></tr>
-        </tbody>
-      </table>
-    </div>
+  <div class="auth-field" data-field="username">
+    <label for="id_username">Username</label>
+    <input type="text" name="username" id="id_username" required autocomplete="username"
+           autocapitalize="none" spellcheck="false" aria-describedby="id_username-help">
+    <span class="auth-field-help" id="id_username-help">The name you sign in with.</span>
+    <span class="auth-field-error" data-error role="status" aria-live="polite" hidden></span>
   </div>
-</section>
+
+  <div class="auth-field" data-field="password">
+    <label for="id_password">Password</label>
+    <input type="password" name="password" id="id_password" required autocomplete="new-password"
+           aria-describedby="id_password-help">
+    <span class="auth-field-help" id="id_password-help">At least 8 characters.</span>
+    <span class="auth-field-error" data-error role="status" aria-live="polite" hidden></span>
+  </div>
+
+  <div class="auth-field" data-field="password_confirm">
+    <label for="id_password_confirm">Confirm password</label>
+    <input type="password" name="password_confirm" id="id_password_confirm" required
+           autocomplete="new-password">
+    <span class="auth-field-error" data-error role="status" aria-live="polite" hidden></span>
+  </div>
+
+  <p class="auth-error" id="register-error" role="alert" hidden>
+    <span class="auth-error-mark" aria-hidden="true"></span>
+    <span data-error-text></span>
+  </p>
+
+  <div class="auth-actions">
+    <button class="btn auth-submit" type="submit" id="register-submit" data-auth-submit>
+      <span data-auth-label>Create account</span>
+    </button>
+    <a class="auth-link" href="{% url 'login' %}">I already have an account</a>
+  </div>
+</form>
 {% endblock %}
 
 {% block scripts %}
@@ -88,28 +84,95 @@
   var form = document.getElementById('register-form');
   var box = document.getElementById('register-error');
   var button = document.getElementById('register-submit');
-  if (!form || !box) { return; }
+  var label = document.querySelector('[data-auth-label]');
+  if (!form || !box || !button) { return; }
 
-  function fail(message) {
-    box.querySelector('p').textContent = message;
-    box.hidden = false;
+  // The field a refusal belongs to, so the message sits under the input it is
+  // about rather than in a banner at the top of the form.
+  var FIELD_BY_CODE = {
+    code: 'code',
+    username: 'username',
+    password: 'password',
+    password_confirm: 'password_confirm'
+  };
+
+  function fieldFor(name) {
+    if (!name) { return null; }
+    return form.querySelector('[data-field="' + name + '"]');
+  }
+
+  function clearErrors() {
+    form.querySelectorAll('[data-error]').forEach(function (node) {
+      node.hidden = true;
+      node.textContent = '';
+    });
+    form.querySelectorAll('.auth-field').forEach(function (node) {
+      node.classList.remove('is-invalid');
+    });
+    form.querySelectorAll('[aria-invalid]').forEach(function (node) {
+      node.removeAttribute('aria-invalid');
+    });
+    box.hidden = true;
+  }
+
+  function showError(message, fieldName) {
+    var field = fieldFor(fieldName);
+    if (!field) {
+      box.querySelector('[data-error-text]').textContent = message;
+      box.hidden = false;
+      return;
+    }
+    var slot = field.querySelector('[data-error]');
+    var input = field.querySelector('input');
+    if (slot) {
+      slot.textContent = message;
+      slot.hidden = false;
+    }
+    if (input) {
+      input.setAttribute('aria-invalid', 'true');
+      if (slot && slot.id === '') { slot.id = input.id + '-error'; }
+      if (slot) { input.setAttribute('aria-describedby', slot.id); }
+    }
+    field.classList.add('is-invalid');
+  }
+
+  function fail(message, fieldName) {
     button.removeAttribute('aria-busy');
-    button.textContent = 'Create account';
+    label.textContent = 'Create account';
+    showError(message, fieldName);
+    var field = fieldFor(fieldName);
+    var input = field ? field.querySelector('input') : null;
+    if (input) { input.focus(); }
   }
 
   form.addEventListener('submit', function (event) {
     event.preventDefault();
-    box.hidden = true;
+    clearErrors();
+
+    // The rules the server holds to, checked here first so the reader is
+    // told at the field rather than after the round trip.
+    var code = form.querySelector('[name=code]').value.trim();
+    var username = form.querySelector('[name=username]').value.trim();
+    var password = form.querySelector('[name=password]').value;
+    var confirm = form.querySelector('[name=password_confirm]').value;
+
+    if (!code) { fail('Enter the code from the mess office', 'code'); return; }
+    if (!username) { fail('Choose a username', 'username'); return; }
+    if (password.length < 8) { fail('Use at least 8 characters', 'password'); return; }
+    if (password !== confirm) { fail('The two passwords do not match', 'password_confirm'); return; }
+
     button.setAttribute('aria-busy', 'true');
-    button.textContent = 'Creating';
+    label.textContent = 'Creating…';
 
     var body = new URLSearchParams(new FormData(form)).toString();
+    var token = form.querySelector('[name="csrfmiddlewaretoken"]');
     fetch(form.action, {
       method: 'POST',
       credentials: 'same-origin',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'X-CSRFToken': window.MessForecast.csrfToken(),
+        'X-CSRFToken': (token && token.value) ||
+          (window.MessForecast && window.MessForecast.csrfToken()) || '',
         'X-Requested-With': 'XMLHttpRequest'
       },
       body: body
@@ -118,13 +181,15 @@
         var data = null;
         try { data = text ? JSON.parse(text) : null; } catch (e) { data = null; }
         if (!res.ok) {
-          fail((data && (data.detail || data.message)) || 'The account could not be created.');
+          var detail = (data && (data.detail || data.message)) || 'The account could not be created.';
+          var field = data && data.field ? FIELD_BY_CODE[data.field] : null;
+          fail(detail, field);
           return;
         }
         window.location.href = (data && data.redirect) || '/dashboard/';
       });
     }).catch(function () {
-      fail('The server could not be reached. Check the connection and try again.');
+      fail('The server could not be reached. Check the connection and try again.', null);
     });
   });
 })();

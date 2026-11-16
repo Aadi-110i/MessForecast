@@ -1,74 +1,108 @@
-{% extends "base.html" %}
+{% extends "registration/auth_base.html" %}
 
 {% block title %}Sign in · {{ app_name }}{% endblock %}
 
-{% block body_class %}is-auth{% endblock %}
-{% block page_class %}page-narrow{% endblock %}
+{% block claim %}Cook for who turns up.{% endblock %}
+{% block note %}
+  Forecast the turnout, set the portions, measure what was thrown away.
+{% endblock %}
+{% block list_head %}The demonstration mess{% endblock %}
+
+{% block list %}
+<dl class="auth-list">
+  <div><dt><code>manager</code></dt><dd>Dashboard, planning, waste, accuracy</dd></div>
+  <div><dt><code>chef</code></dt><dd>Kitchen screen, capture screen</dd></div>
+  <div><dt><code>admin</code></dt><dd>Dish, recipe and ingredient master</dd></div>
+  <div><dt><code>finance</code></dt><dd>Waste cost and procurement, read-only</dd></div>
+  <div><dt><code>sysadmin</code></dt><dd>Everything, including forecast settings</dd></div>
+  <div><dt><code>student</code></dt><dd>Menu and own attendance</dd></div>
+</dl>
+<p class="auth-block-foot">
+  The seed command creates one account per role. The password for all of them is
+  <code>messdemo</code>.
+</p>
+{% endblock %}
 
 {% block content %}
-<div class="pagehead">
-  <div>
-    <h1>Sign in</h1>
-    <p class="lede">
-      Use the account issued by the mess office. Kitchen staff see the kitchen screen and
-      the capture screen; mess managers and administrators see the dashboard.
+<p class="auth-eyebrow">Mess account</p>
+<h1>Sign in</h1>
+<p class="auth-lede">
+  Use the account issued by the mess office. Kitchen staff see the kitchen screen and
+  the capture screen; mess managers and administrators see the dashboard.
+</p>
+
+{% if next %}
+  <p class="auth-alternate">You are signing in to continue to <strong>{{ next }}</strong>.</p>
+{% endif %}
+
+<form method="post" action="{% url 'login' %}">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ next }}">
+
+  <div class="auth-field">
+    <label for="id_username">Username</label>
+    <input type="text" name="username" id="id_username" autocomplete="username"
+           autocapitalize="none" spellcheck="false" required
+           {% if form.errors %}aria-invalid="true" aria-describedby="auth-error"{% endif %}>
+  </div>
+
+  <div class="auth-field">
+    <label for="id_password">Password</label>
+    <input type="password" name="password" id="id_password" autocomplete="current-password" required
+           {% if form.errors %}aria-invalid="true" aria-describedby="auth-error"{% endif %}>
+  </div>
+
+  {% if form.errors %}
+    <p class="auth-error" id="auth-error" role="alert">
+      <span class="auth-error-mark" aria-hidden="true"></span>
+      <span>
+        {% if form.username.errors %}
+          {{ form.username.errors.0 }}
+        {% elif form.password.errors %}
+          {{ form.password.errors.0 }}
+        {% else %}
+          That username and password did not match. Check them and try again.
+        {% endif %}
+      </span>
     </p>
-  </div>
-</div>
+  {% endif %}
 
-<section class="panel">
-  <div class="panelbody">
-    {% if form.errors %}
-      <p class="note is-error after-table">
-        That username and password did not match. Check them and try again.
-      </p>
-    {% endif %}
-    {% if next %}
-      <p class="note after-table">
-        Sign in to continue to <strong>{{ next }}</strong>.
-      </p>
-    {% endif %}
-
-    <form method="post" action="{% url 'login' %}" class="signin">
-      {% csrf_token %}
-      <div class="field">
-        <label for="id_username">Username</label>
-        <input type="text" name="username" id="id_username" autocomplete="username" autofocus required>
-      </div>
-      <div class="field">
-        <label for="id_password">Password</label>
-        <input type="password" name="password" id="id_password" autocomplete="current-password" required>
-      </div>
-      <input type="hidden" name="next" value="{{ next }}">
-      <div class="c-actions">
-        <button class="btn" type="submit">Sign in</button>
-        <a class="btn btn-ghost" href="{% url 'register' %}">I have a code</a>
-        <a class="btn btn-ghost" href="{% url 'password-reset' %}">Forgot password?</a>
-      </div>
-    </form>
+  <div class="auth-actions">
+    <button class="btn auth-submit" type="submit" data-auth-submit>
+      <span data-auth-label>Sign in</span>
+    </button>
+    <a class="auth-link" href="{% url 'password-reset' %}">Forgot password?</a>
   </div>
-</section>
 
-<section class="panel">
-  <div class="panelhead"><h2>Demonstration accounts</h2></div>
-  <div class="panelbody">
-    <p>
-      The seed command creates one account per role. The password for all of them is
-      <code>messdemo</code>.
-    </p>
-    <div class="table-wrap">
-      <table class="ledger">
-        <thead><tr><th>Username</th><th>Role</th><th>Sees</th></tr></thead>
-        <tbody>
-          <tr><td class="num">manager</td><td class="metric">Mess Manager</td><td>Dashboard, planning, waste, accuracy</td></tr>
-          <tr><td class="num">chef</td><td class="metric">Kitchen Staff</td><td>Kitchen screen, capture screen</td></tr>
-          <tr><td class="num">admin</td><td class="metric">Mess Administrator</td><td>Dish, recipe and ingredient master</td></tr>
-          <tr><td class="num">finance</td><td class="metric">Finance Officer</td><td>Waste cost and procurement, read-only</td></tr>
-          <tr><td class="num">sysadmin</td><td class="metric">Administrator</td><td>Everything, including forecast settings</td></tr>
-          <tr><td class="num">student</td><td class="metric">Student</td><td>Menu and own attendance</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
+  <p class="auth-alternate">
+    Issued a code by the mess office? <a class="auth-link" href="{% url 'register' %}">Create an account</a>
+  </p>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  'use strict';
+  var form = document.querySelector('.auth-form form');
+  var button = document.querySelector('[data-auth-submit]');
+  var label = document.querySelector('[data-auth-label]');
+  var error = document.getElementById('auth-error');
+  var first = document.getElementById('id_username');
+  if (!form || !button || !label) { return; }
+
+  // The field that was refused takes the cursor. On a fresh page the cursor
+  // waits on a keyboard only, so the page is not scrolled under a phone.
+  if (error && first) {
+    first.focus();
+  } else if (first && window.matchMedia('(pointer: fine)').matches) {
+    first.focus();
+  }
+
+  form.addEventListener('submit', function () {
+    button.setAttribute('aria-busy', 'true');
+    label.textContent = 'Signing in…';
+  });
+})();
+</script>
 {% endblock %}

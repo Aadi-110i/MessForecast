@@ -1,0 +1,503 @@
+/* =========================================================================
+   MessForecast — the sign-in and register screens
+   -------------------------------------------------------------------------
+   One composition for both screens: a column that says who this is for,
+   and a column that asks for the thing.
+
+   The field is a rule, not a box. The line under the input draws in from
+   the left when the field takes the cursor, which is the same gesture the
+   console uses for everything else, so signing in feels like the rest of
+   the product rather than a form bolted onto it.
+
+   Nothing here is a new palette or a new face. The Dusk tokens and the
+   two typefaces already in the project carry it; what is new is the
+   shape of the page and how it moves.
+   ========================================================================= */
+
+/* =========================================================================
+   The shell
+   ========================================================================= */
+.auth-shell {
+  background: var(--color-paper);
+  min-height: 100svh;
+}
+
+.auth {
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: minmax(0, 41fr) minmax(0, 59fr);
+}
+
+/* A way past the chrome, the same one the console uses. */
+.skip {
+  position: absolute;
+  left: var(--space-md);
+  top: calc(-1 * var(--space-2xl));
+  z-index: var(--z-toast);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-control);
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  font-size: var(--text-sm);
+  text-decoration: none;
+}
+.skip:focus-visible { top: var(--space-md); outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+/* =========================================================================
+   The identity column
+   ========================================================================= */
+.auth-side {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  padding: var(--space-2xl) var(--space-2xl) var(--space-xl);
+  padding-left: max(var(--space-2xl), env(safe-area-inset-left));
+  padding-right: max(var(--space-2xl), env(safe-area-inset-right));
+  padding-bottom: max(var(--space-xl), env(safe-area-inset-bottom));
+  background: var(--color-paper-2);
+  border-right: 1px solid var(--color-rule);
+  overflow: hidden;
+}
+
+/* One wash of periwinkle in the corner, so the column has a ground rather
+   than a flat fill. */
+.auth-side::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 70% at 0% 0%, var(--color-accent-wash), transparent 62%);
+  pointer-events: none;
+}
+.auth-side > * { position: relative; }
+
+.auth-mark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+  align-self: flex-start;
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: var(--text-xl);
+  line-height: 1.1;
+  letter-spacing: var(--tracking-display);
+  color: var(--color-ink);
+  text-decoration: none;
+}
+.auth-mark:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; }
+
+/* The same mark the console uses to carry a state. */
+.auth-mark-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  flex: none;
+  align-self: center;
+  border-radius: 50%;
+  background: var(--color-accent);
+  transition: transform var(--dur-short) var(--ease-out);
+}
+.auth-mark:hover .auth-mark-dot { transform: scale(1.35); }
+
+.auth-claim {
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: var(--text-3xl);
+  line-height: 1.08;
+  letter-spacing: var(--tracking-display);
+  color: var(--color-ink);
+  max-width: 15ch;
+  text-wrap: balance;
+}
+
+.auth-side-note {
+  max-width: 42ch;
+  font-size: var(--text-md);
+  color: var(--color-ink-2);
+}
+
+.auth-rule {
+  height: 1px;
+  border: 0;
+  margin: var(--space-sm) 0;
+  background: var(--color-rule);
+}
+
+/* A block with a head, a ruled list under it, and a foot. */
+.auth-block { margin-top: auto; }
+
+.auth-block-head {
+  margin-bottom: var(--space-xs);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-3);
+}
+
+.auth-list {
+  margin: 0;
+  display: grid;
+  border-top: 1px solid var(--color-hair);
+}
+.auth-list > div {
+  display: grid;
+  grid-template-columns: 10rem minmax(0, 1fr);
+  gap: var(--space-md);
+  padding-block: var(--space-sm);
+  border-bottom: 1px solid var(--color-hair);
+}
+.auth-list dt {
+  font-weight: 500;
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+.auth-list dd {
+  margin: 0;
+  color: var(--color-ink-2);
+  font-size: var(--text-sm);
+}
+
+/* A username in the demonstration list is a token, not a word. */
+.auth-list dt code,
+.auth-token {
+  font-family: ui-monospace, "Cascadia Mono", "Consolas", monospace;
+  font-size: 0.92em;
+  color: var(--color-ink);
+}
+
+.auth-block-foot {
+  margin-top: var(--space-sm);
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+.auth-block-foot code {
+  font-family: ui-monospace, "Cascadia Mono", "Consolas", monospace;
+  color: var(--color-ink-2);
+}
+
+.auth-method {
+  font-size: var(--text-xs);
+  line-height: 1.6;
+  color: var(--color-ink-3);
+  max-width: 46ch;
+}
+.auth-method code {
+  font-family: ui-monospace, "Cascadia Mono", "Consolas", monospace;
+  font-size: 0.95em;
+  color: var(--color-muted);
+}
+
+/* =========================================================================
+   The form column
+   ========================================================================= */
+.auth-main {
+  display: flex;
+  align-items: center;
+  padding: var(--space-2xl);
+  padding-left: max(var(--space-2xl), env(safe-area-inset-left));
+  padding-right: max(var(--space-2xl), env(safe-area-inset-right));
+  padding-bottom: max(var(--space-2xl), env(safe-area-inset-bottom));
+}
+
+.auth-form {
+  width: 100%;
+  max-width: 27rem;
+}
+
+.auth-eyebrow {
+  margin-bottom: var(--space-xs);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.auth-form h1 {
+  font-size: clamp(1.875rem, 3vw, 2.5rem);
+  max-width: 18ch;
+}
+
+.auth-lede {
+  margin-top: var(--space-sm);
+  margin-bottom: var(--space-xl);
+  max-width: 44ch;
+  color: var(--color-ink-2);
+}
+
+/* =========================================================================
+   The field: a ruled row, the way the ledger sets one
+   -------------------------------------------------------------------------
+   The label stands in the first column and the input in the second, over
+   one rule. It is the same shape as the list in the column beside it, so
+   the form and the list are visibly the same kind of thing.
+
+   The rule under the row draws in from the left when the field takes the
+   cursor, and a bar drops in at the edge of the label. Between them
+   they say which field is live, which is what the focus ring on the
+   input was doing, in the shape of the page.
+   ========================================================================= */
+.auth-field {
+  position: relative;
+  display: grid;
+  grid-template-columns: 10rem minmax(0, 1fr);
+  column-gap: var(--space-md);
+  row-gap: var(--space-3xs);
+  align-items: baseline;
+  padding: var(--space-sm) 0 var(--space-xs);
+  border-bottom: 1px solid var(--color-hair);
+}
+.auth-field + .auth-field { margin-top: var(--space-md); }
+
+.auth-field > label {
+  grid-column: 1;
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+  transition: color var(--dur-short) var(--ease-out);
+}
+.auth-field:focus-within > label { color: var(--color-accent); }
+
+.auth-field > input,
+.auth-field > input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]) {
+  appearance: none;
+  grid-column: 2;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-ink);
+  font: var(--text-md)/1.4 var(--font-body);
+}
+.auth-field > input:hover { border-color: transparent; }
+.auth-field > input::placeholder { color: var(--color-ink-3); }
+
+/* The input carries the cursor, so the ring around the input is dropped in
+   favour of the bar and the rule, which say the same thing in the shape
+   of the page. */
+.auth-field > input:focus-visible { outline: none; }
+
+/* The bar that drops in at the edge of the label. */
+.auth-field::before {
+  content: "";
+  position: absolute;
+  left: -0.75rem;
+  top: var(--space-sm);
+  bottom: var(--space-xs);
+  width: 2px;
+  border-radius: 1px;
+  background: var(--color-accent);
+  transform: scaleY(0);
+  transform-origin: top center;
+  transition: transform var(--dur-short) var(--ease-out);
+}
+.auth-field:focus-within::before { transform: scaleY(1); }
+
+/* The rule under the row, drawn from the left. */
+.auth-field::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--dur-short) var(--ease-out);
+}
+.auth-field:focus-within::after { transform: scaleX(1); }
+
+.auth-field-help,
+.auth-field-error { grid-column: 1 / -1; }
+
+.auth-field-help {
+  font-size: var(--text-xs);
+  color: var(--color-ink-3);
+}
+
+/* A field that has been refused. */
+.auth-field.is-invalid { border-bottom-color: var(--color-error); }
+.auth-field.is-invalid::after { background: var(--color-error); }
+.auth-field.is-invalid::before { background: var(--color-error); }
+.auth-field.is-invalid > label { color: var(--color-error-ink); }
+
+.auth-field-error {
+  font-size: var(--text-xs);
+  color: var(--color-error-ink);
+}
+
+/* The refusal, set against the fields it is about. */
+.auth-error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+  padding: var(--space-sm) var(--space-md);
+  border-left: 2px solid var(--color-error);
+  background: var(--color-error-wash);
+  color: var(--color-error-ink);
+  font-size: var(--text-sm);
+}
+.auth-error-mark {
+  width: 0.4rem;
+  height: 0.4rem;
+  flex: none;
+  margin-top: 0.45rem;
+  border-radius: 50%;
+  background: var(--color-error);
+}
+
+/* =========================================================================
+   The actions: one filled button, the rest are quiet
+   ========================================================================= */
+.auth-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md) var(--space-lg);
+  margin-top: var(--space-xl);
+}
+
+.auth-submit {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  /* No double-tap delay on the one control the reader is aiming for. */
+  touch-action: manipulation;
+}
+/* The fill wipes in from the left on hover. */
+.auth-submit::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--color-accent-hi);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--dur-short) var(--ease-out);
+}
+.auth-submit:hover::before { transform: scaleX(1); }
+
+/* The spinner, while the request is out. */
+.auth-submit[aria-busy="true"]::after {
+  content: "";
+  position: absolute;
+  right: var(--space-md);
+  top: 50%;
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-top: -0.425rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: auth-spin 0.7s linear infinite;
+}
+@keyframes auth-spin {
+  to { transform: rotate(360deg); }
+}
+
+.auth-link {
+  font-size: var(--text-sm);
+  color: var(--color-ink-2);
+  text-decoration: underline;
+  text-decoration-color: var(--color-rule);
+  text-underline-offset: 0.16em;
+  transition: color var(--dur-short) var(--ease-out), text-decoration-color var(--dur-short) var(--ease-out);
+}
+.auth-link:hover { color: var(--color-ink); text-decoration-color: var(--color-accent); }
+.auth-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+.auth-alternate {
+  margin-top: var(--space-xl);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--color-hair);
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+/* =========================================================================
+   The arrival: the two columns settle in, in order
+   ========================================================================= */
+@keyframes auth-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+.auth-side > *,
+.auth-form > * {
+  animation: auth-rise 0.5s var(--ease-out) both;
+}
+.auth-side > *:nth-child(1) { animation-delay: 0.02s; }
+.auth-side > *:nth-child(2) { animation-delay: 0.08s; }
+.auth-side > *:nth-child(3) { animation-delay: 0.14s; }
+.auth-side > *:nth-child(4) { animation-delay: 0.2s; }
+.auth-side > *:nth-child(5) { animation-delay: 0.26s; }
+.auth-side > *:nth-child(6) { animation-delay: 0.32s; }
+
+.auth-form > *:nth-child(1) { animation-delay: 0.06s; }
+.auth-form > *:nth-child(2) { animation-delay: 0.12s; }
+.auth-form > *:nth-child(3) { animation-delay: 0.18s; }
+.auth-form > *:nth-child(4) { animation-delay: 0.24s; }
+.auth-form > *:nth-child(5) { animation-delay: 0.3s; }
+
+/* =========================================================================
+   Narrow screens: the columns stack, in reading order
+   ========================================================================= */
+@media (max-width: 64rem) {
+  .auth { grid-template-columns: minmax(0, 1fr); }
+  .auth-side {
+    border-right: 0;
+    border-bottom: 1px solid var(--color-rule);
+    padding: var(--space-xl) var(--space-lg) var(--space-lg);
+    gap: var(--space-md);
+  }
+  .auth-claim { font-size: var(--text-2xl); max-width: 22ch; }
+  .auth-block { margin-top: var(--space-md); }
+  .auth-main { padding: var(--space-xl) var(--space-lg) var(--space-2xl); align-items: flex-start; }
+  .auth-form { max-width: 34rem; }
+}
+
+@media (max-width: 40rem) {
+  .auth-list > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3xs);
+  }
+  /* The label stands over the input when the row is too narrow to hold
+     both, but the rule stays under them. The input is given the same
+     weight as the rule above it, or the placement set there would
+     outrank this and leave it in the second column. */
+  .auth-field {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--space-3xs);
+  }
+  .auth-field > label { grid-column: 1; }
+  .auth-field > input,
+  .auth-field > input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]) {
+    grid-column: 1;
+    min-height: 2.5rem;
+  }
+  .auth-field::before { left: -0.5rem; }
+  .auth-side { padding: var(--space-lg) var(--space-md) var(--space-md); }
+  .auth-main { padding: var(--space-lg) var(--space-md) var(--space-xl); }
+  .auth-actions { gap: var(--space-md); }
+  .auth-submit { width: 100%; }
+}
+
+/* =========================================================================
+   Reduced motion: the page is simply there
+   ========================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  .auth-side > *,
+  .auth-form > * {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .auth-submit[aria-busy="true"]::after { animation: none; }
+  .auth-field::after,
+  .auth-submit::before,
+  .auth-mark-dot,
+  .auth-field > label,
+  .auth-link { transition: none; }
+}

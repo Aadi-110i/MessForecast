@@ -43,6 +43,10 @@ const PAGES = [
   ['landing', '/landing/', 1440],
   ['landing-narrow', '/landing/', 390],
   ['capture-narrow', '/scan/', 390],
+  ['signin', '/accounts/login/', 1440],
+  ['signin-narrow', '/accounts/login/', 390],
+  ['register', '/accounts/register/', 1440],
+  ['register-narrow', '/accounts/register/', 390],
 ];
 
 const AUDIT = () => {
@@ -158,6 +162,42 @@ const browser = await puppeteer.launch({
 });
 const page = await browser.newPage();
 await page.setViewport({ width: 1440, height: 900 });
+
+let problems = 0;
+
+// The sign-in and register screens are seen by a reader who is not signed in
+// yet, so they are audited before anyone is. Signed in, the register screen
+// sends the reader to the dashboard instead, and the audit would measure the
+// dashboard twice.
+const ANONYMOUS = PAGES.filter(([name]) => name.startsWith('signin') || name.startsWith('register'));
+for (const [name, path, width] of ANONYMOUS) {
+  await page.setViewport({ width, height: width < 500 ? 844 : 900 });
+  await page.goto(`${BASE}${path}`, { waitUntil: 'networkidle0' });
+  const result = await page.evaluate(AUDIT);
+  const count =
+    result.wideTables.length +
+    result.pageOverflow.length +
+    result.clipped.length +
+    result.misaligned.length +
+    result.labelOverflow.length +
+    (result.pageScroll ? 1 : 0);
+  problems += count;
+  if (count === 0) {
+    console.log(`  ok    ${name} (${width})`);
+    continue;
+  }
+  console.log(`  ISSUE ${name} (${width})`);
+  if (result.pageScroll) {
+    console.log(`      page scrolls sideways: ${result.pageScroll.scrollWidth} > ${result.pageScroll.vw}`);
+  }
+  for (const o of result.pageOverflow) {
+    console.log(`      overflow: <${o.tag} class="${o.cls}"> right=${o.right} vw=${o.vw}`);
+  }
+  for (const c of result.clipped) {
+    console.log(`      clipped: <${c.tag} class="${c.cls}"> "${c.text}" ${c.scrollWidth}>${c.clientWidth}`);
+  }
+}
+
 await page.goto(`${BASE}/accounts/login/`, { waitUntil: 'networkidle0' });
 await page.type('#id_username', 'sysadmin');
 await page.type('#id_password', 'messdemo');
@@ -166,8 +206,8 @@ await Promise.all([
   page.click('button[type=submit]'),
 ]);
 
-let problems = 0;
 for (const [name, path, width] of PAGES) {
+  if (ANONYMOUS.some(([n]) => n === name)) { continue; }
   await page.setViewport({ width, height: width < 500 ? 844 : 900 });
   await page.goto(`${BASE}${path}`, { waitUntil: 'networkidle0' });
   const result = await page.evaluate(AUDIT);
