@@ -21,7 +21,7 @@
    ========================================================================= */
 'use strict';
 
-var VERSION = 'v9';
+var VERSION = 'v10';
 var SHELL_CACHE = 'messforecast-shell-' + VERSION;
 var PAGE_CACHE = 'messforecast-pages-' + VERSION;
 
@@ -30,12 +30,14 @@ var CODE_TIMEOUT_MS = 3000;
 
 var SHELL_ASSETS = [
   '/static/css/app.css',
+  '/static/css/console.css',
   '/static/css/tokens.css',
   '/static/css/base.css',
   '/static/css/fonts.css',
   '/static/css/kitchen.css',
   '/static/css/landing.css',
   '/static/css/auth.css',
+  '/static/fonts/Archivo-latin-var.woff2',
   '/static/fonts/WixMadeforDisplay-latin.woff2',
   '/static/fonts/WixMadeforDisplay-latin-ext.woff2',
   '/static/fonts/WixMadeforText-400-latin.woff2',
@@ -45,6 +47,7 @@ var SHELL_ASSETS = [
   '/static/fonts/WixMadeforText-500-latin-ext.woff2',
   '/static/fonts/WixMadeforText-600-latin-ext.woff2',
   '/static/js/app.js',
+  '/static/js/auth.js',
   '/static/js/kitchen.js',
   '/static/js/scan.js',
   '/static/js/landing.js',
@@ -53,6 +56,7 @@ var SHELL_ASSETS = [
   '/static/img/landing/kitchen.png',
   '/static/img/landing/scan.png',
   '/static/img/landing/dough.jpg',
+  '/static/img/kitchen-hero.jpg',
   '/static/pwa/offline-queue.js',
   '/static/pwa/manifest.webmanifest',
   '/static/pwa/icon.svg',
