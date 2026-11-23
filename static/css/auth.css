@@ -46,19 +46,31 @@
   --a-mono: ui-monospace, "Cascadia Mono", "Consolas", monospace;
   /* The height of a field. The bar and the rule under it are drawn against
      it, so they stay on the edge of the box at every width. */
-  --a-field-h: max(46px, 8.4cqw);
+  --a-field-h: max(40px, 7.2cqw);
 
   color-scheme: light;
   background: var(--color-rail);
   color: var(--a-ink);
   font-family: var(--a-body);
-  min-height: 100svh;
+  height: 100vh !important;
+  height: 100svh !important;
+  max-height: 100vh !important;
+  max-height: 100svh !important;
+  overflow: hidden !important;
+}
+
+html {
+  overflow: hidden !important;
+  height: 100% !important;
 }
 
 .auth-stage {
   position: relative;
-  height: 100svh;
-  overflow: hidden;
+  height: 100vh !important;
+  height: 100svh !important;
+  max-height: 100vh !important;
+  max-height: 100svh !important;
+  overflow: hidden !important;
   isolation: isolate;
 }
 
@@ -78,20 +90,15 @@
 }
 .skip:focus-visible { top: 1rem; outline: 2px solid var(--a-brand); outline-offset: 2px; }
 
-/* On a wide screen the stage is exactly one viewport tall — no scroll. */
+/* The stage stays locked to 100svh on desktop - strictly no scrolling */
 @media (min-width: 1041px) {
   .auth-shell .auth-stage {
-    height: 100svh;
-    overflow: hidden;
+    height: 100vh !important;
+    height: 100svh !important;
+    max-height: 100vh !important;
+    max-height: 100svh !important;
+    overflow: hidden !important;
   }
-}
-/* Fallback: if JS decides the ticket cannot fit even after scaling,
-   it adds auth-scroll and the stage grows to let the page scroll. */
-body.auth-scroll .auth-shell .auth-stage,
-body.auth-scroll .auth-stage {
-  height: auto !important;
-  overflow: visible !important;
-  min-height: 100svh;
 }
 
 /* The canteen, behind everything. */
@@ -131,8 +138,10 @@ body.auth-scroll .auth-stage {
   left: 42.4vw;
   top: 11vh;
   width: 48.4vw;
-  height: 160vh;
-  border-radius: 50% 50% 6% 6% / 34vh 34vh 0 0;
+  bottom: 0;
+  height: auto;
+  max-height: 89vh;
+  border-radius: 50% 50% 0 0 / 34vh 34vh 0 0;
   background: radial-gradient(circle at 34% 24%, #ff8b4d 0%, #f06514 40%, #e24807 72%, #cf3b04 100%);
   box-shadow: 0 50px 110px -34px rgba(170, 55, 6, 0.5);
   pointer-events: none;
@@ -230,10 +239,13 @@ body.auth-scroll .auth-stage {
   position: relative;
   z-index: 5;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(430px, 32vw, 700px);
-  gap: clamp(1.5rem, 4vw, 4.5rem);
-  align-items: start;
-  padding: clamp(0.5rem, 1.2vh, 1.5rem) clamp(1.25rem, 4.4vw, 6rem) clamp(0.5rem, 1.2vh, 1.5rem) clamp(1.25rem, 11.5vw, 16rem);
+  grid-template-columns: minmax(0, 1fr) clamp(380px, 29vw, 600px);
+  gap: clamp(1rem, 3vw, 3.5rem);
+  align-items: center;
+  padding: 0 clamp(1.25rem, 4vw, 5rem) 0 clamp(1.25rem, 10vw, 14rem);
+  height: calc(100svh - var(--auth-topbar-h, 64px));
+  max-height: calc(100svh - var(--auth-topbar-h, 64px));
+  box-sizing: border-box;
 }
 
 .auth-side { max-width: none; }
@@ -248,19 +260,19 @@ body.auth-scroll .auth-stage {
 }
 
 .auth-headline {
-  margin: 1.35rem 0 0;
+  margin: 0.8rem 0 0;
   font-family: var(--a-display);
   font-weight: 800;
-  font-size: clamp(3rem, 5.8vw, 8rem);
-  line-height: 0.92;
+  font-size: clamp(2.8rem, 5.5vw, 7.5rem);
+  line-height: 0.93;
   letter-spacing: -0.04em;
 }
 .auth-headline span { color: var(--a-brand); }
 
 .auth-lede {
-  margin: 1.5rem 0 0;
+  margin: 1rem 0 0;
   max-width: 32ch;
-  font-size: clamp(1rem, 1.22vw, 1.5rem);
+  font-size: clamp(1rem, 1.2vw, 1.45rem);
   line-height: 1.45;
   color: var(--a-ink-2);
   opacity: 0.84;
@@ -269,8 +281,8 @@ body.auth-scroll .auth-stage {
 /* Three things the platform does, in a frosted strip. */
 .auth-strip {
   list-style: none;
-  margin: clamp(1.6rem, 2.4vw, 2.8rem) 0 0;
-  padding: clamp(0.9rem, 1.1vw, 1.35rem) clamp(1rem, 1.3vw, 1.6rem);
+  margin: clamp(1rem, 2vw, 2.2rem) 0 0;
+  padding: clamp(0.75rem, 1vw, 1.25rem) clamp(0.9rem, 1.2vw, 1.5rem);
   display: flex;
   align-items: stretch;
   gap: 0;
@@ -286,7 +298,7 @@ body.auth-scroll .auth-stage {
   display: flex;
   align-items: center;
   gap: clamp(0.5rem, 0.7vw, 0.9rem);
-  padding: 0 clamp(0.8rem, 1.3vw, 1.6rem);
+  padding: 0 clamp(0.75rem, 1.25vw, 1.5rem);
   font-size: clamp(0.88rem, 1.02vw, 1.2rem);
   font-weight: 600;
   line-height: 1.2;
@@ -295,11 +307,11 @@ body.auth-scroll .auth-stage {
 .auth-strip li:first-child { padding-left: 0; }
 .auth-strip li:last-child { padding-right: 0; }
 .auth-strip li + li { border-left: 1px solid var(--a-line); }
-.auth-strip svg { width: clamp(26px, 2vw, 40px); height: clamp(26px, 2vw, 40px); color: var(--a-brand); flex: none; }
+.auth-strip svg { width: clamp(24px, 1.9vw, 38px); height: clamp(24px, 1.9vw, 38px); color: var(--a-brand); flex: none; }
 
 /* The demonstration accounts, folded away until they are wanted. */
 .auth-demo {
-  margin: clamp(1rem, 1.6vw, 1.6rem) 0 0;
+  margin: clamp(0.8rem, 1.4vw, 1.4rem) 0 0;
   border-radius: 14px;
   background: rgba(255, 253, 249, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.7);
@@ -450,9 +462,9 @@ body.auth-scroll .auth-stage {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 220px),
     var(--a-paper);
-  border-radius: 22px;
-  padding: 4.5cqw 9.4cqw 4cqw;
-  clip-path: inset(0 round 22px);
+  border-radius: 20px;
+  padding: 3cqw 7.5cqw 2.5cqw;
+  clip-path: inset(0 round 20px);
   -webkit-mask:
     radial-gradient(circle var(--notch-r) at calc(var(--notch) / 2) 0, transparent 99%, #000 100%) 0 0 / var(--notch) 100% repeat-x,
     radial-gradient(circle var(--notch-r) at calc(var(--notch) / 2) 100%, transparent 99%, #000 100%) 0 0 / var(--notch) 100% repeat-x,
@@ -486,7 +498,7 @@ body.auth-scroll .auth-stage {
 
 .auth-kicker {
   margin: 0;
-  font-size: max(0.72rem, 2.3cqw);
+  font-size: max(0.7rem, 2.1cqw);
   font-weight: 700;
   letter-spacing: 0.24em;
   text-transform: uppercase;
@@ -494,17 +506,17 @@ body.auth-scroll .auth-stage {
 }
 
 .auth-ticket h1 {
-  margin: 0.9cqw 0 0;
+  margin: 0.6cqw 0 0;
   font-family: var(--a-display);
   font-weight: 800;
-  font-size: max(1.9rem, 10.2cqw);
+  font-size: max(1.7rem, 9.2cqw);
   line-height: 1;
   letter-spacing: -0.035em;
   color: var(--a-ink);
 }
 
 .auth-cloche {
-  width: max(52px, 15cqw);
+  width: max(44px, 13cqw);
   height: auto;
   aspect-ratio: 64 / 56;
   color: var(--a-brand);
@@ -512,9 +524,9 @@ body.auth-scroll .auth-stage {
 }
 
 .auth-ticket-sub {
-  margin: 1.8cqw 0 0;
-  font-size: max(0.88rem, 3.2cqw);
-  line-height: 1.45;
+  margin: 1.2cqw 0 0;
+  font-size: max(0.82rem, 2.9cqw);
+  line-height: 1.4;
   color: var(--a-muted);
   max-width: 30ch;
 }
@@ -522,7 +534,7 @@ body.auth-scroll .auth-stage {
 .auth-perf {
   border: 0;
   border-top: 2px dashed rgba(23, 19, 15, 0.3);
-  margin: 2.8cqw 0 3cqw;
+  margin: 1.8cqw 0 2cqw;
 }
 
 /* =========================================================================
@@ -530,7 +542,7 @@ body.auth-scroll .auth-stage {
    ========================================================================= */
 .auth-field {
   position: relative;
-  margin-bottom: 3.4cqw;
+  margin-bottom: 2.2cqw;
 }
 .auth-field + .auth-field { margin-top: 0; }
 
@@ -683,20 +695,20 @@ body.auth-scroll .auth-stage {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  margin-top: 4cqw;
+  gap: 0.75rem;
+  margin-top: 2.2cqw;
 }
 
 .auth-submit,
 .auth-ghost {
   width: 100%;
-  height: max(48px, 8.6cqw);
+  height: max(40px, 7.4cqw);
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: max(0.5rem, 2cqw);
-  font: 600 max(0.95rem, 3.2cqw) / 1 var(--a-body);
+  gap: max(0.4rem, 1.8cqw);
+  font: 600 max(0.9rem, 2.9cqw) / 1 var(--a-body);
   text-decoration: none;
   cursor: pointer;
   transition: transform 0.2s var(--ease-out), background 0.2s, border-color 0.2s, box-shadow 0.2s, color 0.2s;
@@ -714,7 +726,7 @@ body.auth-scroll .auth-stage {
 .auth-submit:hover { background: var(--a-brand-600); transform: translateY(-2px); }
 .auth-submit:active { transform: translateY(0); }
 .auth-submit svg,
-.auth-ghost svg { width: max(18px, 3.8cqw); height: max(18px, 3.8cqw); }
+.auth-ghost svg { width: max(16px, 3.4cqw); height: max(16px, 3.4cqw); }
 
 .auth-ghost {
   border: 1.5px solid rgba(23, 19, 15, 0.26);
@@ -740,7 +752,7 @@ body.auth-scroll .auth-stage {
 @keyframes auth-spin { to { transform: rotate(360deg); } }
 
 .auth-link {
-  font-size: max(0.85rem, 3cqw);
+  font-size: max(0.8rem, 2.7cqw);
   font-weight: 600;
   color: var(--a-brand);
   background: none;
@@ -756,17 +768,17 @@ body.auth-scroll .auth-stage {
 .auth-or {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin: 3cqw 0;
+  gap: 0.8rem;
+  margin: 1.8cqw 0;
   color: var(--a-muted);
-  font-size: max(0.8rem, 2.6cqw);
+  font-size: max(0.75rem, 2.4cqw);
 }
 .auth-or::before,
 .auth-or::after { content: ""; flex: 1; height: 1px; background: var(--a-line); }
 
 .auth-alternate {
-  margin: 3cqw 0 0;
-  font-size: max(0.82rem, 2.8cqw);
+  margin: 1.8cqw 0 0;
+  font-size: max(0.78rem, 2.6cqw);
   color: var(--a-muted);
   text-align: center;
 }
@@ -779,24 +791,24 @@ body.auth-scroll .auth-stage {
   align-items: flex-end;
   justify-content: space-between;
   gap: 1rem;
-  margin-top: 3.6cqw;
-  padding-top: 2.8cqw;
+  margin-top: 2cqw;
+  padding-top: 1.8cqw;
   border-top: 1px dashed rgba(23, 19, 15, 0.22);
 }
 .auth-pass { flex: 1; min-width: 0; }
-.auth-barcode { display: block; width: 100%; max-width: 45cqw; height: max(30px, 8.5cqw); }
+.auth-barcode { display: block; width: 100%; max-width: 45cqw; height: max(24px, 6.5cqw); }
 .auth-barcode rect { fill: var(--a-ink); }
 .auth-pass-meta {
-  margin: 0.8cqw 0 0;
+  margin: 0.6cqw 0 0;
   font-family: var(--a-mono);
-  font-size: max(0.56rem, 2.1cqw);
+  font-size: max(0.52rem, 1.9cqw);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--a-ink-2);
   white-space: nowrap;
 }
 .auth-stamp {
-  width: max(84px, 21.7cqw);
+  width: max(60px, 15cqw);
   height: auto;
   aspect-ratio: 1 / 1;
   flex: none;

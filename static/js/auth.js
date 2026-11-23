@@ -22,53 +22,35 @@
      The fit: the ticket never outgrows the frame it sits in
      --------------------------------------------------------------------- */
   function fitTicket() {
-    if (!stage || !ticketWrap || !ticket) { return; }
+    if (!ticketWrap || !ticket) { return; }
 
     var stacked = window.matchMedia('(max-width: 1040px)').matches;
     if (stacked) {
       ticketWrap.style.zoom = '';
-      document.body.classList.remove('auth-scroll');
       return;
     }
 
-    var topH = topbar ? topbar.getBoundingClientRect().height : 76;
+    var topH = topbar ? topbar.getBoundingClientRect().height : 60;
     document.documentElement.style.setProperty('--auth-topbar-h', Math.round(topH) + 'px');
 
-    var available = window.innerHeight - topH - 4;
+    var layout = document.querySelector('.auth-layout');
+    var layoutPad = 0;
+    if (layout) {
+      var cs = window.getComputedStyle(layout);
+      layoutPad = parseFloat(cs.paddingTop || 0) + parseFloat(cs.paddingBottom || 0);
+    }
+
+    var available = window.innerHeight - topH - layoutPad - 10;
 
     ticketWrap.style.zoom = '';
     var natural = ticketWrap.offsetHeight;
 
-    if (natural <= available) {
-      document.body.classList.remove('auth-scroll');
-      return;
+    if (natural > 0 && available > 0) {
+      // Scale up to 1.25x if height permits (matching the 125% zoom look),
+      // and scale down smoothly so the bottom is never cut off.
+      var targetScale = Math.min(1.25, Math.max(0.5, (available - 16) / natural));
+      ticketWrap.style.zoom = targetScale.toFixed(3);
     }
-
-    // Zooming the ticket narrows it, so the copy re-wraps and the pass can
-    // come out taller than the zoom asked for. A ratio worked out from the
-    // natural height is therefore only a guess, so each step is applied and
-    // then measured: the only honest measure is the height it actually
-    // renders at. The steps are close together, because where the copy
-    // breaks is not a smooth function of the zoom.
-    var steps = [];
-    for (var step = Math.min(1, available / natural); step >= 0.55; step -= 0.02) {
-      var rounded = Math.round(step * 100) / 100;
-      if (steps.indexOf(rounded) === -1) { steps.push(rounded); }
-    }
-
-    for (var i = 0; i < steps.length; i++) {
-      ticketWrap.style.zoom = String(steps[i]);
-      if (ticketWrap.getBoundingClientRect().height <= available) {
-        document.body.classList.remove('auth-scroll');
-        return;
-      }
-    }
-
-    // The zoom has stopped helping: the frame gives way and the page
-    // scrolls, rather than the end of the ticket being cut off where
-    // nobody can reach it.
-    ticketWrap.style.zoom = '';
-    document.body.classList.add('auth-scroll');
   }
 
   var fitFrame = 0;

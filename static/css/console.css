@@ -328,6 +328,18 @@
               box-shadow var(--dur-short) var(--ease-out),
               border-color var(--dur-short) var(--ease-out);
 }
+/* Every chip is a closed shape: it keeps its border on all four sides and its
+   inset on all four sides. The ruled-row rules inherited from components.css
+   and app.css zeroed the left padding of the first chip, which put the big
+   value straight onto the border. This skin loads last, so it owns that edge. */
+.tally-item:first-child,
+.c-figrow > *:first-child,
+.tally-item:nth-child(odd),
+.c-figrow > *:nth-child(odd) {
+  padding-left: var(--space-lg);
+  border-left: 1px solid var(--color-rule);
+}
+
 .tally-item:hover,
 .c-figrow > *:hover {
   transform: translateY(-2px);
