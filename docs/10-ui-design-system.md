@@ -39,8 +39,8 @@ change between surfaces.
 | `--color-rule` | A structural edge between regions |
 | `--color-hair` | A rule inside a region |
 
-A number is never coloured for decoration. Periwinkle means "the model
-predicted this". Apricot means "this went wrong". Nothing else is coloured.
+A number is never coloured for decoration. Orange means "the model
+predicted this". Amber means "this went wrong". Nothing else is coloured.
 
 ---
 
@@ -189,8 +189,8 @@ because the kitchen tablet has no network.
      data-title="Waste cost per week"></div>
 ```
 
-`data-chart` is `bar`, `line` or `band`. `data-tone` is `loss` for apricot and
-`model` for periwinkle. The label key is parsed and shortened: an ISO date
+`data-chart` is `bar`, `line` or `band`. `data-tone` is `loss` for amber and
+`model` for orange. The label key is parsed and shortened: an ISO date
 becomes "14 Mar".
 
 **The forecast band.** A forecast is not a number, it is a number with a

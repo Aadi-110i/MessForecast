@@ -4,7 +4,7 @@
 {% block title %}Registration codes · {{ app_name }}{% endblock %}
 
 {% block console_content %}
-{% include "components/page_head.html" with title="Registration codes" lede="A code is issued to the person who will use the account, and it carries the role. That keeps a student from registering themselves as an administrator, and it means the platform knows who vouched for an account." %}
+{% include "components/page_head.html" with title="Registration codes" eyebrow="Administration" lede="A code is issued to the person who will use the account, and it carries the role. That keeps a student from registering themselves as an administrator, and it means the platform knows who vouched for an account." %}
 
 <!-- ===================== The figures ===================== -->
 {% include "components/figures.html" with figures=figures %}
@@ -18,7 +18,7 @@
         <span class="hint">{{ codes|length }} most recent</span>
       </div>
       {% if codes %}
-        <div class="table-wrap">
+        <div class="table-wrap c-scroll">
           <table class="ledger">
             <thead>
               <tr>

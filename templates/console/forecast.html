@@ -4,7 +4,7 @@
 {% block title %}Forecast · {{ app_name }}{% endblock %}
 
 {% block console_content %}
-{% include "components/page_head.html" with title="Forecast dashboard" lede="What the engine expects for the week ahead, how much room there is around each number, and why it says what it says. Every forecast carries its own workings, so the number can be argued with." %}
+{% include "components/page_head.html" with title="Forecast dashboard" eyebrow="Console" lede="What the engine expects for the week ahead, how much room there is around each number, and why it says what it says. Every forecast carries its own workings, so the number can be argued with." %}
 
 <form class="toolbar" method="get">
   <div class="field field--inline">
@@ -63,7 +63,7 @@
     <span class="hint">{{ rows|length }}</span>
   </div>
 {% if rows %}
-  <div class="table-wrap">
+  <div class="table-wrap c-scroll">
     <table class="ledger">
       <thead>
         <tr>

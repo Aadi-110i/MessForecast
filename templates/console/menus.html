@@ -4,7 +4,7 @@
 {% block title %}Menus · {{ app_name }}{% endblock %}
 
 {% block console_content %}
-{% include "components/page_head.html" with title="Menu management" lede="The cycles the kitchen cooks from, and what is scheduled for the week. A cycle is a set of dishes per meal; a schedule row binds a cycle to a hall, a date and a meal." %}
+{% include "components/page_head.html" with title="Menu management" eyebrow="Console" lede="The cycles the kitchen cooks from, and what is scheduled for the week. A cycle is a set of dishes per meal; a schedule row binds a cycle to a hall, a date and a meal." %}
 
 <div class="c-stack">
 
@@ -43,7 +43,7 @@
           <span class="hint">{{ cycles|length }} active</span>
         </div>
         {% if cycles %}
-          <div class="table-wrap">
+          <div class="table-wrap c-scroll">
             <table class="ledger">
               <thead>
                 <tr>

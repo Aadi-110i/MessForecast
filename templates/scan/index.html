@@ -5,13 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Attendance capture, {{ app_name }}</title>
   <meta name="description" content="Scan or type student attendance at the counter for an open mess service.">
-  <meta name="theme-color" content="#0E1017">
+  <meta name="theme-color" content="#F7EEE1">
   <link rel="manifest" href="{% url 'pwa-manifest' %}">
   <link rel="icon" href="{% static 'pwa/icon.svg' %}" type="image/svg+xml">
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
   <link rel="stylesheet" href="{% static 'css/kitchen.css' %}">
 </head>
 <body class="k-shell">
+<script>
+/* A new service worker takes over the page it is looking at. The reader gets
+   the new screen without being asked to refresh. */
+(function () {
+  if (!('serviceWorker' in navigator)) { return; }
+  navigator.serviceWorker.addEventListener('message', function (event) {
+    if (!event.data || event.data.type !== 'SW_ACTIVATED') { return; }
+    if (sessionStorage.getItem('mf-sw-reloaded')) { return; }
+    sessionStorage.setItem('mf-sw-reloaded', '1');
+    window.location.reload();
+  });
+})();
+</script>
 {% csrf_token %}
 
 <header class="k-ticket">

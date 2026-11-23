@@ -4,7 +4,7 @@
 {% block title %}Settings · {{ app_name }}{% endblock %}
 
 {% block console_content %}
-{% include "components/page_head.html" with title="Settings" lede="The halls, the service levels they cook to, the people who use the platform, and who is allowed to do what. Every rule the platform applies is set here." %}
+{% include "components/page_head.html" with title="Settings" eyebrow="Administration" lede="The halls, the service levels they cook to, the people who use the platform, and who is allowed to do what. Every rule the platform applies is set here." %}
 
 <div class="c-split">
   <div class="c-stack">
@@ -15,7 +15,7 @@
     <h2>Dining halls</h2>
     <span class="hint">{{ halls|length }}</span>
   </div>
-<div class="table-wrap">
+<div class="table-wrap c-scroll">
   <table class="ledger">
     <thead>
       <tr>
@@ -56,7 +56,7 @@
     <span class="hint">{{ level_configs|length }}</span>
   </div>
 {% if level_configs %}
-  <div class="table-wrap">
+  <div class="table-wrap c-scroll">
     <table class="ledger">
       <thead>
         <tr>
@@ -106,7 +106,7 @@
     <span class="hint">{{ events|length }}</span>
   </div>
 {% if events %}
-  <div class="table-wrap">
+  <div class="table-wrap c-scroll">
     <table class="ledger">
       <thead>
         <tr>
@@ -145,7 +145,7 @@
     <h2>People</h2>
     <span class="hint">{{ people|length }}</span>
   </div>
-<div class="table-wrap">
+<div class="table-wrap c-scroll">
   <table class="ledger">
     <thead>
       <tr>

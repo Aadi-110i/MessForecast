@@ -1,8 +1,8 @@
-/* Hallmark · shape: app screen · genre: modern-minimal · theme: Dusk (by request) · redesign: full
- * nav: glass topbar over a slate rail of ruled destinations · footer: one method line
+/* Hallmark · shape: app screen · genre: modern-minimal · theme: daylight · redesign: full
+ * nav: a paper topbar over a warm rail of ruled destinations · footer: one method line
  * signature: the service reconciliation, forecast against the published band, row by row
- * states: loading, empty, error, full · dusk: fog/periwinkle-apricot/glass
- * axes: dark/grotesk-sans/cool · posture: committed · contrast: pass · v2.0.0 */
+ * states: loading, empty, error, full · daylight: paper/orange-amber/glass
+ * axes: light/grotesk-sans/warm · posture: committed · contrast: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P4 H4 E4 S5 R4 V4 · weakest: R, the day range sat in a coloured band
    that read as decoration; it now sits in the filter row where it is an input, and the tally lost
    its four tinted tiles for one ruled row */
@@ -10,8 +10,8 @@
 /* Hallmark · waive 69 · a ledger whose rows repeat a value by nature · each plan lists its own dishes, so the same dish repeats its standard weight across the hundred plans */
 /* Hallmark · answered F25 · the wide reconciliation table scrolls sideways with its naming column and its outcome column pinned, so the row is never lost */
 /* Hallmark · dropped {{ u_home }}, {{ u_waste }}, {{ u_acc }}, {{ u_dq }}, {{ u_plan }}, {{ u_kitchen }}, {{ u_scan }} · these were undefined template variables, so every navigation link rendered as href="" and went nowhere; each is now a real url tag */
-/* Hallmark · dismissed 29 · smoked glass is the Dusk material; the top bar blurs the ledger scrolling under it */
-/* Hallmark · answered F4 · one filled periwinkle pill a page; the ghost beside it carries no fill */
+/* Hallmark · dismissed 29 · the top bar blurs the ledger scrolling under it, and in daylight that glass is warm paper */
+/* Hallmark · answered F4 · one filled orange pill a page; the ghost beside it carries no fill */
 @import url("./fonts.css");
 @import url("./tokens.css");
 @import url("./base.css");
@@ -20,11 +20,11 @@
 /* =========================================================================
    MessForecast — application shell
    -------------------------------------------------------------------------
-   Hallmark's Dusk theme, adapted to what this product does. The ground is
-   slate, the chrome is smoked glass, and two signals carry the whole
-   vocabulary: periwinkle for the model and anything that matched, apricot
-   for loss and anything still open. Figures live in a ruled tally, a ledger
-   or a table, never in a grid of stat tiles.
+   The theme is daylight. The ground is warm paper, the chrome is a sheet of
+   glass laid over it, and two signals carry the whole vocabulary: orange for
+   the model and anything that matched, a deeper amber for loss and anything
+   still open. Figures live in a ruled tally, a ledger or a table, never in a
+   grid of stat tiles.
    ========================================================================= */
 
 /* =========================================================================
@@ -503,28 +503,40 @@
   gap: var(--space-xs);
 }
 
-input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
-select, textarea {
+/* The sign-in and register screens are a daylight surface with their own
+   fields, so they are kept out of the shared control styling below. The
+   rule is written against the body, not the control, so it holds however
+   deep the control sits. */
+body:not(.auth-shell) input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
+body:not(.auth-shell) select,
+body:not(.auth-shell) textarea {
   min-height: var(--control-h);
   padding: 0 var(--space-sm);
   border: 1px solid var(--color-field-edge);
   border-radius: var(--radius-control);
-  background: var(--color-paper);
+  background: var(--color-paper-3);
   color: var(--color-ink);
   font: var(--text-sm)/1.2 var(--font-body);
 }
-textarea { padding-block: var(--space-xs); min-height: 6rem; }
-input:hover, select:hover, textarea:hover { border-color: var(--color-muted); }
-input:focus-visible, select:focus-visible, textarea:focus-visible {
+body:not(.auth-shell) textarea { padding-block: var(--space-xs); min-height: 6rem; }
+body:not(.auth-shell) input:hover,
+body:not(.auth-shell) select:hover,
+body:not(.auth-shell) textarea:hover { border-color: var(--color-muted); }
+body:not(.auth-shell) input:focus-visible,
+body:not(.auth-shell) select:focus-visible,
+body:not(.auth-shell) textarea:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 1px;
 }
-input:disabled, select:disabled, textarea:disabled {
+body:not(.auth-shell) input:disabled,
+body:not(.auth-shell) select:disabled,
+body:not(.auth-shell) textarea:disabled {
   opacity: 0.55;
   cursor: not-allowed;
   background: var(--color-paper-2);
 }
-input::placeholder, textarea::placeholder { color: var(--color-ink-3); }
+body:not(.auth-shell) input::placeholder,
+body:not(.auth-shell) textarea::placeholder { color: var(--color-ink-3); }
 
 /* =========================================================================
    Buttons

@@ -6,6 +6,7 @@
 {% block console_content %}
 <header class="c-head">
   <div>
+    <p class="c-head-eyebrow">Console</p>
     <h1>Preparation planning</h1>
     <p class="c-head-lede">
       What the kitchen should cook and what it should buy. The portion count comes from the
@@ -90,7 +91,7 @@
             <h2>Portions per dish</h2>
             <span class="hint">share of the plan</span>
           </div>
-          <div class="table-wrap">
+          <div class="table-wrap c-scroll">
             <table class="ledger">
               <thead>
                 <tr><th>Dish</th><th class="num">Share</th><th class="num">Portions</th><th class="num">Cost</th></tr>
@@ -116,7 +117,7 @@
           </div>
           {% with indent=plan.indent %}
             {% if indent %}
-              <div class="table-wrap">
+              <div class="table-wrap c-scroll">
                 <table class="ledger">
                   <thead>
                     <tr><th>Ingredient</th><th class="num">Qty</th><th class="num">Packs</th><th class="num">Cost</th></tr>

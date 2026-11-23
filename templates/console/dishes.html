@@ -5,9 +5,9 @@
 
 {% block console_content %}
 {% if editing %}
-  {% include "components/page_head.html" with title="Edit a dish" lede=editing.name %}
+  {% include "components/page_head.html" with title="Edit a dish" eyebrow="Console" lede=editing.name %}
 {% else %}
-  {% include "components/page_head.html" with title="Dishes" lede="What the kitchen can cook. A dish is a portion of something: a staple, a curry, a daal, a salad, a sweet. Adding one here makes it available to the cycles and the recipes." %}
+  {% include "components/page_head.html" with title="Dishes" eyebrow="Console" lede="What the kitchen can cook. A dish is a portion of something: a staple, a curry, a daal, a salad, a sweet. Adding one here makes it available to the cycles and the recipes." %}
 {% endif %}
 
 <div class="c-stack">
@@ -24,7 +24,7 @@
           <span class="hint">{{ active|length }} active</span>
         </div>
         {% if active %}
-          <div class="table-wrap">
+          <div class="table-wrap c-scroll">
             <table class="ledger is-tight">
               <thead>
                 <tr>
@@ -81,7 +81,7 @@
               takes it off the menus and keeps the history.
             </p>
           </div>
-          <div class="table-wrap">
+          <div class="table-wrap c-scroll">
             <table class="ledger">
               <thead>
                 <tr>

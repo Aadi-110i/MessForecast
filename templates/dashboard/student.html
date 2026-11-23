@@ -4,7 +4,7 @@
 {% block title %}My dashboard · {{ app_name }}{% endblock %}
 
 {% block console_content %}
-{% include "components/page_head.html" with title="My dashboard" lede="Your menu, your attendance, and the notices the mess office has published for students." %}
+{% include "components/page_head.html" with title="My dashboard" eyebrow="Your mess" lede="Your menu, your attendance, and the notices the mess office has published for students." %}
 
 {% if figures %}
 {% include "components/figures.html" with figures=figures %}
@@ -14,7 +14,7 @@
 <!-- ===================== Today's menu ===================== -->
 <section class="panel">
   <div class="panelhead"><h2>Today's menu</h2></div>
-  <div class="table-wrap">
+  <div class="table-wrap c-scroll">
     <table class="ledger">
       <thead>
         <tr>
@@ -52,7 +52,7 @@
 {% if upcoming %}
 <section class="panel">
   <div class="panelhead"><h2>Coming up</h2></div>
-  <div class="table-wrap">
+  <div class="table-wrap c-scroll">
     <table class="ledger">
       <thead>
         <tr>
@@ -92,7 +92,7 @@
     </div>
     <div class="panelbody">
       {% if recent_attendance %}
-        <div class="table-wrap">
+        <div class="table-wrap c-scroll">
           <table class="ledger">
             <thead>
               <tr>
@@ -130,7 +130,7 @@
     <div class="panelhead"><h2>Announcements</h2></div>
     <div class="panelbody">
       {% if notifications %}
-        <div class="table-wrap">
+        <div class="table-wrap c-scroll">
           <table class="ledger">
             <thead>
               <tr><th>Notice</th><th class="num">Posted</th></tr>

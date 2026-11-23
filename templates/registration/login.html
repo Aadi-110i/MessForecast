@@ -2,54 +2,70 @@
 
 {% block title %}Sign in · {{ app_name }}{% endblock %}
 
-{% block claim %}Cook for who turns up.{% endblock %}
 {% block note %}
   Forecast the turnout, set the portions, measure what was thrown away.
 {% endblock %}
-{% block list_head %}The demonstration mess{% endblock %}
 
 {% block list %}
-<dl class="auth-list">
-  <div><dt><code>manager</code></dt><dd>Dashboard, planning, waste, accuracy</dd></div>
-  <div><dt><code>chef</code></dt><dd>Kitchen screen, capture screen</dd></div>
-  <div><dt><code>admin</code></dt><dd>Dish, recipe and ingredient master</dd></div>
-  <div><dt><code>finance</code></dt><dd>Waste cost and procurement, read-only</dd></div>
-  <div><dt><code>sysadmin</code></dt><dd>Everything, including forecast settings</dd></div>
-  <div><dt><code>student</code></dt><dd>Menu and own attendance</dd></div>
-</dl>
-<p class="auth-block-foot">
-  The seed command creates one account per role. The password for all of them is
-  <code>messdemo</code>.
-</p>
+<details class="auth-demo">
+  <summary>{% block list_head %}The demonstration mess{% endblock %}</summary>
+  <div class="auth-demo-body">
+    {% block demo_list %}
+    <dl class="auth-list">
+      <div><dt><code>manager</code></dt><dd>Dashboard, planning, waste, accuracy</dd></div>
+      <div><dt><code>chef</code></dt><dd>Kitchen screen, capture screen</dd></div>
+      <div><dt><code>admin</code></dt><dd>Dish, recipe and ingredient master</dd></div>
+      <div><dt><code>finance</code></dt><dd>Waste cost and procurement, read-only</dd></div>
+      <div><dt><code>sysadmin</code></dt><dd>Everything, including forecast settings</dd></div>
+      <div><dt><code>student</code></dt><dd>Menu and own attendance</dd></div>
+    </dl>
+    <p class="auth-block-foot">
+      The seed command creates one account per role. The password for all of them is
+      <code>messdemo</code>.
+    </p>
+    {% endblock %}
+  </div>
+</details>
 {% endblock %}
 
 {% block content %}
-<p class="auth-eyebrow">Mess account</p>
-<h1>Sign in</h1>
-<p class="auth-lede">
-  Use the account issued by the mess office. Kitchen staff see the kitchen screen and
-  the capture screen; mess managers and administrators see the dashboard.
+<header class="auth-ticket-head">
+  <div>
+    <p class="auth-kicker">Mess account</p>
+    <h1>Sign in</h1>
+  </div>
+  <svg class="auth-cloche" aria-hidden="true"><use href="#i-cloche"></use></svg>
+</header>
+
+<p class="auth-ticket-sub">
+  Use the account issued by the mess office. Kitchen staff see the kitchen screen;
+  mess managers and administrators see the dashboard.
 </p>
 
-{% if next %}
-  <p class="auth-alternate">You are signing in to continue to <strong>{{ next }}</strong>.</p>
-{% endif %}
+<hr class="auth-perf">
 
-<form method="post" action="{% url 'login' %}">
+<form method="post" action="{% url 'login' %}" class="auth-fields">
   {% csrf_token %}
   <input type="hidden" name="next" value="{{ next }}">
 
-  <div class="auth-field">
+  <div class="auth-field" data-field="username">
+    <svg aria-hidden="true"><use href="#i-user"></use></svg>
     <label for="id_username">Username</label>
     <input type="text" name="username" id="id_username" autocomplete="username"
-           autocapitalize="none" spellcheck="false" required
+           autocapitalize="none" spellcheck="false" required placeholder="Username"
            {% if form.errors %}aria-invalid="true" aria-describedby="auth-error"{% endif %}>
   </div>
 
-  <div class="auth-field">
+  <div class="auth-field" data-field="password">
+    <svg aria-hidden="true"><use href="#i-lock"></use></svg>
     <label for="id_password">Password</label>
-    <input type="password" name="password" id="id_password" autocomplete="current-password" required
+    <input type="password" name="password" id="id_password" autocomplete="current-password"
+           required placeholder="Password"
            {% if form.errors %}aria-invalid="true" aria-describedby="auth-error"{% endif %}>
+    <button class="auth-eye" type="button" data-auth-eye="id_password"
+            aria-label="Show the password" aria-pressed="false">
+      <svg aria-hidden="true"><use href="#i-eye"></use></svg>
+    </button>
   </div>
 
   {% if form.errors %}
@@ -68,16 +84,49 @@
   {% endif %}
 
   <div class="auth-actions">
-    <button class="btn auth-submit" type="submit" data-auth-submit>
+    <button class="auth-submit" type="submit" data-auth-submit>
       <span data-auth-label>Sign in</span>
+      <svg aria-hidden="true"><use href="#i-arrow-right"></use></svg>
     </button>
     <a class="auth-link" href="{% url 'password-reset' %}">Forgot password?</a>
   </div>
+
+  <div class="auth-or">or</div>
+
+  <a class="auth-ghost" href="{% url 'register' %}">
+    <svg aria-hidden="true"><use href="#i-qr"></use></svg>
+    Use Mess Office Code
+  </a>
 
   <p class="auth-alternate">
     Issued a code by the mess office? <a class="auth-link" href="{% url 'register' %}">Create an account</a>
   </p>
 </form>
+{% endblock %}
+
+{% block foot %}
+<div class="auth-ticket-foot">
+  <div class="auth-pass">
+    <svg class="auth-barcode" id="auth-barcode" viewBox="0 0 190 40" preserveAspectRatio="none"
+         role="img" aria-label="MessForecast access pass barcode"></svg>
+    <p class="auth-pass-meta" data-auth-pass="MESSFORECAST-ACCESS-PASS">MessForecast / Access Pass</p>
+  </div>
+  <svg class="auth-stamp" viewBox="0 0 120 120" role="img" aria-label="Authorised mess access stamp">
+    <defs>
+      <path id="arcTop" d="M60,60 m-44,0 a44,44 0 1,1 88,0" fill="none" />
+      <path id="arcBottom" d="M60,60 m-38,0 a38,38 0 1,0 76,0" fill="none" />
+    </defs>
+    <circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" stroke-width="2.4" />
+    <circle cx="60" cy="60" r="50" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="3 4" />
+    <g fill="currentColor" font-family="ui-monospace, Cascadia Mono, Consolas, monospace" font-size="8.4" letter-spacing="1.6">
+      <text><textPath href="#arcTop" startOffset="50%" text-anchor="middle">AUTHORIZED</textPath></text>
+      <text><textPath href="#arcBottom" startOffset="50%" text-anchor="middle">MESS ACCESS</textPath></text>
+    </g>
+    <g transform="translate(38,38) scale(1.83)" color="currentColor">
+      <use href="#i-cloche" width="24" height="24" transform="translate(-4,-1)" style="stroke-width:3.2" />
+    </g>
+  </svg>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -93,10 +142,13 @@
 
   // The field that was refused takes the cursor. On a fresh page the cursor
   // waits on a keyboard only, so the page is not scrolled under a phone.
+  // The cursor is placed without scrolling: on the narrow layout the ticket
+  // sits under the column that says who this is for, and the reader should
+  // be able to see that first.
   if (error && first) {
     first.focus();
   } else if (first && window.matchMedia('(pointer: fine)').matches) {
-    first.focus();
+    first.focus({ preventScroll: true });
   }
 
   form.addEventListener('submit', function () {

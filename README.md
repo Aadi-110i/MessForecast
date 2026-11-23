@@ -47,19 +47,18 @@ model, that module is replaced — not the application around it.
 
 ## The interface
 
-The whole application is built on **Hallmark's Dusk theme**: a calm, expensive operations
-console on a deep slate ground, with smoked-glass chrome, bone wells for the notes the
-product hands to a person, and exactly two signal colours.
+The whole application is built on **one theme**: a warm, daylight operations console on
+paper, with the chrome of a pass handed over at the counter, and exactly two signal colours.
 
 | | |
 |---|---|
-| **Periwinkle** | the model, and anything that matched: a forecast that landed, a service that was recorded |
-| **Apricot** | loss and open work: waste, an overflow portion, a service still waiting to be recorded |
-| **Bone** | a hand-off: the kitchen brief, the method behind the cost |
+| **Orange** | the model, and anything that matched: a forecast that landed, a service that was recorded |
+| **Amber** | loss and open work: waste, an overflow portion, a service still waiting to be recorded |
+| **Paper** | a hand-off: the kitchen brief, the method behind the cost |
 | **Figures** | a ruled tally of four, never a grid of stat tiles |
 | **Data** | a ledger, never a card grid |
 
-The type is Wix Madefor Display over Wix Madefor Text, **served from this origin** rather than
+The type is Archivo over Wix Madefor Text, **served from this origin** rather than
 a font CDN, because the kitchen tablet may have no internet at all. The stylesheet is split
 into [`static/css/tokens.css`](static/css/tokens.css) (the theme's palette, type and scale
 plus the application's own roles), [`static/css/base.css`](static/css/base.css) (reset and

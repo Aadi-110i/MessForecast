@@ -4,7 +4,7 @@
 {% block title %}{{ summary.menu.name }} · {{ app_name }}{% endblock %}
 
 {% block console_content %}
-{% include "components/page_head.html" with title=summary.menu.name lede=summary.menu.description %}
+{% include "components/page_head.html" with title=summary.menu.name eyebrow="Console" lede=summary.menu.description %}
 
 <nav class="c-crumbs" aria-label="Breadcrumb">
   <a href="{% url 'console-menus' %}">Menus</a>
@@ -23,7 +23,7 @@
             <span class="hint">{{ items|length }} dishes</span>
           </div>
           {% if items %}
-            <div class="table-wrap">
+            <div class="table-wrap c-scroll">
               <table class="ledger">
                 <thead>
                   <tr>
@@ -61,7 +61,7 @@
         <span class="hint">{{ schedules|length }} rows</span>
       </div>
       {% if schedules %}
-        <div class="table-wrap">
+        <div class="table-wrap c-scroll">
           <table class="ledger">
             <thead>
               <tr>

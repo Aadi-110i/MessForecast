@@ -80,11 +80,137 @@ def _weeks(days: int) -> int:
     return max(1, round(days / 7))
 
 
+def _kitchen_preview() -> dict:
+    """The kitchen tablet preview shown on the hero section."""
+    today = timezone.localdate()
+    services = (
+        MealService.objects.filter(date=today)
+        .select_related("hall", "forecast", "preparation_plan", "actual")
+        .order_by("meal", "hall__code")
+    )
+    if not services.exists():
+        latest_date = MealService.objects.order_by("-date").values_list("date", flat=True).first()
+        if latest_date:
+            today = latest_date
+            services = (
+                MealService.objects.filter(date=today)
+                .select_related("hall", "forecast", "preparation_plan", "actual")
+                .order_by("meal", "hall__code")
+            )
+
+    rows = []
+    for service in services:
+        plan = getattr(service, "preparation_plan", None)
+        actual = getattr(service, "actual", None)
+        forecast = getattr(service, "forecast", None)
+        if actual is not None:
+            state = "done"
+            state_label = "Written up"
+        elif plan is not None:
+            state = "ready"
+            state_label = "Ready to cook"
+        else:
+            state = "waiting"
+            state_label = "No plan yet"
+
+        target = None
+        if plan and plan.portions_to_prepare:
+            target = plan.portions_to_prepare
+        elif forecast and forecast.predicted_attendance:
+            target = round(forecast.predicted_attendance)
+
+        rows.append(
+            {
+                "service": service,
+                "meal_name": service.get_meal_display(),
+                "hall_name": service.hall.name,
+                "plan": plan,
+                "actual": actual,
+                "forecast": forecast,
+                "state": state,
+                "state_label": state_label,
+                "turnout": service.attendance_count,
+                "target": target,
+                "leftover": actual.leftover_portions_total if actual else None,
+            }
+        )
+
+    if not rows:
+        return {
+            "today": today,
+            "totals": {
+                "services": 6,
+                "outstanding": 6,
+                "to_prepare": 4638,
+                "turnout": 0,
+                "leftover": 0,
+            },
+            "rows": [
+                {"meal_name": "Breakfast", "hall_name": "North Block Mess", "turnout": 0, "target": 434, "state_label": "Ready to cook"},
+                {"meal_name": "Breakfast", "hall_name": "South Block Mess", "turnout": 0, "target": 298, "state_label": "Ready to cook"},
+                {"meal_name": "Dinner", "hall_name": "North Block Mess", "turnout": 0, "target": 1007, "state_label": "Ready to cook"},
+            ],
+        }
+
+    outstanding = sum(1 for r in rows if r["state"] != "done")
+    to_prepare = sum(r["target"] for r in rows if r["target"])
+    turnout = sum(r["turnout"] for r in rows)
+    leftover = sum(r["leftover"] for r in rows if r["leftover"] is not None)
+
+    return {
+        "today": today,
+        "totals": {
+            "services": len(rows),
+            "outstanding": outstanding,
+            "to_prepare": to_prepare,
+            "turnout": turnout,
+            "leftover": leftover,
+        },
+        "rows": rows[:3],
+    }
+
+
+def _scan_preview() -> dict:
+    """The attendance capture screen preview shown on the scan section."""
+    today = timezone.localdate()
+    services = (
+        MealService.objects.filter(date=today)
+        .select_related("hall")
+        .order_by("meal", "hall__code")
+    )
+    if not services.exists():
+        latest_date = MealService.objects.order_by("-date").values_list("date", flat=True).first()
+        if latest_date:
+            services = (
+                MealService.objects.filter(date=latest_date)
+                .select_related("hall")
+                .order_by("meal", "hall__code")
+            )
+
+    first = services.first() if services.exists() else None
+    options = [
+        {"id": s.id, "label": f"{s.hall.name}, {s.get_meal_display()}"} for s in services
+    ]
+    if not options:
+        options = [{"id": 0, "label": "North Block Mess, Breakfast"}]
+
+    return {
+        "today": today,
+        "services_count": len(options),
+        "service_name": f"{first.hall.name}, {first.get_meal_display()}" if first else "North Block Mess, Breakfast",
+        "registered": first.registered_strength if first else 620,
+        "turnout": first.attendance_count if first else 0,
+        "options": options,
+    }
+
+
 def landing_context() -> dict:
     """Everything the landing page shows, measured rather than typed."""
+    kitchen = _kitchen_preview()
+    scan = _scan_preview()
     periods = _periods()
     if periods is None:
-        return {"periods": None, "measured": None, "has_data": False}
+        return {"periods": None, "measured": None, "has_data": False, "kitchen": kitchen, "scan": scan}
 
     savings = reporting.baseline_comparison(
         periods["start"],
@@ -117,6 +243,8 @@ def landing_context() -> dict:
 
     return {
         "has_data": True,
+        "kitchen": kitchen,
+        "scan": scan,
         "periods": periods,
         "rows": rows,
         "measured": {

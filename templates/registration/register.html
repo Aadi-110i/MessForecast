@@ -2,36 +2,54 @@
 
 {% block title %}Create an account · {{ app_name }}{% endblock %}
 
-{% block claim %}One code, one account.{% endblock %}
+{% block eyebrow %}New mess account{% endblock %}
+
+{% block headline %}One code.<br>One account.<br><span>Serve Better.</span>{% endblock %}
+
 {% block note %}
   Accounts are made against a code issued by the mess office. The code carries the
   role, so you do not choose it yourself.
 {% endblock %}
-{% block list_head %}The role the code carries{% endblock %}
 
 {% block list %}
-<dl class="auth-list">
-  <div><dt>Student</dt><dd>The published menu and their own attendance</dd></div>
-  <div><dt>Kitchen Staff</dt><dd>The kitchen tablet and the capture screen</dd></div>
-  <div><dt>Mess Manager</dt><dd>The console, planning, waste and accuracy</dd></div>
-  <div><dt>Mess Administrator</dt><dd>The masters: menus, recipes, ingredients, halls</dd></div>
-  <div><dt>Finance Officer</dt><dd>Waste cost and procurement, read only</dd></div>
-  <div><dt>Administrator</dt><dd>Everything, including the forecast settings</dd></div>
-</dl>
+<details class="auth-demo">
+  <summary>{% block list_head %}The role the code carries{% endblock %}</summary>
+  <div class="auth-demo-body">
+    {% block demo_list %}
+    <dl class="auth-list">
+      <div><dt>Student</dt><dd>The published menu and their own attendance</dd></div>
+      <div><dt>Kitchen Staff</dt><dd>The kitchen tablet and the capture screen</dd></div>
+      <div><dt>Mess Manager</dt><dd>The console, planning, waste and accuracy</dd></div>
+      <div><dt>Mess Administrator</dt><dd>The masters: menus, recipes, ingredients, halls</dd></div>
+      <div><dt>Finance Officer</dt><dd>Waste cost and procurement, read only</dd></div>
+      <div><dt>Administrator</dt><dd>Everything, including the forecast settings</dd></div>
+    </dl>
+    {% endblock %}
+  </div>
+</details>
 {% endblock %}
 
 {% block content %}
-<p class="auth-eyebrow">Mess account</p>
-<h1>Create an account</h1>
-<p class="auth-lede">
+<header class="auth-ticket-head">
+  <div>
+    <p class="auth-kicker">New registration</p>
+    <h1>Create account</h1>
+  </div>
+  <svg class="auth-cloche" aria-hidden="true"><use href="#i-cloche"></use></svg>
+</header>
+
+<p class="auth-ticket-sub">
   The mess office issues a code against your name. Redeeming it spends the code, so it
   makes exactly one account.
 </p>
 
-<form method="post" action="{% url 'register-submit' %}" id="register-form" novalidate>
+<hr class="auth-perf">
+
+<form method="post" action="{% url 'register-submit' %}" id="register-form" class="auth-fields" novalidate>
   {% csrf_token %}
 
   <div class="auth-field" data-field="code">
+    <svg aria-hidden="true"><use href="#i-qr"></use></svg>
     <label for="id_code">Code from the mess office</label>
     <input type="text" name="code" id="id_code" required autocomplete="off"
            autocapitalize="characters" spellcheck="false" placeholder="ABCD-1234"
@@ -41,25 +59,33 @@
   </div>
 
   <div class="auth-field" data-field="username">
+    <svg aria-hidden="true"><use href="#i-user"></use></svg>
     <label for="id_username">Username</label>
     <input type="text" name="username" id="id_username" required autocomplete="username"
-           autocapitalize="none" spellcheck="false" aria-describedby="id_username-help">
+           autocapitalize="none" spellcheck="false" placeholder="Username"
+           aria-describedby="id_username-help">
     <span class="auth-field-help" id="id_username-help">The name you sign in with.</span>
     <span class="auth-field-error" data-error role="status" aria-live="polite" hidden></span>
   </div>
 
   <div class="auth-field" data-field="password">
+    <svg aria-hidden="true"><use href="#i-lock"></use></svg>
     <label for="id_password">Password</label>
     <input type="password" name="password" id="id_password" required autocomplete="new-password"
-           aria-describedby="id_password-help">
+           placeholder="Password" aria-describedby="id_password-help">
+    <button class="auth-eye" type="button" data-auth-eye="id_password"
+            aria-label="Show the password" aria-pressed="false">
+      <svg aria-hidden="true"><use href="#i-eye"></use></svg>
+    </button>
     <span class="auth-field-help" id="id_password-help">At least 8 characters.</span>
     <span class="auth-field-error" data-error role="status" aria-live="polite" hidden></span>
   </div>
 
   <div class="auth-field" data-field="password_confirm">
+    <svg aria-hidden="true"><use href="#i-lock"></use></svg>
     <label for="id_password_confirm">Confirm password</label>
     <input type="password" name="password_confirm" id="id_password_confirm" required
-           autocomplete="new-password">
+           autocomplete="new-password" placeholder="Confirm password">
     <span class="auth-field-error" data-error role="status" aria-live="polite" hidden></span>
   </div>
 
@@ -69,12 +95,44 @@
   </p>
 
   <div class="auth-actions">
-    <button class="btn auth-submit" type="submit" id="register-submit" data-auth-submit>
+    <button class="auth-submit" type="submit" id="register-submit" data-auth-submit>
       <span data-auth-label>Create account</span>
+      <svg aria-hidden="true"><use href="#i-arrow-right"></use></svg>
     </button>
-    <a class="auth-link" href="{% url 'login' %}">I already have an account</a>
   </div>
+
+  <div class="auth-or">or</div>
+
+  <a class="auth-ghost" href="{% url 'login' %}">
+    <svg aria-hidden="true"><use href="#i-user"></use></svg>
+    Sign in with an existing account
+  </a>
 </form>
+{% endblock %}
+
+{% block foot %}
+<div class="auth-ticket-foot">
+  <div class="auth-pass">
+    <svg class="auth-barcode" id="auth-barcode" viewBox="0 0 190 40" preserveAspectRatio="none"
+         role="img" aria-label="MessForecast registration pass barcode"></svg>
+    <p class="auth-pass-meta" data-auth-pass="MESSFORECAST-REGISTRATION-PASS">MessForecast / Registration</p>
+  </div>
+  <svg class="auth-stamp" viewBox="0 0 120 120" role="img" aria-label="Registration open stamp">
+    <defs>
+      <path id="arcTop" d="M60,60 m-44,0 a44,44 0 1,1 88,0" fill="none" />
+      <path id="arcBottom" d="M60,60 m-38,0 a38,38 0 1,0 76,0" fill="none" />
+    </defs>
+    <circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" stroke-width="2.4" />
+    <circle cx="60" cy="60" r="50" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="3 4" />
+    <g fill="currentColor" font-family="ui-monospace, Cascadia Mono, Consolas, monospace" font-size="8.4" letter-spacing="1.6">
+      <text><textPath href="#arcTop" startOffset="50%" text-anchor="middle">REGISTRATION</textPath></text>
+      <text><textPath href="#arcBottom" startOffset="50%" text-anchor="middle">OPEN ACCESS</textPath></text>
+    </g>
+    <g transform="translate(38,38) scale(1.83)" color="currentColor">
+      <use href="#i-user" width="24" height="24" transform="translate(-4,-1)" style="stroke-width:3.2" />
+    </g>
+  </svg>
+</div>
 {% endblock %}
 
 {% block scripts %}

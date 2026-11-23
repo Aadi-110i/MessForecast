@@ -6,20 +6,27 @@
      navigations (HTML)  network-first, fall back to the cached page, then to
                          the offline notice. Fresh data wins when there is a
                          connection; the kitchen still works when there is not.
-     static assets       the cached copy is served straight away, and refreshed
-                         in the background. The tablet works without a network,
-                         and a change to the stylesheet still reaches it on the
-                         next load instead of waiting for the cache to be
-                         thrown away by hand.
+     stylesheets, scripts
+                         network-first with a three-second cap, fall back to
+                         the cached copy. A change to the stylesheet has to
+                         reach the reader on the next load, not the one after
+                         it, and the kitchen still gets its screen when the
+                         network is slow or gone.
+     images, fonts      the cached copy is served straight away, and refreshed
+                         in the background. These rarely change, and the
+                         tablet works without a network.
      API reads          network only. Caching attendance numbers would be
                          actively misleading.
      API writes         never intercepted. The IndexedDB queue owns those.
    ========================================================================= */
 'use strict';
 
-var VERSION = 'v5';
+var VERSION = 'v9';
 var SHELL_CACHE = 'messforecast-shell-' + VERSION;
 var PAGE_CACHE = 'messforecast-pages-' + VERSION;
+
+/* How long the network gets before the cached stylesheet is used instead. */
+var CODE_TIMEOUT_MS = 3000;
 
 var SHELL_ASSETS = [
   '/static/css/app.css',
@@ -67,7 +74,18 @@ self.addEventListener('activate', function (event) {
         if (key !== SHELL_CACHE && key !== PAGE_CACHE) { return caches.delete(key); }
         return null;
       }));
-    }).then(function () { return self.clients.claim(); })
+    })
+      .then(function () { return self.clients.claim(); })
+      .then(function () {
+        // The page that is open is still the old one. It is told that a new
+        // worker has taken over, and it reloads itself once, so the reader
+        // is never left looking at a screen the platform has moved on from.
+        return self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (clients) {
+          clients.forEach(function (client) {
+            client.postMessage({ type: 'SW_ACTIVATED', version: VERSION });
+          });
+        });
+      })
   );
 });
 
@@ -77,6 +95,39 @@ self.addEventListener('message', function (event) {
 
 function isStaticAsset(url) {
   return url.pathname.indexOf('/static/') === 0;
+}
+
+/* The stylesheets and the scripts. These are the files that change, and a
+   reader has to see the change on the next load. */
+function isCodeAsset(url) {
+  return isStaticAsset(url) && /\.(css|js)$/.test(url.pathname);
+}
+
+/* The network, but not for longer than the reader will wait. The request is
+   made with the HTTP cache switched off: the browser would otherwise answer
+   from its own copy, and the reader would keep seeing the old screen. */
+function networkWithin(request, ms) {
+  return new Promise(function (resolve, reject) {
+    var settled = false;
+    var timer = setTimeout(function () {
+      if (settled) { return; }
+      settled = true;
+      reject(new Error('timeout'));
+    }, ms);
+    fetch(request.url, { cache: 'reload', credentials: 'same-origin' })
+      .then(function (response) {
+        if (settled) { return; }
+        settled = true;
+        clearTimeout(timer);
+        resolve(response);
+      })
+      .catch(function (error) {
+        if (settled) { return; }
+        settled = true;
+        clearTimeout(timer);
+        reject(error);
+      });
+  });
 }
 
 function isApiRequest(url) {
@@ -107,16 +158,39 @@ self.addEventListener('fetch', function (event) {
     return;
   }
 
-  // --- Static assets: the cached copy now, a fresh one in the background ---
+  // --- Stylesheets and scripts: the network first, the cache when there is
+  //     none, and the cached copy when the network is too slow to wait for ---
+  if (isCodeAsset(url)) {
+    event.respondWith(
+      networkWithin(request, CODE_TIMEOUT_MS)
+        .then(function (response) {
+          if (response && response.ok) {
+            var copy = response.clone();
+            caches.open(SHELL_CACHE).then(function (cache) { cache.put(request, copy); });
+          }
+          return response;
+        })
+        .catch(function () {
+          return caches.match(request).then(function (cached) {
+            if (cached) { return cached; }
+            return new Response('', { status: 504, statusText: 'Offline' });
+          });
+        })
+    );
+    return;
+  }
+
+  // --- Images and fonts: the cached copy now, a fresh one in the background ---
   if (isStaticAsset(url)) {
     event.respondWith(
       caches.match(request).then(function (cached) {
         // The copy on the tablet is served straight away, because the kitchen
         // works without a network. The same copy is refreshed in the
-        // background, so a change to the stylesheet reaches the tablet on the
+        // background, so a change to the picture reaches the tablet on the
         // next load rather than waiting for someone to remember to throw the
-        // cache away by hand.
-        var refreshed = fetch(request)
+        // cache away by hand. The refresh bypasses the browser's own cache,
+        // or it would put the same old copy back.
+        var refreshed = fetch(request.url, { cache: 'reload', credentials: 'same-origin' })
           .then(function (response) {
             if (response && response.ok) {
               var copy = response.clone();
