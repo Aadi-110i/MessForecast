@@ -78,15 +78,19 @@
 }
 .skip:focus-visible { top: 1rem; outline: 2px solid var(--a-brand); outline-offset: 2px; }
 
-/* On a wide screen the stage is a fixed frame, so the door opens without a
-   scrollbar. When the ticket cannot be made to fit, the frame gives way and
-   the page scrolls instead of cutting the form off. */
+/* On a wide screen the stage is exactly one viewport tall — no scroll. */
 @media (min-width: 1041px) {
-  .auth-shell .auth-stage { height: 100svh; }
+  .auth-shell .auth-stage {
+    height: 100svh;
+    overflow: hidden;
+  }
 }
+/* Fallback: if JS decides the ticket cannot fit even after scaling,
+   it adds auth-scroll and the stage grows to let the page scroll. */
 body.auth-scroll .auth-shell .auth-stage,
 body.auth-scroll .auth-stage {
-  height: auto;
+  height: auto !important;
+  overflow: visible !important;
   min-height: 100svh;
 }
 
@@ -228,9 +232,8 @@ body.auth-scroll .auth-stage {
   display: grid;
   grid-template-columns: minmax(0, 1fr) clamp(430px, 32vw, 700px);
   gap: clamp(1.5rem, 4vw, 4.5rem);
-  align-items: center;
-  padding: 0 clamp(1.25rem, 4.4vw, 6rem) clamp(1rem, 3vh, 2.5rem) clamp(1.25rem, 11.5vw, 16rem);
-  min-height: calc(100svh - var(--auth-topbar-h, 76px));
+  align-items: start;
+  padding: clamp(0.5rem, 1.2vh, 1.5rem) clamp(1.25rem, 4.4vw, 6rem) clamp(0.5rem, 1.2vh, 1.5rem) clamp(1.25rem, 11.5vw, 16rem);
 }
 
 .auth-side { max-width: none; }
@@ -448,7 +451,7 @@ body.auth-scroll .auth-stage {
     linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 220px),
     var(--a-paper);
   border-radius: 22px;
-  padding: 7.4cqw 9.4cqw 6cqw;
+  padding: 4.5cqw 9.4cqw 4cqw;
   clip-path: inset(0 round 22px);
   -webkit-mask:
     radial-gradient(circle var(--notch-r) at calc(var(--notch) / 2) 0, transparent 99%, #000 100%) 0 0 / var(--notch) 100% repeat-x,
@@ -519,7 +522,7 @@ body.auth-scroll .auth-stage {
 .auth-perf {
   border: 0;
   border-top: 2px dashed rgba(23, 19, 15, 0.3);
-  margin: 4.4cqw 0 4.6cqw;
+  margin: 2.8cqw 0 3cqw;
 }
 
 /* =========================================================================

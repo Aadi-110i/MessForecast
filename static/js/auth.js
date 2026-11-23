@@ -34,7 +34,7 @@
     var topH = topbar ? topbar.getBoundingClientRect().height : 76;
     document.documentElement.style.setProperty('--auth-topbar-h', Math.round(topH) + 'px');
 
-    var available = window.innerHeight - topH - 18;
+    var available = window.innerHeight - topH - 4;
 
     ticketWrap.style.zoom = '';
     var natural = ticketWrap.offsetHeight;
@@ -51,7 +51,7 @@
     // renders at. The steps are close together, because where the copy
     // breaks is not a smooth function of the zoom.
     var steps = [];
-    for (var step = Math.min(1, available / natural); step >= 0.73; step -= 0.04) {
+    for (var step = Math.min(1, available / natural); step >= 0.55; step -= 0.02) {
       var rounded = Math.round(step * 100) / 100;
       if (steps.indexOf(rounded) === -1) { steps.push(rounded); }
     }
