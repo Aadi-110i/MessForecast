@@ -34,18 +34,41 @@
     var topH = topbar ? topbar.getBoundingClientRect().height : 76;
     document.documentElement.style.setProperty('--auth-topbar-h', Math.round(topH) + 'px');
 
-    ticketWrap.style.zoom = '';
-    var natural = ticketWrap.offsetHeight;
     var available = window.innerHeight - topH - 18;
 
-    if (natural > available) {
-      var ratio = available / natural;
-      ticketWrap.style.zoom = Math.max(0.74, ratio);
-      document.body.classList.toggle('auth-scroll', ratio < 0.74);
-    } else {
-      ticketWrap.style.zoom = '';
+    ticketWrap.style.zoom = '';
+    var natural = ticketWrap.offsetHeight;
+
+    if (natural <= available) {
       document.body.classList.remove('auth-scroll');
+      return;
     }
+
+    // Zooming the ticket narrows it, so the copy re-wraps and the pass can
+    // come out taller than the zoom asked for. A ratio worked out from the
+    // natural height is therefore only a guess, so each step is applied and
+    // then measured: the only honest measure is the height it actually
+    // renders at. The steps are close together, because where the copy
+    // breaks is not a smooth function of the zoom.
+    var steps = [];
+    for (var step = Math.min(1, available / natural); step >= 0.73; step -= 0.04) {
+      var rounded = Math.round(step * 100) / 100;
+      if (steps.indexOf(rounded) === -1) { steps.push(rounded); }
+    }
+
+    for (var i = 0; i < steps.length; i++) {
+      ticketWrap.style.zoom = String(steps[i]);
+      if (ticketWrap.getBoundingClientRect().height <= available) {
+        document.body.classList.remove('auth-scroll');
+        return;
+      }
+    }
+
+    // The zoom has stopped helping: the frame gives way and the page
+    // scrolls, rather than the end of the ticket being cut off where
+    // nobody can reach it.
+    ticketWrap.style.zoom = '';
+    document.body.classList.add('auth-scroll');
   }
 
   var fitFrame = 0;
