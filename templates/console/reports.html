@@ -4,7 +4,7 @@
 {% block title %}Reports · {{ app_name }}{% endblock %}
 
 {% block console_content %}
-{% include "components/page_head.html" with title="Reports" lede="Everything the platform can produce, and what each report covers. Every export is a real dataset drawn from recorded services." %}
+{% include "components/page_head.html" with title="Reports" eyebrow="Administration" lede="Everything the platform can produce, and what each report covers. Every export is a real dataset drawn from recorded services." %}
 
 <!-- ===================== The figures ===================== -->
 {% include "components/figures.html" with figures=figures %}
@@ -18,7 +18,7 @@
         <h2>Report catalogue</h2>
         <span class="hint">{{ reports|length }} reports</span>
       </div>
-      <div class="table-wrap">
+      <div class="table-wrap c-scroll">
         <table class="ledger">
           <thead>
             <tr>

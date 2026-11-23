@@ -34,7 +34,10 @@ await page.evaluate(async () => {
 async function shot(name, path, width, height, full = true) {
   await page.setViewport({ width, height });
   await page.goto(`${BASE}${path}`, { waitUntil: 'networkidle0' });
-  await new Promise((r) => setTimeout(r, 900));
+  // The page arrives in stages: the last piece of the ticket is drawn at
+  // 0.6s and takes 0.95s to settle, so the capture waits for the page to
+  // stop moving rather than for the network to go quiet.
+  await new Promise((r) => setTimeout(r, 1800));
   await page.screenshot({ path: join(OUT, `${name}.png`), fullPage: full });
   console.log('shot', name);
 }

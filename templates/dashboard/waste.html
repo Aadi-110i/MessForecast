@@ -4,7 +4,7 @@
 {% block title %}Waste report · {{ app_name }}{% endblock %}
 
 {% block console_content %}
-{% include "components/page_head.html" with title="Waste analytics" lede="Quantity in kilograms and cost in rupees for the food that was prepared, served and left over. The cost is derived from each dish's recipe and the current price of every ingredient in it." %}
+{% include "components/page_head.html" with title="Waste analytics" eyebrow="Console" lede="Quantity in kilograms and cost in rupees for the food that was prepared, served and left over. The cost is derived from each dish's recipe and the current price of every ingredient in it." %}
 
 <form class="toolbar" method="get">
   <div class="field field--inline">
@@ -39,7 +39,7 @@
       <h2>Why it was thrown away</h2>
       <span class="hint">the cause decides who fixes it</span>
     </div>
-    <div class="table-wrap">
+    <div class="table-wrap c-scroll">
       <table class="ledger">
         <thead>
           <tr>
@@ -101,7 +101,7 @@
       <span class="hint">where the money goes</span>
     </div>
     {% if top_dishes %}
-      <div class="table-wrap">
+      <div class="table-wrap c-scroll">
         <table class="ledger">
           <thead>
             <tr>
@@ -149,7 +149,7 @@
           {% if by_meal %}
             <div>
               <h3>By meal</h3>
-              <div class="table-wrap">
+              <div class="table-wrap c-scroll">
                 <table class="ledger">
                   <thead>
                     <tr><th>Meal</th><th class="num">Cost</th><th class="num">kg</th></tr>
@@ -175,7 +175,7 @@
           {% if by_hall %}
             <div>
               <h3>By hall</h3>
-              <div class="table-wrap">
+              <div class="table-wrap c-scroll">
                 <table class="ledger">
                   <thead>
                     <tr><th>Hall</th><th class="num">Cost</th></tr>

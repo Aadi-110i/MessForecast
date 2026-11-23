@@ -4,7 +4,7 @@
 {% block title %}Attendance · {{ app_name }}{% endblock %}
 
 {% block console_content %}
-{% include "components/page_head.html" with title="Attendance" lede="Who turned up, how it was captured, and whether the tablets are syncing. The number that matters is the turnout against registered strength, because that is what the forecast is scored against." %}
+{% include "components/page_head.html" with title="Attendance" eyebrow="Console" lede="Who turned up, how it was captured, and whether the tablets are syncing. The number that matters is the turnout against registered strength, because that is what the forecast is scored against." %}
 
 <form class="toolbar" method="get">
   <div class="field field--inline">
@@ -43,8 +43,8 @@
     <span class="hint">{{ services|length }}</span>
   </div>
 {% if services %}
-  <div class="table-wrap">
-    <table class="ledger is-pinned">
+  <div class="table-wrap c-scroll">
+    <table class="ledger is-pinned is-tight">
       <thead>
         <tr>
           <th>Date</th>
@@ -59,9 +59,9 @@
       <tbody>
         {% for s in services %}
           <tr>
-            <td>{{ s.date|date:"D d M" }}</td>
-            <td class="metric">{{ s.hall.name }}</td>
-            <td>{{ s.get_meal_display }}</td>
+            <td class="nowrap">{{ s.date|date:"D d M" }}</td>
+            <td class="metric nowrap">{{ s.hall.name }}</td>
+            <td class="nowrap">{{ s.get_meal_display }}</td>
             <td class="num">{{ s.attendance_count }}</td>
             <td class="num">{{ s.registered_strength }}</td>
             <td class="num">
@@ -92,7 +92,7 @@
     <span class="hint">{{ audits|length }}</span>
   </div>
 {% if audits %}
-  <div class="table-wrap">
+  <div class="table-wrap c-scroll">
     <table class="ledger">
       <thead>
         <tr>

@@ -1,62 +1,106 @@
+/* =========================================================================
+   MessForecast — the token layer
+   -------------------------------------------------------------------------
+   One palette, one type voice, one set of shapes, shared by every surface:
+   the public landing page, the sign-in pass, the manager's console, the
+   kitchen tablet and the capture screen.
+
+   The palette is daylight. The product is worked in a canteen in the morning
+   and read at a desk in the afternoon, so the ground is warm paper rather
+   than a dark room: the wall behind the counter, the paper of the pass that
+   is handed over, and one orange that carries the model and everything that
+   matched. A second, deeper amber carries loss and everything still open.
+   No third signal colour, and no red debit.
+
+   The roles below are named for what they do on a screen, not for what hue
+   they are, so a surface never reaches for a colour directly: it asks for
+   paper, ink, a rule, a panel.
+   ========================================================================= */
+
 :root {
-  color-scheme: dark;
+  color-scheme: light;
   --space-3xs: 2px; --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 64px; --space-3xl: 96px; --space-4xl: 144px;
   --text-xs: 0.75rem; --text-sm: 0.875rem; --text-md: 1rem; --text-lg: 1.2rem; --text-xl: 1.44rem; --text-2xl: 1.728rem; --text-3xl: 2.074rem; --text-4xl: 2.488rem;
   --text-display-s: 1.44rem; --text-display: 1.728rem; --text-section: 1.2rem; --text-title: 1rem; --text-lead: 1rem;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1); --ease-in: cubic-bezier(0.7, 0, 0.84, 0); --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --dur-micro: 120ms; --dur-short: 220ms; --dur-long: 420ms;
-  --color-error: oklch(72% 0.15 27); --color-success: oklch(76% 0.13 150);
+  --color-error: #c4302b; --color-success: #2f7d4f;
   --container: 1440px; --gutter: 64px; --gap-columns: 32px; --section-gap-s: 120px; --section-gap: 144px; --section-gap-l: 176px;
   --z-base: 1; --z-raised: 10; --z-dropdown: 100; --z-sticky: 200; --z-sticky-nav: 300; --z-modal: 400; --z-toast: 500; --z-tooltip: 600;
-  --color-paper: oklch(17.5% 0.014 268); --color-paper-2: oklch(21% 0.016 268); --color-paper-3: oklch(25% 0.017 268);
-  --color-ink: oklch(96% 0.006 75); --color-ink-2: oklch(85% 0.010 262); --color-muted: oklch(70% 0.016 262);
-  --color-rule: oklch(30% 0.016 266); --color-light: oklch(100% 0 0); --color-shade: oklch(10% 0.022 268);
-  --color-accent: oklch(77% 0.10 274); --color-accent-ink: oklch(19% 0.035 274); --color-accent-hi: oklch(84% 0.085 274);
-  --color-accent-deep: oklch(44% 0.13 274); --color-accent-soft: oklch(91% 0.038 274); --color-focus: oklch(80% 0.10 274);
-  --color-accent-2: oklch(83% 0.095 62); --color-dusk: oklch(70% 0.12 330);
-  --color-day-ink: oklch(22% 0.022 268); --color-day-muted: oklch(38% 0.022 266); --color-fog: oklch(94% 0.012 70);
-  --color-well: oklch(95.5% 0.008 75); --color-well-2: oklch(92% 0.010 75); --color-well-ink: oklch(21% 0.016 268); --color-well-muted: oklch(47% 0.016 265); --color-well-rule: oklch(87.5% 0.009 75); --color-card: oklch(99.5% 0.003 75);
-  --glass: oklch(22% 0.018 268 / 0.58); --glass-blur: 22px;
-  --glass-hi: inset 0 1px 0 oklch(100% 0 0 / 0.10), inset 0 0 0 1px oklch(100% 0 0 / 0.06);
-  --shadow-card: 0 1px 0 oklch(100% 0 0 / 0.06) inset, 0 40px 80px -32px oklch(8% 0.02 268 / 0.7);
-  --font-display: "Wix Madefor Display", ui-sans-serif, system-ui, sans-serif; --font-body: "Wix Madefor Text", ui-sans-serif, system-ui, sans-serif;
-  --radius-card: 18px; --radius-inner: 10px; --radius-pill: 999px; --rule-hair: 1px;
-  --tracking-display: -0.022em; --display-weight: 500;
 
-  /* --- MessForecast roles -------------------------------------------------
-     The Dusk palette mapped onto what this product actually does. Periwinkle
-     carries the model and anything that matched; apricot carries loss and
-     anything still open. No third signal colour, and no red debit.
+  /* --- The ground, in three steps -----------------------------------------
+     The page is the wall. A band on the page is the light that falls on it.
+     A card is the paper of the pass. Each step is a little lighter and a
+     little warmer than the one under it. */
+  --color-paper: #f7eee1; --color-paper-2: #fffaf2; --color-paper-3: #fffcf6;
+
+  /* --- The ink, in three steps -------------------------------------------- */
+  --color-ink: #17130f; --color-ink-2: #3b332c; --color-muted: #736860;
+  --color-rule: rgba(23, 19, 15, 0.16); --color-light: #ffffff; --color-shade: #2a231d;
+
+  /* --- The orange ---------------------------------------------------------
+     The model, anything that matched, and the one action on a screen. */
+  --color-accent: #ee540c; --color-accent-ink: #fffcf6; --color-accent-hi: #d64204;
+  --color-accent-deep: #b03a03; --color-accent-soft: #fff1e7; --color-focus: #ee540c;
+
+  /* The second signal: loss, and anything still open. A deeper amber, so it
+     reads as its own thing against the orange and still passes as text. */
+  --color-accent-2: #a8620a;
+  --color-dusk: #b04a6b;
+
+  --color-day-ink: #17130f; --color-day-muted: #3b332c; --color-fog: #f7eee1;
+  --color-well: #f7eee1; --color-well-2: #efe3d0; --color-well-ink: #17130f; --color-well-muted: #6b6158; --color-well-rule: #e2d4c0; --color-card: #fffdf9;
+
+  /* --- Glass and shadow ----------------------------------------------------
+     The chrome is smoked glass in the dusk theme; in daylight it is the same
+     glass with the light behind it, so it is a warm paper that lets the
+     ledger show faintly through. */
+  --glass: rgba(255, 252, 246, 0.76); --glass-blur: 22px;
+  --glass-hi: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 0 0 1px rgba(23, 19, 15, 0.06);
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 24px 48px -30px rgba(86, 42, 8, 0.32);
+
+  /* --- Type ----------------------------------------------------------------
+     Archivo for the display voice, the same face the sign-in pass sets its
+     headline in. Wix Madefor Text carries everything that is read. */
+  --font-display: "Archivo", ui-sans-serif, system-ui, sans-serif; --font-body: "Wix Madefor Text", ui-sans-serif, system-ui, sans-serif;
+  --radius-card: 18px; --radius-inner: 10px; --radius-pill: 999px; --rule-hair: 1px;
+  --tracking-display: -0.03em; --display-weight: 700;
+
+  /* --- MessForecast roles ---------------------------------------------------
+     The daylight palette mapped onto what this product actually does. Orange
+     carries the model and anything that matched; a deeper amber carries loss
+     and anything still open. No third signal colour, and no red debit.
      ---------------------------------------------------------------------- */
-  --color-panel: oklch(21.5% 0.016 268);
-  --color-panel-2: oklch(25.5% 0.017 268);
-  --color-rail: oklch(14.5% 0.014 268);
-  --color-ink-3: oklch(62% 0.016 262);
-  --color-edge-lit: oklch(100% 0 0 / 0.09);
-  --color-hair: oklch(27% 0.015 267);
-  --color-field-edge: oklch(76% 0.014 262);
-  --color-wash: oklch(100% 0 0 / 0.05);
-  --color-wash-strong: oklch(100% 0 0 / 0.10);
-  --color-accent-wash: oklch(77% 0.10 274 / 0.16);
-  --color-accent-band: oklch(77% 0.10 274 / 0.30);
-  --color-accent-2-wash: oklch(83% 0.095 62 / 0.16);
-  --color-accent-2-deep: oklch(56% 0.10 62);
-  --color-error-wash: oklch(72% 0.15 27 / 0.18);
-  --color-error-ink: oklch(86% 0.09 27);
-  --color-well-shadow: oklch(8% 0.02 268 / 0.5);
-  --color-print-ink: oklch(20% 0.02 268);
-  --color-print-rule: oklch(78% 0.02 268);
-  --color-print-hair: oklch(87% 0.02 268);
-  --radius-control: 10px;
-  --radius-field-lg: 0.75rem;
+  --color-panel: #fffdf9;
+  --color-panel-2: #fff4e8;
+  --color-rail: #efe4d6;
+  --color-ink-3: #6b6158;
+  --color-edge-lit: rgba(23, 19, 15, 0.1);
+  --color-hair: rgba(23, 19, 15, 0.1);
+  --color-field-edge: rgba(23, 19, 15, 0.24);
+  --color-wash: rgba(23, 19, 15, 0.04);
+  --color-wash-strong: rgba(23, 19, 15, 0.08);
+  --color-accent-wash: rgba(238, 84, 12, 0.14);
+  --color-accent-band: rgba(238, 84, 12, 0.3);
+  --color-accent-2-wash: rgba(168, 98, 10, 0.12);
+  --color-accent-2-deep: #7a4708;
+  --color-error-wash: rgba(196, 48, 43, 0.1);
+  --color-error-ink: #a52b26;
+  --color-well-shadow: rgba(86, 42, 8, 0.18);
+  --color-print-ink: #2a231d;
+  --color-print-rule: #b9a894;
+  --color-print-hair: #ded2c2;
+  --radius-control: 999px;
+  --radius-field-lg: 999px;
   --rail-w: 15rem;
-  --topbar-h: 3.5rem;
+  --topbar-h: 4rem;
   --control-h: 2.5rem;
 
   /* --- Kitchen screen roles ------------------------------------------------
-     The tablet screen runs in a hot room, so the palette is the same Dusk
-     palette but the targets are glove sized and the copy is larger. Periwinkle
-     is still the model and the action; apricot is still loss and overflow.
+     The tablet screen runs in a hot room, so the palette is the same daylight
+     palette but the targets are glove sized and the copy is larger. Orange
+     is still the model and the action; the deeper amber is still loss and
+     overflow.
      ---------------------------------------------------------------------- */
   --k-min: 4.5rem;
   --k-surface: var(--color-panel);

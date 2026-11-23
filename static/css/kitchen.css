@@ -3,7 +3,7 @@
    -------------------------------------------------------------------------
    These two screens live in a hot, wet room and are used by people wearing
    gloves, standing up, in a forty-five-minute rush. Every rule below comes
-   from that, and the design language is the same Dusk language as the
+   from that, and the design language is the same daylight language as the
    dashboard:
 
      - touch targets are never smaller than 72px on the short edge;
@@ -15,9 +15,9 @@
        never more than one thumb-reach away;
      - the whole screen works with the network down.
 
-   The ground is slate, the surfaces are smoked glass with a lit top edge, the
-   figures are set in the display face with tabular numerals, and the brief
-   the kitchen reads is set on bone.
+   The ground is warm paper, the surfaces are the paper of a pass, the figures
+   are set in the display face with tabular numerals, and the brief the
+   kitchen reads is set on a sheet of its own.
    ========================================================================= */
 
 .k-shell {
@@ -46,14 +46,30 @@
   flex-wrap: wrap;
 }
 .k-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
   font-family: var(--font-display);
-  font-weight: var(--display-weight);
-  font-size: var(--text-lg);
+  font-weight: 600;
+  font-size: var(--text-md);
   letter-spacing: var(--tracking-display);
-  color: var(--color-ink);
-  padding: var(--space-xs) var(--space-sm);
-  border: 1px solid var(--color-rule);
-  border-radius: var(--radius-control);
+  color: var(--color-accent-ink);
+  padding: 0.35rem 0.85rem;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-deep));
+  border: 1px solid var(--color-accent-deep);
+  border-radius: var(--radius-pill);
+  box-shadow: 0 2px 10px -2px rgba(176, 58, 3, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(8px);
+}
+.k-mark::before {
+  content: "";
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--color-accent-ink);
+  box-shadow: 0 0 8px rgba(255, 252, 246, 0.9);
+  flex: none;
 }
 .k-where { min-width: 0; }
 .k-where .k-hall {

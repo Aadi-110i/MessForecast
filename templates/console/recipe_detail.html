@@ -4,7 +4,7 @@
 {% block title %}{{ dish.name }} · {{ app_name }}{% endblock %}
 
 {% block console_content %}
-{% include "components/page_head.html" with title=dish.name lede=dish.notes|default:"The dish, its recipe versions, and what one portion of it costs." %}
+{% include "components/page_head.html" with title=dish.name eyebrow="Console" lede=dish.notes|default:"The dish, its recipe versions, and what one portion of it costs." %}
 
 <nav class="c-crumbs" aria-label="Breadcrumb">
   <a href="{% url 'console-recipes' %}">Recipes</a>
@@ -21,7 +21,7 @@
         {% if active %}<span class="hint">Version {{ active.recipe.version }}</span>{% endif %}
       </div>
       {% if active %}
-        <div class="table-wrap">
+        <div class="table-wrap c-scroll">
           <table class="ledger">
             <thead>
               <tr>
@@ -74,7 +74,7 @@
         <span class="hint">{{ versions|length }} versions</span>
       </div>
       {% if versions %}
-        <div class="table-wrap">
+        <div class="table-wrap c-scroll">
           <table class="ledger">
             <thead>
               <tr>
@@ -124,7 +124,7 @@
         <form class="c-form" method="post" action="{% url 'console-recipe-version' dish.id %}">
           {% csrf_token %}
           <p class="hint">A new version starts today and closes the current one. Leave a row blank to skip it.</p>
-          <div class="table-wrap">
+          <div class="table-wrap c-scroll">
             <table class="ledger">
               <thead>
                 <tr>

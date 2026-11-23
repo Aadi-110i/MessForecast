@@ -6,6 +6,7 @@
 {% block content %}
 <div class="pagehead">
   <div>
+    <p class="c-head-eyebrow">Administration</p>
     <h1>Data quality</h1>
     <p class="lede">
       Waste cannot be measured for a service whose actuals were never recorded, and a forecast
@@ -58,7 +59,7 @@
     <span class="hint">the kitchen is reminded automatically</span>
   </div>
   {% if missing %}
-    <div class="table-wrap">
+    <div class="table-wrap c-scroll">
       <table class="ledger is-pinned">
         <thead>
           <tr><th>Date</th><th>Hall</th><th>Meal</th><th class="num">Turned up</th><th>Status</th></tr>
@@ -90,7 +91,7 @@
     <span class="hint">how much over-preparation each hall tolerates</span>
   </div>
   {% if level_configs %}
-    <div class="table-wrap">
+    <div class="table-wrap c-scroll">
       <table class="ledger">
         <thead>
           <tr>

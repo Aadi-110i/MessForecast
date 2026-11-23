@@ -1,13 +1,15 @@
 {% comment %}
 Component library — the page head.
 A screen's name, one sentence of orientation, and the actions that belong
-to that name. No eyebrow, no tracked capitals.
+to that name. The eyebrow is optional: it names the section the screen sits
+in, the way the landing page names its own sections.
 
 Usage:
-  {% include "components/page_head.html" with title="Attendance" lede="..." %}
+  {% include "components/page_head.html" with title="Attendance" eyebrow="Turnout" lede="..." %}
 {% endcomment %}
 <header class="c-head">
   <div>
+    {% if eyebrow %}<p class="c-head-eyebrow">{{ eyebrow }}</p>{% endif %}
     <h1>{{ title }}</h1>
     {% if lede %}<p class="c-head-lede">{{ lede }}</p>{% endif %}
   </div>

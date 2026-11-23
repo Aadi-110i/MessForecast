@@ -1,8 +1,8 @@
-/* Hallmark · shape: app screen · genre: modern-minimal · theme: Dusk · scope: the reusable component library
+/* Hallmark · shape: app screen · genre: modern-minimal · theme: daylight · scope: the reusable component library
  * nav: none, a component carries no navigation of its own · footer: none
  * signature: one figure contract at two scales — the same turnout, portions, leftover and cost read densely on the console and large on the tablet
- * states: loading, empty, error, full · dusk: fog/periwinkle-apricot/glass
- * axes: dark/grotesk-sans/cool · posture: committed · contrast: pass · v2.0.0 */
+ * states: loading, empty, error, full · daylight: paper/orange-amber/glass
+ * axes: light/grotesk-sans/warm · posture: committed · contrast: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P5 H4 E4 S5 R5 V5 · weakest: E, the first pass repeated the tally pattern on every screen, so the library
    earns its own components — the schedule board, the forecast band, the report ledger — instead of one row of figures everywhere */
 

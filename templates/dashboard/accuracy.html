@@ -6,6 +6,7 @@
 {% block content %}
 <div class="pagehead">
   <div>
+    <p class="c-head-eyebrow">Console</p>
     <h1>Forecast accuracy</h1>
     <p class="lede">
       Each forecast is compared with the attendance that actually turned up. MAPE is the
@@ -91,7 +92,7 @@
     <span class="hint">where the model is weakest</span>
   </div>
   {% if by_meal_and_hall %}
-    <div class="table-wrap">
+    <div class="table-wrap c-scroll">
       <table class="ledger">
         <thead>
           <tr>
@@ -133,7 +134,7 @@
     <span class="hint">the last 200 services, with the reasoning that produced each number</span>
   </div>
   {% if rows %}
-    <div class="table-wrap">
+    <div class="table-wrap c-scroll">
       <table class="ledger is-pinned">
         <thead>
           <tr>

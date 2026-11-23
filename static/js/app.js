@@ -326,6 +326,20 @@
      --------------------------------------------------------------------- */
   function registerServiceWorker() {
     if (!('serviceWorker' in navigator)) { return; }
+
+    // When a new worker takes over, the page it is looking at is the old one.
+    // The reader gets the new screen without being asked to refresh. Two
+    // things can announce the change — this and the worker's own message —
+    // so the flag in the session makes sure the page reloads once, not twice.
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (sessionStorage.getItem('mf-sw-reloaded')) { return; }
+      sessionStorage.setItem('mf-sw-reloaded', '1');
+      window.location.reload();
+    });
+    if (sessionStorage.getItem('mf-sw-reloaded')) {
+      sessionStorage.removeItem('mf-sw-reloaded');
+    }
+
     navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {
       // A failed registration must never break the page; the app still works,
       // it just will not be available offline.

@@ -11,8 +11,10 @@ from pathlib import Path
 
 import os
 from datetime import timedelta
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env")
 
 
 def env(key: str, default: str | None = None) -> str | None:

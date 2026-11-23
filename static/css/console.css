@@ -1,0 +1,591 @@
+/* Hallmark · shape: app screen · genre: modern-minimal · theme: daylight · scope: the console layer
+ * nav: the same paper masthead and marked rail as the public pages, so the product does not change character at the door
+ * signature: the figure row as paper chips, and every long ledger inside a bordered frame that scrolls under a pinned head
+ * states: loading, empty, error, full · daylight: paper/orange-amber/glass
+ * axes: light/grotesk-sans/warm · posture: committed · contrast: pass · v1.0.0 */
+/* Hallmark · pre-emit critique: P5 H4 E5 S5 R5 V5 · weakest: E, the console had grown its own colder register; it now
+   stands on the same warm ground as the landing page and the sign-in pass, and the long tables are framed rather than
+   allowed to run the length of the page
+   Hallmark · answered F25 · a ledger that runs past the panel is put in a bordered frame with its head pinned, so the
+   panel keeps its size and the row is never lost
+   Hallmark · answered F4 · one filled orange pill a page; the ghost beside it carries no fill */
+
+/* =========================================================================
+   MessForecast — the console, dressed for daylight
+   -------------------------------------------------------------------------
+   The landing page and the sign-in pass are warm: a paper ground, one orange
+   that carries the model, glass chips, a display face set large, and cards
+   that sit on the page rather than in it. The console grew a colder, flatter
+   register of its own, and it read as a different product from the one the
+   visitor had just seen.
+
+   This layer puts the console back on the same ground. It changes how the
+   console looks and how it holds a lot of data. It does not change what the
+   console is for: a manager reading many numbers at a desk, often printed.
+
+   It also adds the one thing the console was missing. A ledger with two
+   hundred rows used to run the length of the page and push everything else
+   off the screen. Now it sits in a frame of its own, with a border and a
+   pinned head, and scrolls inside that frame.
+   ========================================================================= */
+
+/* =========================================================================
+   The ground: daylight falling on the wall
+   ========================================================================= */
+.shell {
+  position: relative;
+  isolation: isolate;
+}
+
+/* The same ambient wash the landing page opens with, laid over the paper. */
+.shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 62% 46% at 92% -6%, rgba(238, 84, 12, 0.11) 0%, transparent 62%),
+    radial-gradient(ellipse 48% 42% at 2% 102%, rgba(255, 180, 100, 0.12) 0%, transparent 60%);
+}
+
+/* =========================================================================
+   The masthead: smoked warm glass over the paper
+   ========================================================================= */
+.topbar {
+  background: rgba(247, 238, 225, 0.82);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  backdrop-filter: blur(18px) saturate(1.4);
+  border-bottom: 1px solid var(--color-rule);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), 0 12px 30px -26px rgba(86, 42, 8, 0.7);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding-block: var(--space-xs);
+  min-width: 0;
+}
+
+.brand-mark {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.3rem;
+  letter-spacing: var(--tracking-display);
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The wordmark carries the same lit dot as the landing page. */
+.brand-dot {
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 10px var(--color-accent);
+  flex: none;
+  transition: transform var(--dur-short) var(--ease-out);
+}
+.brand:hover .brand-dot { transform: scale(1.3); }
+.brand:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; }
+
+.brand-sub {
+  padding-left: var(--space-xs);
+  border-left: 1px solid var(--color-rule);
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+.userbox { gap: var(--space-sm); }
+.user-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-display);
+  color: var(--color-ink);
+}
+.user-role {
+  padding: 0.2rem 0.65rem;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-pill);
+  background: var(--color-wash);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--color-ink-2);
+}
+
+/* The chrome buttons are the landing page's outlined pill, not a filled one:
+   the one filled orange on a screen is the one action the reader takes. */
+.userbox .btn {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: var(--tracking-display);
+  border-radius: var(--radius-pill);
+  border-color: var(--color-rule);
+  background: transparent;
+  color: var(--color-ink);
+}
+.userbox .btn:hover {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: var(--color-light);
+}
+
+/* =========================================================================
+   The rail: a card of destinations, marked rather than ruled
+   ========================================================================= */
+.rail {
+  position: sticky;
+  top: calc(var(--topbar-h) + var(--space-md));
+  padding: var(--space-md);
+  margin-block: var(--space-md) var(--space-lg);
+  max-height: calc(100vh - var(--topbar-h) - var(--space-xl));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-rule) transparent;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-card);
+  background: var(--color-panel);
+  box-shadow: 0 16px 40px -28px rgba(86, 42, 8, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.rail-heading {
+  margin: var(--space-lg) 0 var(--space-xs);
+  padding-inline: var(--space-sm);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-ink-3);
+}
+.rail-heading:first-of-type { margin-top: var(--space-xs); }
+.rail-heading + .rail-list { margin-bottom: var(--space-sm); }
+
+.rail-list { list-style: none; margin: 0; padding: 0; }
+
+/* One destination: a mark, a name, and one line of context when it is the
+   page being read. The mark is the same stroke vocabulary as the sign-in
+   pass, drawn at 1.1rem. */
+.rail-link {
+  display: grid;
+  grid-template-columns: 1.1rem minmax(0, 1fr);
+  grid-template-areas:
+    "mark label"
+    "mark note";
+  align-items: center;
+  column-gap: var(--space-sm);
+  row-gap: 1px;
+  padding: 0.5rem var(--space-sm);
+  border-bottom: 0;
+  border-radius: var(--radius-inner);
+  text-decoration: none;
+  color: var(--color-ink-2);
+  font-size: var(--text-sm);
+  transition: background-color var(--dur-short) var(--ease-out),
+              color var(--dur-short) var(--ease-out);
+}
+.rail-link::before { content: none; }
+
+.rail-mark {
+  grid-area: mark;
+  width: 1.1rem;
+  height: 1.1rem;
+  color: var(--color-ink-3);
+  transition: color var(--dur-short) var(--ease-out);
+}
+
+.rail-label {
+  grid-area: label;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.rail-note {
+  grid-area: note;
+  display: none;
+  font-size: var(--text-xs);
+  line-height: 1.35;
+  color: var(--color-muted);
+}
+.rail-link[aria-current="page"] .rail-note { display: block; }
+
+.rail-link:hover {
+  background: var(--color-wash);
+  color: var(--color-ink);
+}
+.rail-link:hover .rail-mark { color: var(--color-accent); }
+.rail-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+
+/* The page being read is marked with the orange, the way the landing page
+   marks the one thing it wants looked at. */
+.rail-link[aria-current="page"] {
+  background: var(--color-accent-wash);
+  color: var(--color-accent-deep);
+}
+.rail-link[aria-current="page"] .rail-label { font-weight: 700; }
+.rail-link[aria-current="page"] .rail-mark { color: var(--color-accent); }
+.rail-link[aria-current="page"] .rail-note { color: var(--color-accent-2); }
+
+/* =========================================================================
+   The page head: a name, one line of orientation, and a marked eyebrow
+   ========================================================================= */
+.c-head { margin-bottom: var(--space-lg); }
+
+.c-head-eyebrow {
+  display: inline-block;
+  margin-bottom: var(--space-2xs);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.c-head h1 {
+  font-size: clamp(1.65rem, 2.3vw, 2.15rem);
+  font-weight: 800;
+}
+
+.c-head-lede {
+  margin-top: var(--space-xs);
+  max-width: 64ch;
+  font-size: var(--text-md);
+  color: var(--color-ink-2);
+}
+
+/* The older head, on the pages that still use it, is held to the same scale. */
+.pagehead { margin-bottom: var(--space-lg); }
+.pagehead h1 {
+  font-size: clamp(1.65rem, 2.3vw, 2.15rem);
+  font-weight: 800;
+}
+.pagehead .lede { max-width: 64ch; }
+
+/* =========================================================================
+   Panels: paper cards that sit on the ground
+   ========================================================================= */
+.panel {
+  background: var(--color-panel);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-card);
+  box-shadow: 0 16px 40px -26px rgba(86, 42, 8, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  overflow: hidden;
+}
+
+/* Two panels side by side are one pair, so their heads sit on one line. The
+   grid gap already holds them apart, so the stack margin between siblings
+   would only knock the second one out of line. */
+.grid-2 { align-items: start; }
+.grid-2 > .panel + .panel,
+.grid-2 > * + * { margin-top: 0; }
+
+.panelhead {
+  padding: var(--space-md) var(--space-lg);
+  background: linear-gradient(180deg, var(--color-paper-2), var(--color-panel));
+  border-bottom: 1px solid var(--color-hair);
+}
+.panelhead h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-md);
+  letter-spacing: var(--tracking-display);
+  color: var(--color-ink);
+}
+.panelhead .hint { font-size: var(--text-sm); color: var(--color-muted); }
+
+.panelbody { padding: var(--space-lg); color: var(--color-ink-2); }
+
+/* =========================================================================
+   The figure row: four chips of paper, not four tiles of a dashboard
+   -------------------------------------------------------------------------
+   The number is the point, so it is set in the display face at size, and the
+   label above it carries the same lit dot the rest of the product uses.
+   ========================================================================= */
+.tally,
+.c-figrow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-md);
+  border: 0;
+  margin-bottom: var(--space-xl);
+}
+
+.tally-item,
+.c-figrow > * {
+  position: relative;
+  min-width: 0;
+  padding: var(--space-lg);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-card);
+  background: var(--color-panel);
+  box-shadow: 0 4px 16px rgba(23, 19, 15, 0.04);
+  transition: transform var(--dur-short) var(--ease-out),
+              box-shadow var(--dur-short) var(--ease-out),
+              border-color var(--dur-short) var(--ease-out);
+}
+.tally-item:hover,
+.c-figrow > *:hover {
+  transform: translateY(-2px);
+  border-color: rgba(238, 84, 12, 0.28);
+  box-shadow: 0 16px 32px -18px rgba(86, 42, 8, 0.3);
+}
+
+.tally-label,
+.c-fig-label {
+  display: block;
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+.tally-label::before,
+.c-fig-label::before {
+  content: "";
+  display: inline-block;
+  width: 0.4rem;
+  height: 0.4rem;
+  margin-right: var(--space-xs);
+  border-radius: 50%;
+  background: var(--color-accent);
+  vertical-align: middle;
+}
+
+.tally-value,
+.c-fig-value {
+  margin-top: var(--space-2xs);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.7rem, 2.1vw, 2.15rem);
+  line-height: 1.05;
+  letter-spacing: var(--tracking-display);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink);
+}
+.tally-value.is-loss,
+.c-fig-value.is-loss { color: var(--color-accent-2); }
+.tally-value.is-match,
+.c-fig-value.is-match { color: var(--color-accent); }
+
+.tally-note,
+.c-fig-note {
+  margin-top: var(--space-2xs);
+  font-size: var(--text-xs);
+  color: var(--color-ink-3);
+}
+
+/* A figure whose value is a phrase, not a number, steps down a size so the
+   words stay whole instead of breaking across three lines. */
+.c-fig-value.is-text { font-size: var(--text-xl); line-height: 1.16; }
+
+/* =========================================================================
+   The scroll frame
+   -------------------------------------------------------------------------
+   The one thing the console was missing. A ledger with two hundred rows used
+   to run the length of the page and push everything below it off the screen.
+   Now it sits in a frame of its own: a border, a corner, a pinned head and
+   a scrollbar, and the panel keeps the size of a panel.
+
+   Inside a panel the frame is the panel: the panel's own border is the edge
+   and the ledger scrolls under the panel's head.
+   ========================================================================= */
+.c-scroll {
+  --scroll-paper: var(--color-paper-3);
+  --scroll-head: var(--color-panel-2);
+  width: 100%;
+  max-height: var(--scroll-h, 26rem);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(23, 19, 15, 0.28) transparent;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-inner);
+  background: var(--scroll-paper);
+  /* The shadow at each edge shows only while there is more to read, and it
+     goes away when the reader reaches the end. */
+  background-image:
+    linear-gradient(var(--scroll-paper) 30%, transparent),
+    linear-gradient(transparent, var(--scroll-paper) 70%),
+    radial-gradient(farthest-side at 50% 0, rgba(23, 19, 15, 0.16), rgba(23, 19, 15, 0)),
+    radial-gradient(farthest-side at 50% 100%, rgba(23, 19, 15, 0.16), rgba(23, 19, 15, 0));
+  background-repeat: no-repeat;
+  background-size: 100% 26px, 100% 26px, 100% 12px, 100% 12px;
+  background-attachment: local, local, scroll, scroll;
+}
+
+/* The scrollbar is always drawn, so the frame reads as a frame and not as a
+   panel that happens to be cut short. */
+.c-scroll::-webkit-scrollbar { width: 11px; height: 11px; }
+.c-scroll::-webkit-scrollbar-track { background: transparent; }
+.c-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-rule);
+  background-clip: content-box;
+  border: 3px solid transparent;
+  border-radius: 999px;
+}
+.c-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ink-3);
+  background-clip: content-box;
+}
+.c-scroll::-webkit-scrollbar-corner { background: transparent; }
+
+/* Inside a panel the panel is the frame, so the ledger runs to its edges. */
+.panel > .c-scroll {
+  --scroll-paper: var(--color-panel);
+  --scroll-head: var(--color-panel-2);
+  border: 0;
+  border-top: 1px solid var(--color-hair);
+  border-radius: 0;
+  background-color: var(--scroll-paper);
+}
+
+/* The head of the ledger is pinned, so the columns keep their names while
+   the rows are read. */
+.c-scroll .ledger thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--scroll-head);
+  box-shadow: inset 0 -1px 0 var(--color-rule);
+}
+
+.c-scroll .ledger tbody tr:hover td { background: var(--color-wash); }
+
+/* A frame that is short enough never scrolls, so it should not pretend to. */
+.c-scroll.is-short { max-height: none; }
+
+/* =========================================================================
+   The ledger inside a frame
+   ========================================================================= */
+.ledger th,
+.ledger td { padding: var(--space-sm) var(--space-md); }
+.ledger thead th {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.ledger tbody td { color: var(--color-ink-2); }
+.ledger tbody td.metric { color: var(--color-ink); font-weight: 500; }
+
+/* =========================================================================
+   The filter row: one warm card of inputs
+   ========================================================================= */
+.toolbar {
+  padding: var(--space-md) var(--space-lg);
+  margin-bottom: var(--space-xl);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-card);
+  background: var(--color-panel);
+  box-shadow: 0 16px 40px -28px rgba(86, 42, 8, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+.toolbar .field label {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-ink-3);
+}
+
+/* =========================================================================
+   Buttons: the one filled orange on a screen
+   ========================================================================= */
+.btn {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: var(--tracking-display);
+  box-shadow: 0 3px 12px -3px rgba(238, 84, 12, 0.45);
+}
+.btn:hover { box-shadow: 0 6px 18px -4px rgba(238, 84, 12, 0.5); }
+.btn-ghost {
+  box-shadow: none;
+  font-weight: 600;
+}
+/* A quiet button carries no fill and no glow: it is a way through a table,
+   not the one action on the screen. */
+.btn-quiet {
+  box-shadow: none;
+  font-weight: 600;
+}
+
+/* =========================================================================
+   States and chips
+   ========================================================================= */
+.state {
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-wash-strong);
+  font-weight: 500;
+}
+.state.is-match {
+  background: var(--color-accent-wash);
+  color: var(--color-accent-deep);
+}
+.state.is-open {
+  background: var(--color-accent-2-wash);
+  color: var(--color-accent-2-deep);
+}
+
+/* =========================================================================
+   Empty: a frame that says nothing is here yet
+   ========================================================================= */
+.empty:not(td) {
+  display: grid;
+  gap: var(--space-xs);
+  justify-items: center;
+  text-align: center;
+  margin: var(--space-lg);
+  padding: var(--space-2xl) var(--space-lg);
+  max-width: none;
+  border: 1px dashed var(--color-rule);
+  border-radius: var(--radius-inner);
+  background: var(--color-wash);
+}
+.empty:not(td) h3 { color: var(--color-ink); }
+.empty:not(td) p { color: var(--color-muted); max-width: 46ch; }
+
+/* =========================================================================
+   The footer
+   ========================================================================= */
+.foot { border-top: 1px solid var(--color-rule); }
+
+/* =========================================================================
+   Responsive
+   ========================================================================= */
+@media (max-width: 60rem) {
+  .tally,
+  .c-figrow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .rail {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    margin-bottom: var(--space-lg);
+  }
+  .rail[hidden] { display: none; }
+  html:not(.js) .rail { display: block; }
+}
+
+@media (max-width: 40rem) {
+  .tally,
+  .c-figrow { grid-template-columns: minmax(0, 1fr); }
+  .brand-sub { display: none; }
+
+  /* A phone has no room for the full wordmark and three buttons, so the
+     wordmark steps down rather than being cut off mid-word. */
+  .brand-mark { font-size: 1.05rem; }
+  .userbox { gap: var(--space-2xs); }
+  .userbox .btn--small { padding-inline: var(--space-xs); }
+
+  /* The corner cell is pinned in two directions at once, so it needs to sit
+     above the rest of the pinned head. */
+  .c-scroll .ledger thead th:first-child {
+    left: 0;
+    z-index: 3;
+    background: var(--scroll-head);
+  }
+  .c-scroll .ledger tbody td:first-child { background: var(--color-panel); }
+}

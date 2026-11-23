@@ -4,7 +4,7 @@
 {% block title %}Recipes · {{ app_name }}{% endblock %}
 
 {% block console_content %}
-{% include "components/page_head.html" with title="Recipe management" lede="What each dish is made of, and what one portion costs. A recipe is versioned: when the kitchen changes a proportion, that is a new version, and the old one stays so a dish served in March can still be costed." %}
+{% include "components/page_head.html" with title="Recipe management" eyebrow="Console" lede="What each dish is made of, and what one portion costs. A recipe is versioned: when the kitchen changes a proportion, that is a new version, and the old one stays so a dish served in March can still be costed." %}
 
 <!-- ===================== The figures ===================== -->
 {% include "components/figures.html" with figures=figures %}
@@ -16,7 +16,7 @@
     <span class="hint">{{ total_dishes }}</span>
   </div>
 {% if rows %}
-  <div class="table-wrap">
+  <div class="table-wrap c-scroll">
     <table class="ledger">
       <thead>
         <tr>

@@ -4,7 +4,7 @@
 {% block title %}Overview · {{ app_name }}{% endblock %}
 
 {% block console_content %}
-{% include "components/page_head.html" with title="Overview" lede="How much food this mess threw away, what the forecast predicted, and whether the two are getting closer. Every figure below is computed from recorded services." %}
+{% include "components/page_head.html" with title="Overview" eyebrow="Console" lede="How much food this mess threw away, what the forecast predicted, and whether the two are getting closer. Every figure below is computed from recorded services." %}
 
 <form class="toolbar" method="get">
   {% if savings %}
@@ -46,7 +46,7 @@
       <h2>Reconciled against the baseline window</h2>
       <span class="hint">{{ savings.baseline.start|date:"d M Y" }} to {{ savings.baseline.end|date:"d M Y" }} against {{ savings.live.start|date:"d M Y" }} to {{ savings.live.end|date:"d M Y" }}</span>
     </div>
-    <div class="table-wrap">
+    <div class="table-wrap c-scroll">
       <table class="ledger">
         <thead>
           <tr>
@@ -148,7 +148,7 @@
     <span class="hint">{{ todays_services|length }} services</span>
   </div>
   {% if todays_services %}
-    <div class="table-wrap">
+    <div class="table-wrap c-scroll">
       <table class="ledger is-pinned">
         <thead>
           <tr>
@@ -225,7 +225,7 @@
       <span class="hint">cost of the food left over</span>
     </div>
     {% if top_dishes %}
-      <div class="table-wrap">
+      <div class="table-wrap c-scroll">
         <table class="ledger">
           <thead>
             <tr>

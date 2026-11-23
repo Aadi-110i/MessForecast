@@ -1,503 +1,902 @@
 /* =========================================================================
    MessForecast — the sign-in and register screens
    -------------------------------------------------------------------------
-   One composition for both screens: a column that says who this is for,
-   and a column that asks for the thing.
+   The front door is warm: a canteen in daylight, one orange dome, and the
+   form held in a torn-off access pass. Everything the reader needs is on
+   one sheet — what the platform does on the left, the ticket on the right.
 
-   The field is a rule, not a box. The line under the input draws in from
-   the left when the field takes the cursor, which is the same gesture the
-   console uses for everything else, so signing in feels like the rest of
-   the product rather than a form bolted onto it.
+   The ticket is the form. Its scalloped top and bottom edges are cut with a
+   mask, so the perforations are the shape of the control itself and not a
+   picture of one. Its inside scales with its own width through container
+   query units, so the spacing holds from a phone to a wide desk.
 
-   Nothing here is a new palette or a new face. The Dusk tokens and the
-   two typefaces already in the project carry it; what is new is the
-   shape of the page and how it moves.
+   The whole product is now this daylight theme: this surface is where it was
+   drawn first, and it is scoped to .auth-shell so it can carry the canteen
+   photograph and the torn edge without putting them on every screen.
+   ========================================================================= */
+
+/* =========================================================================
+   The display face, for the headline and the ticket title only
+   -------------------------------------------------------------------------
+   Archivo tops out at weight 600 in the Wix set, which is a semibold. The
+   reference for this screen is a heavy grotesque, so Archivo is vendored
+   for the display type alone and the body stays in the project voice. It is
+   declared once, in fonts.css, with the rest of the self-hosted faces.
    ========================================================================= */
 
 /* =========================================================================
    The shell
+   -------------------------------------------------------------------------
+   The names below are the theme's own, taken from the token layer so that
+   this surface and the rest of the product are literally the same palette.
    ========================================================================= */
 .auth-shell {
-  background: var(--color-paper);
+  --a-paper: var(--color-paper-3);
+  --a-ink: var(--color-ink);
+  --a-ink-2: var(--color-ink-2);
+  --a-muted: var(--color-muted);
+  --a-brand: var(--color-accent);
+  --a-brand-600: var(--color-accent-hi);
+  --a-brand-050: var(--color-accent-soft);
+  --a-line: var(--color-rule);
+  --a-hair: var(--color-hair);
+  --a-danger: var(--color-error);
+  --a-display: "Archivo", var(--font-display);
+  --a-body: var(--font-body);
+  --a-mono: ui-monospace, "Cascadia Mono", "Consolas", monospace;
+  /* The height of a field. The bar and the rule under it are drawn against
+     it, so they stay on the edge of the box at every width. */
+  --a-field-h: max(46px, 8.4cqw);
+
+  color-scheme: light;
+  background: var(--color-rail);
+  color: var(--a-ink);
+  font-family: var(--a-body);
   min-height: 100svh;
 }
 
-.auth {
+.auth-stage {
+  position: relative;
   min-height: 100svh;
-  display: grid;
-  grid-template-columns: minmax(0, 41fr) minmax(0, 59fr);
+  overflow: hidden;
+  isolation: isolate;
 }
 
 /* A way past the chrome, the same one the console uses. */
 .skip {
   position: absolute;
-  left: var(--space-md);
-  top: calc(-1 * var(--space-2xl));
-  z-index: var(--z-toast);
-  padding: var(--space-xs) var(--space-md);
-  border-radius: var(--radius-control);
-  background: var(--color-accent);
-  color: var(--color-accent-ink);
-  font-size: var(--text-sm);
+  left: 1rem;
+  top: -4rem;
+  z-index: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: var(--a-ink);
+  color: var(--a-paper);
+  font-size: 0.875rem;
   text-decoration: none;
+  transition: top 0.2s var(--ease-out);
 }
-.skip:focus-visible { top: var(--space-md); outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.skip:focus-visible { top: 1rem; outline: 2px solid var(--a-brand); outline-offset: 2px; }
 
-/* =========================================================================
-   The identity column
-   ========================================================================= */
-.auth-side {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-lg);
-  padding: var(--space-2xl) var(--space-2xl) var(--space-xl);
-  padding-left: max(var(--space-2xl), env(safe-area-inset-left));
-  padding-right: max(var(--space-2xl), env(safe-area-inset-right));
-  padding-bottom: max(var(--space-xl), env(safe-area-inset-bottom));
-  background: var(--color-paper-2);
-  border-right: 1px solid var(--color-rule);
-  overflow: hidden;
+/* On a wide screen the stage is a fixed frame, so the door opens without a
+   scrollbar. When the ticket cannot be made to fit, the frame gives way and
+   the page scrolls instead of cutting the form off. */
+@media (min-width: 1041px) {
+  .auth-shell .auth-stage { height: 100svh; }
+}
+body.auth-scroll .auth-shell .auth-stage,
+body.auth-scroll .auth-stage {
+  height: auto;
+  min-height: 100svh;
 }
 
-/* One wash of periwinkle in the corner, so the column has a ground rather
-   than a flat fill. */
-.auth-side::before {
-  content: "";
+/* The canteen, behind everything. */
+.auth-photo {
+  position: absolute;
+  inset: -2%;
+  z-index: 0;
+  background-image: url("../img/kitchen-hero.jpg");
+  background-size: cover;
+  background-position: 50% 20%;
+  background-repeat: no-repeat;
+  animation: auth-photo-in 1.6s var(--ease-out) both;
+}
+
+/* A wash of daylight over the left, so the words hold. */
+.auth-veil {
   position: absolute;
   inset: 0;
-  background: radial-gradient(120% 70% at 0% 0%, var(--color-accent-wash), transparent 62%);
+  z-index: 1;
   pointer-events: none;
+  background:
+    linear-gradient(96deg,
+      rgba(255, 252, 246, 0.96) 0%,
+      rgba(255, 251, 244, 0.88) 26%,
+      rgba(255, 249, 241, 0.58) 44%,
+      rgba(255, 248, 240, 0.16) 60%,
+      rgba(255, 248, 240, 0) 72%),
+    linear-gradient(180deg, rgba(255, 250, 243, 0.78) 0%, rgba(255, 250, 243, 0) 16%),
+    linear-gradient(0deg, rgba(255, 249, 240, 0.55) 0%, rgba(255, 249, 240, 0) 26%);
 }
-.auth-side > * { position: relative; }
 
-.auth-mark {
+/* The dome. Wide at the top, straight down past the fold, so it reads as a
+   half circle standing in the room rather than a disc floating on it. */
+.auth-dome {
+  position: absolute;
+  z-index: 2;
+  left: 42.4vw;
+  top: 11vh;
+  width: 48.4vw;
+  height: 160vh;
+  border-radius: 50% 50% 6% 6% / 34vh 34vh 0 0;
+  background: radial-gradient(circle at 34% 24%, #ff8b4d 0%, #f06514 40%, #e24807 72%, #cf3b04 100%);
+  box-shadow: 0 50px 110px -34px rgba(170, 55, 6, 0.5);
+  pointer-events: none;
+  animation: auth-dome-in 1.4s 0.15s var(--ease-out) both;
+}
+
+/* =========================================================================
+   The top bar
+   ========================================================================= */
+.auth-topbar {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: clamp(1.6rem, 4.2vw, 4.5rem);
+  padding: 1.15rem clamp(1.25rem, 4.4vw, 6rem) 1.15rem clamp(1.25rem, 11.5vw, 16rem);
+}
+
+.auth-wordmark {
   display: inline-flex;
-  align-items: baseline;
-  gap: var(--space-xs);
-  align-self: flex-start;
-  font-family: var(--font-display);
-  font-weight: var(--display-weight);
-  font-size: var(--text-xl);
-  line-height: 1.1;
-  letter-spacing: var(--tracking-display);
-  color: var(--color-ink);
+  align-items: flex-start;
+  font-family: var(--a-display);
+  font-weight: 800;
+  font-size: clamp(1.35rem, 1.95vw, 2.2rem);
+  letter-spacing: -0.028em;
+  line-height: 1;
+  color: var(--a-ink);
   text-decoration: none;
 }
-.auth-mark:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; }
-
-/* The same mark the console uses to carry a state. */
-.auth-mark-dot {
-  width: 0.5rem;
-  height: 0.5rem;
-  flex: none;
-  align-self: center;
-  border-radius: 50%;
-  background: var(--color-accent);
-  transition: transform var(--dur-short) var(--ease-out);
+.auth-wordmark sup {
+  font-size: 0.42em;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--a-brand);
+  margin: 0.12em 0 0 0.18em;
 }
-.auth-mark:hover .auth-mark-dot { transform: scale(1.35); }
+.auth-wordmark:focus-visible { outline: 2px solid var(--a-brand); outline-offset: 4px; }
 
-.auth-claim {
-  font-family: var(--font-display);
-  font-weight: var(--display-weight);
-  font-size: var(--text-3xl);
-  line-height: 1.08;
-  letter-spacing: var(--tracking-display);
-  color: var(--color-ink);
-  max-width: 15ch;
-  text-wrap: balance;
-}
-
-.auth-side-note {
-  max-width: 42ch;
-  font-size: var(--text-md);
-  color: var(--color-ink-2);
-}
-
-.auth-rule {
-  height: 1px;
-  border: 0;
-  margin: var(--space-sm) 0;
-  background: var(--color-rule);
-}
-
-/* A block with a head, a ruled list under it, and a foot. */
-.auth-block { margin-top: auto; }
-
-.auth-block-head {
-  margin-bottom: var(--space-xs);
-  font-size: var(--text-xs);
+.auth-nav {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: clamp(1.4rem, 2.4vw, 3rem);
+  font-size: clamp(0.95rem, 1.02vw, 1.25rem);
   font-weight: 500;
+}
+
+.auth-nav a {
+  position: relative;
+  padding: 0.25rem 0;
+  color: var(--a-ink);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.auth-nav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -0.1rem;
+  width: 100%;
+  height: 2px;
+  background: var(--a-brand);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.32s var(--ease-out);
+}
+.auth-nav a:hover { color: var(--a-brand-600); }
+.auth-nav a:hover::after { transform: scaleX(1); transform-origin: left; }
+.auth-nav a:focus-visible { outline: 2px solid var(--a-brand); outline-offset: 4px; }
+
+.auth-topcta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: clamp(0.65rem, 0.85vw, 0.95rem) clamp(1.1rem, 1.5vw, 1.6rem);
+  border-radius: var(--radius-pill);
+  border: 1.6px solid var(--a-ink);
+  background: rgba(255, 253, 249, 0.72);
+  backdrop-filter: blur(10px);
+  color: var(--a-ink);
+  font-weight: 600;
+  font-size: clamp(0.9rem, 1.02vw, 1.2rem);
+  text-decoration: none;
+  transition: background 0.25s var(--ease-out), color 0.25s var(--ease-out), transform 0.25s var(--ease-out);
+}
+.auth-topcta svg { width: clamp(15px, 0.95vw, 20px); height: clamp(15px, 0.95vw, 20px); }
+.auth-topcta:hover { background: var(--a-ink); color: var(--a-paper); transform: translateY(-1px); }
+.auth-topcta:hover svg { transform: translate(2px, -2px); }
+.auth-topcta:focus-visible { outline: 2px solid var(--a-brand); outline-offset: 3px; }
+
+/* =========================================================================
+   The layout: what this is for, and the ticket that asks for it
+   ========================================================================= */
+.auth-layout {
+  position: relative;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(430px, 32vw, 700px);
+  gap: clamp(1.5rem, 4vw, 4.5rem);
+  align-items: center;
+  padding: 0 clamp(1.25rem, 4.4vw, 6rem) clamp(1rem, 3vh, 2.5rem) clamp(1.25rem, 11.5vw, 16rem);
+  min-height: calc(100svh - var(--auth-topbar-h, 76px));
+}
+
+.auth-side { max-width: none; }
+
+.auth-eyebrow {
+  margin: 0;
+  font-size: clamp(0.74rem, 0.93vw, 1.05rem);
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--a-muted);
+}
+
+.auth-headline {
+  margin: 1.35rem 0 0;
+  font-family: var(--a-display);
+  font-weight: 800;
+  font-size: clamp(3rem, 5.8vw, 8rem);
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+}
+.auth-headline span { color: var(--a-brand); }
+
+.auth-lede {
+  margin: 1.5rem 0 0;
+  max-width: 32ch;
+  font-size: clamp(1rem, 1.22vw, 1.5rem);
+  line-height: 1.45;
+  color: var(--a-ink-2);
+  opacity: 0.84;
+}
+
+/* Three things the platform does, in a frosted strip. */
+.auth-strip {
+  list-style: none;
+  margin: clamp(1.6rem, 2.4vw, 2.8rem) 0 0;
+  padding: clamp(0.9rem, 1.1vw, 1.35rem) clamp(1rem, 1.3vw, 1.6rem);
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  width: fit-content;
+  max-width: 100%;
+  border-radius: 16px;
+  background: rgba(255, 253, 249, 0.58);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 22px 46px -32px rgba(70, 38, 12, 0.5);
+}
+.auth-strip li {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.5rem, 0.7vw, 0.9rem);
+  padding: 0 clamp(0.8rem, 1.3vw, 1.6rem);
+  font-size: clamp(0.88rem, 1.02vw, 1.2rem);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--a-ink);
+}
+.auth-strip li:first-child { padding-left: 0; }
+.auth-strip li:last-child { padding-right: 0; }
+.auth-strip li + li { border-left: 1px solid var(--a-line); }
+.auth-strip svg { width: clamp(26px, 2vw, 40px); height: clamp(26px, 2vw, 40px); color: var(--a-brand); flex: none; }
+
+/* The demonstration accounts, folded away until they are wanted. */
+.auth-demo {
+  margin: clamp(1rem, 1.6vw, 1.6rem) 0 0;
+  border-radius: 14px;
+  background: rgba(255, 253, 249, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(14px);
+  max-width: 46rem;
+}
+.auth-demo > summary {
+  cursor: pointer;
+  padding: 0.7rem 1rem;
+  font-size: clamp(0.8rem, 0.92vw, 1.05rem);
+  font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-ink-3);
+  color: var(--a-ink-2);
+  list-style: none;
 }
+.auth-demo > summary::-webkit-details-marker { display: none; }
+.auth-demo > summary::after {
+  content: "";
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-left: 0.6rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform 0.2s var(--ease-out);
+}
+.auth-demo[open] > summary::after { transform: rotate(225deg) translateY(-2px); }
+.auth-demo-body { padding: 0 1rem 1rem; }
 
 .auth-list {
   margin: 0;
   display: grid;
-  border-top: 1px solid var(--color-hair);
+  border-top: 1px solid var(--a-hair);
 }
 .auth-list > div {
   display: grid;
-  grid-template-columns: 10rem minmax(0, 1fr);
-  gap: var(--space-md);
-  padding-block: var(--space-sm);
-  border-bottom: 1px solid var(--color-hair);
+  grid-template-columns: 9rem minmax(0, 1fr);
+  gap: 1rem;
+  padding-block: 0.5rem;
+  border-bottom: 1px solid var(--a-hair);
 }
-.auth-list dt {
-  font-weight: 500;
-  color: var(--color-ink);
-  overflow-wrap: anywhere;
-}
-.auth-list dd {
-  margin: 0;
-  color: var(--color-ink-2);
-  font-size: var(--text-sm);
-}
-
-/* A username in the demonstration list is a token, not a word. */
+.auth-list dt { font-weight: 600; color: var(--a-ink); overflow-wrap: anywhere; }
+.auth-list dd { margin: 0; color: var(--a-ink-2); font-size: clamp(0.78rem, 0.88vw, 1rem); }
 .auth-list dt code,
-.auth-token {
-  font-family: ui-monospace, "Cascadia Mono", "Consolas", monospace;
-  font-size: 0.92em;
-  color: var(--color-ink);
-}
-
-.auth-block-foot {
-  margin-top: var(--space-sm);
-  font-size: var(--text-sm);
-  color: var(--color-muted);
-}
 .auth-block-foot code {
-  font-family: ui-monospace, "Cascadia Mono", "Consolas", monospace;
-  color: var(--color-ink-2);
+  font-family: var(--a-mono);
+  font-size: 0.92em;
+  color: var(--a-ink);
 }
-
-.auth-method {
-  font-size: var(--text-xs);
-  line-height: 1.6;
-  color: var(--color-ink-3);
-  max-width: 46ch;
-}
-.auth-method code {
-  font-family: ui-monospace, "Cascadia Mono", "Consolas", monospace;
-  font-size: 0.95em;
-  color: var(--color-muted);
+.auth-block-foot {
+  margin: 0.7rem 0 0;
+  font-size: clamp(0.78rem, 0.88vw, 1rem);
+  color: var(--a-muted);
 }
 
 /* =========================================================================
-   The form column
+   The floating forecast, on the dome
    ========================================================================= */
-.auth-main {
+.auth-main { position: relative; display: flex; justify-content: flex-end; }
+
+.auth-forecast {
+  position: absolute;
+  z-index: 8;
+  right: calc(100% + clamp(1rem, 1.8vw, 2.4rem));
+  top: 53%;
+  transform: translateY(-50%);
+  width: clamp(230px, 16vw, 350px);
+  padding: 1.15rem 1.2rem 1.05rem;
+  border-radius: 18px;
+  background: rgba(255, 238, 224, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  backdrop-filter: blur(18px) saturate(1.15);
+  box-shadow: 0 30px 60px -30px rgba(120, 55, 12, 0.55);
+  color: #fff;
+  animation: auth-float 7s ease-in-out infinite;
+}
+.auth-forecast::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(160deg, rgba(255, 138, 77, 0.78), rgba(214, 62, 6, 0.9));
+  opacity: 0.95;
+  z-index: -1;
+}
+.auth-forecast p { margin: 0; }
+.auth-forecast-label { font-size: clamp(0.72rem, 0.95vw, 1.15rem); font-weight: 500; opacity: 0.92; }
+.auth-forecast-value {
   display: flex;
   align-items: center;
-  padding: var(--space-2xl);
-  padding-left: max(var(--space-2xl), env(safe-area-inset-left));
-  padding-right: max(var(--space-2xl), env(safe-area-inset-right));
-  padding-bottom: max(var(--space-2xl), env(safe-area-inset-bottom));
+  gap: 0.5rem;
+  margin-top: 0.35rem !important;
+  font-family: var(--a-display);
+  font-weight: 800;
+  font-size: clamp(1.9rem, 2.7vw, 3.2rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
 }
-
-.auth-form {
-  width: 100%;
-  max-width: 27rem;
+.auth-forecast-value svg { width: clamp(20px, 1.55vw, 30px); height: clamp(20px, 1.55vw, 30px); opacity: 0.9; }
+.auth-forecast-sub { font-size: clamp(0.7rem, 0.88vw, 1.05rem); opacity: 0.85; margin-top: 0.2rem !important; }
+.auth-forecast-chart { display: block; width: 100%; height: clamp(40px, 3.1vw, 62px); margin: 0.85rem 0 0.7rem; }
+.auth-forecast-chart path { fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; opacity: 0.95; }
+.auth-forecast-chip {
+  position: absolute;
+  right: 1rem;
+  bottom: clamp(4.2rem, 5vw, 5.6rem);
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  font-size: clamp(0.72rem, 0.82vw, 0.95rem);
+  font-weight: 600;
 }
-
-.auth-eyebrow {
-  margin-bottom: var(--space-xs);
-  font-size: var(--text-xs);
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-accent);
-}
-
-.auth-form h1 {
-  font-size: clamp(1.875rem, 3vw, 2.5rem);
-  max-width: 18ch;
-}
-
-.auth-lede {
-  margin-top: var(--space-sm);
-  margin-bottom: var(--space-xl);
-  max-width: 44ch;
-  color: var(--color-ink-2);
+.auth-forecast-rule { height: 1px; background: rgba(255, 255, 255, 0.4); margin: 0.25rem 0 0.7rem; }
+.auth-forecast-target { display: flex; align-items: center; gap: 0.6rem; }
+.auth-forecast-target svg { width: clamp(22px, 1.7vw, 32px); height: clamp(22px, 1.7vw, 32px); opacity: 0.92; }
+.auth-forecast-target div { font-size: clamp(0.74rem, 0.9vw, 1.05rem); line-height: 1.25; }
+.auth-forecast-target strong {
+  display: block;
+  font-family: var(--a-display);
+  font-size: clamp(1rem, 1.35vw, 1.5rem);
+  font-weight: 700;
 }
 
 /* =========================================================================
-   The field: a ruled row, the way the ledger sets one
+   The ticket
    -------------------------------------------------------------------------
-   The label stands in the first column and the input in the second, over
-   one rule. It is the same shape as the list in the column beside it, so
-   the form and the list are visibly the same kind of thing.
+   The mask cuts the perforations, so the scallops are the edge of the
+   control. The wrap carries the drop shadow, because a filter applied to
+   the masked element would be cut by the mask with it.
+   ========================================================================= */
+.auth-ticket-wrap {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  container-type: inline-size;
+  filter:
+    drop-shadow(0 34px 46px rgba(86, 42, 8, 0.28))
+    drop-shadow(0 8px 14px rgba(86, 42, 8, 0.16));
+}
 
-   The rule under the row draws in from the left when the field takes the
-   cursor, and a bar drops in at the edge of the label. Between them
-   they say which field is live, which is what the focus ring on the
-   input was doing, in the shape of the page.
+.auth-ticket {
+  --notch: 16px;
+  --notch-r: 7px;
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 220px),
+    var(--a-paper);
+  border-radius: 22px;
+  padding: 7.4cqw 9.4cqw 6cqw;
+  clip-path: inset(0 round 22px);
+  -webkit-mask:
+    radial-gradient(circle var(--notch-r) at calc(var(--notch) / 2) 0, transparent 99%, #000 100%) 0 0 / var(--notch) 100% repeat-x,
+    radial-gradient(circle var(--notch-r) at calc(var(--notch) / 2) 100%, transparent 99%, #000 100%) 0 0 / var(--notch) 100% repeat-x,
+    radial-gradient(circle 15px at 100% 168px, transparent 99%, #000 100%) 0 0 / 100% 100% no-repeat;
+  mask:
+    radial-gradient(circle var(--notch-r) at calc(var(--notch) / 2) 0, transparent 99%, #000 100%) 0 0 / var(--notch) 100% repeat-x,
+    radial-gradient(circle var(--notch-r) at calc(var(--notch) / 2) 100%, transparent 99%, #000 100%) 0 0 / var(--notch) 100% repeat-x,
+    radial-gradient(circle 15px at 100% 168px, transparent 99%, #000 100%) 0 0 / 100% 100% no-repeat;
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+/* The grain of the paper. */
+.auth-ticket::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.16'/%3E%3C/svg%3E");
+}
+.auth-ticket > * { position: relative; z-index: 1; }
+
+.auth-ticket-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.auth-kicker {
+  margin: 0;
+  font-size: max(0.72rem, 2.3cqw);
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--a-brand);
+}
+
+.auth-ticket h1 {
+  margin: 0.9cqw 0 0;
+  font-family: var(--a-display);
+  font-weight: 800;
+  font-size: max(1.9rem, 10.2cqw);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  color: var(--a-ink);
+}
+
+.auth-cloche {
+  width: max(52px, 15cqw);
+  height: auto;
+  aspect-ratio: 64 / 56;
+  color: var(--a-brand);
+  flex: none;
+}
+
+.auth-ticket-sub {
+  margin: 1.8cqw 0 0;
+  font-size: max(0.88rem, 3.2cqw);
+  line-height: 1.45;
+  color: var(--a-muted);
+  max-width: 30ch;
+}
+
+.auth-perf {
+  border: 0;
+  border-top: 2px dashed rgba(23, 19, 15, 0.3);
+  margin: 4.4cqw 0 4.6cqw;
+}
+
+/* =========================================================================
+   The field: a pill with an icon in it
    ========================================================================= */
 .auth-field {
   position: relative;
-  display: grid;
-  grid-template-columns: 10rem minmax(0, 1fr);
-  column-gap: var(--space-md);
-  row-gap: var(--space-3xs);
-  align-items: baseline;
-  padding: var(--space-sm) 0 var(--space-xs);
-  border-bottom: 1px solid var(--color-hair);
+  margin-bottom: 3.4cqw;
 }
-.auth-field + .auth-field { margin-top: var(--space-md); }
+.auth-field + .auth-field { margin-top: 0; }
 
 .auth-field > label {
-  grid-column: 1;
-  font-size: var(--text-sm);
-  color: var(--color-muted);
-  transition: color var(--dur-short) var(--ease-out);
-}
-.auth-field:focus-within > label { color: var(--color-accent); }
-
-.auth-field > input,
-.auth-field > input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]) {
-  appearance: none;
-  grid-column: 2;
-  width: 100%;
-  min-height: 2.75rem;
+  position: absolute;
+  width: 1px;
+  height: 1px;
   padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
   border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: var(--color-ink);
-  font: var(--text-md)/1.4 var(--font-body);
 }
-.auth-field > input:hover { border-color: transparent; }
-.auth-field > input::placeholder { color: var(--color-ink-3); }
 
-/* The input carries the cursor, so the ring around the input is dropped in
-   favour of the bar and the rule, which say the same thing in the shape
-   of the page. */
-.auth-field > input:focus-visible { outline: none; }
+.auth-field > svg {
+  position: absolute;
+  left: 3.4cqw;
+  top: 50%;
+  transform: translateY(-50%);
+  width: max(19px, 4cqw);
+  height: max(19px, 4cqw);
+  color: var(--a-ink-2);
+  opacity: 0.85;
+  pointer-events: none;
+}
 
-/* The bar that drops in at the edge of the label. */
+.auth-field > input {
+  width: 100%;
+  height: var(--a-field-h);
+  padding: 0 max(3rem, 9.6cqw);
+  border-radius: 999px;
+  border: 1.5px solid rgba(23, 19, 15, 0.24);
+  background: #fff;
+  color: var(--a-ink);
+  font: 500 max(0.95rem, 2.9cqw) / 1 var(--a-body);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.auth-field > input::placeholder { color: #9a9086; font-weight: 400; }
+.auth-field > input:hover { border-color: rgba(23, 19, 15, 0.38); }
+.auth-field > input:focus-visible,
+.auth-field > input:focus {
+  outline: none;
+  border-color: var(--a-brand);
+  box-shadow: 0 0 0 4px rgba(238, 84, 12, 0.14);
+}
+.auth-field.is-invalid > input { border-color: var(--a-danger); box-shadow: 0 0 0 4px rgba(196, 48, 43, 0.12); }
+
+/* The cursor is shown in the shape of the page rather than as a ring around
+   the box: a bar drops in at the edge of the field, and the rule under it
+   draws in from the left. Both are the accent, so the field that has the
+   cursor is the one that carries the colour. */
 .auth-field::before {
   content: "";
   position: absolute;
-  left: -0.75rem;
-  top: var(--space-sm);
-  bottom: var(--space-xs);
-  width: 2px;
-  border-radius: 1px;
-  background: var(--color-accent);
+  left: -0.85cqw;
+  top: 0;
+  width: 3px;
+  height: var(--a-field-h);
+  border-radius: 2px;
+  background: var(--a-brand);
   transform: scaleY(0);
-  transform-origin: top center;
-  transition: transform var(--dur-short) var(--ease-out);
+  transform-origin: center;
+  transition: transform 0.2s var(--ease-out);
 }
 .auth-field:focus-within::before { transform: scaleY(1); }
 
-/* The rule under the row, drawn from the left. */
 .auth-field::after {
   content: "";
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -1px;
+  top: var(--a-field-h);
   height: 2px;
-  background: var(--color-accent);
+  background: var(--a-brand);
   transform: scaleX(0);
-  transform-origin: left center;
-  transition: transform var(--dur-short) var(--ease-out);
+  transform-origin: left;
+  transition: transform 0.26s var(--ease-out);
 }
 .auth-field:focus-within::after { transform: scaleX(1); }
 
-.auth-field-help,
-.auth-field-error { grid-column: 1 / -1; }
+.auth-field.is-invalid::before,
+.auth-field.is-invalid::after { background: var(--a-danger); }
 
 .auth-field-help {
-  font-size: var(--text-xs);
-  color: var(--color-ink-3);
+  display: block;
+  margin-top: 1.4cqw;
+  font-size: max(0.72rem, 2.4cqw);
+  color: var(--a-muted);
 }
-
-/* A field that has been refused. */
-.auth-field.is-invalid { border-bottom-color: var(--color-error); }
-.auth-field.is-invalid::after { background: var(--color-error); }
-.auth-field.is-invalid::before { background: var(--color-error); }
-.auth-field.is-invalid > label { color: var(--color-error-ink); }
-
 .auth-field-error {
-  font-size: var(--text-xs);
-  color: var(--color-error-ink);
+  display: block;
+  margin-top: 1cqw;
+  font-size: max(0.74rem, 2.5cqw);
+  font-weight: 500;
+  color: var(--a-danger);
 }
+.auth-field-error[hidden] { display: none; }
 
-/* The refusal, set against the fields it is about. */
+/* The eye that opens the password. */
+.auth-eye {
+  position: absolute;
+  right: 0.9cqw;
+  top: 50%;
+  transform: translateY(-50%);
+  width: max(40px, 8cqw);
+  height: max(40px, 8cqw);
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--a-ink-2);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.auth-eye:hover { background: #f6f0e6; color: var(--a-brand-600); }
+.auth-eye svg { width: max(19px, 4cqw); height: max(19px, 4cqw); }
+
+/* =========================================================================
+   The refusal
+   ========================================================================= */
 .auth-error {
   display: flex;
   align-items: flex-start;
-  gap: var(--space-sm);
-  margin-top: var(--space-lg);
-  padding: var(--space-sm) var(--space-md);
-  border-left: 2px solid var(--color-error);
-  background: var(--color-error-wash);
-  color: var(--color-error-ink);
-  font-size: var(--text-sm);
+  gap: 0.6rem;
+  margin: 2.6cqw 0 0;
+  padding: 1.4cqw 2cqw;
+  border-radius: 10px;
+  border-left: 3px solid var(--a-danger);
+  background: rgba(196, 48, 43, 0.08);
+  color: #a52b26;
+  font-size: max(0.78rem, 2.6cqw);
 }
+.auth-error[hidden] { display: none; }
 .auth-error-mark {
   width: 0.4rem;
   height: 0.4rem;
   flex: none;
   margin-top: 0.45rem;
   border-radius: 50%;
-  background: var(--color-error);
+  background: var(--a-danger);
 }
 
 /* =========================================================================
-   The actions: one filled button, the rest are quiet
+   The actions: one filled pill, the rest quiet
    ========================================================================= */
 .auth-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-md) var(--space-lg);
-  margin-top: var(--space-xl);
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 4cqw;
 }
 
+.auth-submit,
+.auth-ghost {
+  width: 100%;
+  height: max(48px, 8.6cqw);
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: max(0.5rem, 2cqw);
+  font: 600 max(0.95rem, 3.2cqw) / 1 var(--a-body);
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.2s var(--ease-out), background 0.2s, border-color 0.2s, box-shadow 0.2s, color 0.2s;
+}
 .auth-submit {
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  /* No double-tap delay on the one control the reader is aiming for. */
+  border: 0;
+  background: var(--a-brand);
+  color: #fff;
+  box-shadow: 0 16px 26px -14px rgba(238, 84, 12, 0.95);
   touch-action: manipulation;
 }
-/* The fill wipes in from the left on hover. */
-.auth-submit::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: var(--color-accent-hi);
-  transform: scaleX(0);
-  transform-origin: left center;
-  transition: transform var(--dur-short) var(--ease-out);
+.auth-submit:hover { background: var(--a-brand-600); transform: translateY(-2px); }
+.auth-submit:active { transform: translateY(0); }
+.auth-submit svg,
+.auth-ghost svg { width: max(18px, 3.8cqw); height: max(18px, 3.8cqw); }
+
+.auth-ghost {
+  border: 1.5px solid rgba(23, 19, 15, 0.26);
+  background: #fff;
+  color: var(--a-ink);
 }
-.auth-submit:hover::before { transform: scaleX(1); }
+.auth-ghost:hover { border-color: var(--a-ink); background: #f6f0e6; transform: translateY(-2px); }
 
 /* The spinner, while the request is out. */
 .auth-submit[aria-busy="true"]::after {
   content: "";
   position: absolute;
-  right: var(--space-md);
+  right: 1.4cqw;
   top: 50%;
-  width: 0.85rem;
-  height: 0.85rem;
-  margin-top: -0.425rem;
+  width: 0.95rem;
+  height: 0.95rem;
+  margin-top: -0.475rem;
   border: 2px solid currentColor;
   border-right-color: transparent;
   border-radius: 50%;
   animation: auth-spin 0.7s linear infinite;
 }
-@keyframes auth-spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes auth-spin { to { transform: rotate(360deg); } }
 
 .auth-link {
-  font-size: var(--text-sm);
-  color: var(--color-ink-2);
-  text-decoration: underline;
-  text-decoration-color: var(--color-rule);
-  text-underline-offset: 0.16em;
-  transition: color var(--dur-short) var(--ease-out), text-decoration-color var(--dur-short) var(--ease-out);
+  font-size: max(0.85rem, 3cqw);
+  font-weight: 600;
+  color: var(--a-brand);
+  background: none;
+  border: 0;
+  padding: 0;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s;
 }
-.auth-link:hover { color: var(--color-ink); text-decoration-color: var(--color-accent); }
-.auth-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.auth-link:hover { color: var(--a-brand-600); text-decoration: underline; text-underline-offset: 3px; }
+.auth-link:focus-visible { outline: 2px solid var(--a-brand); outline-offset: 3px; }
+
+.auth-or {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 3cqw 0;
+  color: var(--a-muted);
+  font-size: max(0.8rem, 2.6cqw);
+}
+.auth-or::before,
+.auth-or::after { content: ""; flex: 1; height: 1px; background: var(--a-line); }
 
 .auth-alternate {
-  margin-top: var(--space-xl);
-  padding-top: var(--space-lg);
-  border-top: 1px solid var(--color-hair);
-  font-size: var(--text-sm);
-  color: var(--color-muted);
+  margin: 3cqw 0 0;
+  font-size: max(0.82rem, 2.8cqw);
+  color: var(--a-muted);
+  text-align: center;
 }
 
 /* =========================================================================
-   The arrival: the two columns settle in, in order
+   The foot of the pass: the barcode and the seal
+   ========================================================================= */
+.auth-ticket-foot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 3.6cqw;
+  padding-top: 2.8cqw;
+  border-top: 1px dashed rgba(23, 19, 15, 0.22);
+}
+.auth-pass { flex: 1; min-width: 0; }
+.auth-barcode { display: block; width: 100%; max-width: 45cqw; height: max(30px, 8.5cqw); }
+.auth-barcode rect { fill: var(--a-ink); }
+.auth-pass-meta {
+  margin: 0.8cqw 0 0;
+  font-family: var(--a-mono);
+  font-size: max(0.56rem, 2.1cqw);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--a-ink-2);
+  white-space: nowrap;
+}
+.auth-stamp {
+  width: max(84px, 21.7cqw);
+  height: auto;
+  aspect-ratio: 1 / 1;
+  flex: none;
+  color: var(--a-brand);
+  opacity: 0.92;
+  transform: rotate(-9deg);
+}
+
+/* =========================================================================
+   The arrival
    ========================================================================= */
 @keyframes auth-rise {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(22px); }
   to { opacity: 1; transform: none; }
 }
-.auth-side > *,
-.auth-form > * {
-  animation: auth-rise 0.5s var(--ease-out) both;
+@keyframes auth-photo-in {
+  from { opacity: 0; transform: scale(1.08); }
+  to { opacity: 1; transform: scale(1.04); }
 }
-.auth-side > *:nth-child(1) { animation-delay: 0.02s; }
-.auth-side > *:nth-child(2) { animation-delay: 0.08s; }
-.auth-side > *:nth-child(3) { animation-delay: 0.14s; }
-.auth-side > *:nth-child(4) { animation-delay: 0.2s; }
-.auth-side > *:nth-child(5) { animation-delay: 0.26s; }
-.auth-side > *:nth-child(6) { animation-delay: 0.32s; }
+@keyframes auth-dome-in {
+  from { opacity: 0; transform: scale(0.82) translateY(30px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes auth-float {
+  0%, 100% { transform: translateY(-50%); }
+  50% { transform: translateY(calc(-50% - 10px)); }
+}
 
-.auth-form > *:nth-child(1) { animation-delay: 0.06s; }
-.auth-form > *:nth-child(2) { animation-delay: 0.12s; }
-.auth-form > *:nth-child(3) { animation-delay: 0.18s; }
-.auth-form > *:nth-child(4) { animation-delay: 0.24s; }
-.auth-form > *:nth-child(5) { animation-delay: 0.3s; }
+.auth-side > *,
+.auth-form > *,
+.auth-ticket-foot {
+  animation: auth-rise 0.95s var(--ease-out) both;
+}
+.auth-side > *:nth-child(1) { animation-delay: 0.1s; }
+.auth-side > *:nth-child(2) { animation-delay: 0.2s; }
+.auth-side > *:nth-child(3) { animation-delay: 0.3s; }
+.auth-side > *:nth-child(4) { animation-delay: 0.4s; }
+.auth-form > *:nth-child(1) { animation-delay: 0.28s; }
+.auth-form > *:nth-child(2) { animation-delay: 0.36s; }
+.auth-form > *:nth-child(3) { animation-delay: 0.44s; }
+.auth-form > *:nth-child(4) { animation-delay: 0.52s; }
+.auth-form > *:nth-child(5) { animation-delay: 0.6s; }
+.auth-ticket-foot { animation-delay: 0.66s; }
 
 /* =========================================================================
    Narrow screens: the columns stack, in reading order
    ========================================================================= */
-@media (max-width: 64rem) {
-  .auth { grid-template-columns: minmax(0, 1fr); }
-  .auth-side {
-    border-right: 0;
-    border-bottom: 1px solid var(--color-rule);
-    padding: var(--space-xl) var(--space-lg) var(--space-lg);
-    gap: var(--space-md);
+@media (max-width: 1040px) {
+  .auth-topbar { padding-left: clamp(1.25rem, 6vw, 4rem); padding-right: clamp(1.25rem, 6vw, 4rem); }
+  .auth-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+    padding: 0 clamp(1.25rem, 6vw, 4rem) 3rem;
+    min-height: 0;
   }
-  .auth-claim { font-size: var(--text-2xl); max-width: 22ch; }
-  .auth-block { margin-top: var(--space-md); }
-  .auth-main { padding: var(--space-xl) var(--space-lg) var(--space-2xl); align-items: flex-start; }
-  .auth-form { max-width: 34rem; }
+  .auth-headline { font-size: clamp(2.8rem, 9vw, 4.6rem); }
+  .auth-main { justify-content: center; }
+  .auth-ticket-wrap { max-width: 620px; }
+  .auth-forecast { display: none; }
+  .auth-dome {
+    left: 18vw;
+    top: auto;
+    bottom: -12vh;
+    width: 84vw;
+    height: 62vh;
+    opacity: 0.85;
+  }
+  .auth-veil {
+    background: linear-gradient(180deg, rgba(255, 252, 246, 0.93) 0%, rgba(255, 250, 243, 0.7) 45%, rgba(255, 248, 240, 0.3) 100%);
+  }
 }
 
-@media (max-width: 40rem) {
-  .auth-list > div {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-3xs);
-  }
-  /* The label stands over the input when the row is too narrow to hold
-     both, but the rule stays under them. The input is given the same
-     weight as the rule above it, or the placement set there would
-     outrank this and leave it in the second column. */
-  .auth-field {
-    grid-template-columns: minmax(0, 1fr);
-    row-gap: var(--space-3xs);
-  }
-  .auth-field > label { grid-column: 1; }
-  .auth-field > input,
-  .auth-field > input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]) {
-    grid-column: 1;
-    min-height: 2.5rem;
-  }
-  .auth-field::before { left: -0.5rem; }
-  .auth-side { padding: var(--space-lg) var(--space-md) var(--space-md); }
-  .auth-main { padding: var(--space-lg) var(--space-md) var(--space-xl); }
-  .auth-actions { gap: var(--space-md); }
-  .auth-submit { width: 100%; }
+@media (max-width: 640px) {
+  .auth-topbar { padding: 1rem 1.1rem; gap: 1rem; }
+  .auth-nav { display: none; }
+  .auth-topcta { margin-left: auto; padding: 0.6rem 1rem; font-size: 0.84rem; }
+  .auth-layout { padding: 0 1.1rem 3rem; }
+  .auth-headline { font-size: clamp(2.5rem, 13vw, 3.6rem); }
+  .auth-strip { flex-wrap: wrap; gap: 0.8rem; }
+  .auth-strip li { padding: 0; }
+  .auth-strip li + li { border-left: 0; }
+  .auth-list > div { grid-template-columns: minmax(0, 1fr); gap: 0.25rem; }
+  .auth-ticket { padding: 1.6rem 1.25rem 1.15rem; }
+  .auth-ticket-foot { flex-direction: column; align-items: flex-start; gap: 1.25rem; }
+  .auth-stamp { align-self: center; }
 }
 
 /* =========================================================================
    Reduced motion: the page is simply there
    ========================================================================= */
 @media (prefers-reduced-motion: reduce) {
+  .auth-photo,
+  .auth-dome,
+  .auth-forecast,
   .auth-side > *,
-  .auth-form > * {
+  .auth-form > *,
+  .auth-ticket-foot {
     animation: none;
     opacity: 1;
     transform: none;
   }
+  .auth-forecast { transform: translateY(-50%); }
   .auth-submit[aria-busy="true"]::after { animation: none; }
-  .auth-field::after,
-  .auth-submit::before,
-  .auth-mark-dot,
-  .auth-field > label,
-  .auth-link { transition: none; }
+  .auth-field::before,
+  .auth-field::after { transition: none; }
 }
