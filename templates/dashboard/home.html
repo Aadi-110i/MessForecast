@@ -1,10 +1,71 @@
 {% extends "console/base_console.html" %}
 {% load static %}
 
+{% comment %}
+The manager's overview.
+
+This used to be four figure tiles, two chart panels and two tables. A
+manager opens this page once a morning and once in the evening, so it is
+written as one briefing: a sentence about today, the day as three beats,
+the money as a story, and the numbers that need attention below.
+
+Nothing here is a widget that can be rearranged. The order is the order
+the questions get asked.
+{% endcomment %}
+
 {% block title %}Overview · {{ app_name }}{% endblock %}
 
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/console.css' %}">
+  <link rel="stylesheet" href="{% static 'css/overview.css' %}">
+{% endblock %}
+
+{% block body_class %}ov-shell{% endblock %}
+
 {% block console_content %}
-{% include "components/page_head.html" with title="Overview" eyebrow="Console" lede="How much food this mess threw away, what the forecast predicted, and whether the two are getting closer. Every figure below is computed from recorded services." %}
+
+<!-- ===================== The briefing ===================== -->
+<header class="ov-brief">
+  <div class="ov-brief-inner">
+    <div>
+      <p class="ov-when">{{ today|date:"l, d F Y" }} · {{ start|date:"j M" }} to {{ end|date:"j M Y" }}</p>
+      <h1 class="ov-headline">
+        {% if written_meals and day_turned_up %}
+          {{ day_turned_up }} turned up today
+          {% if day_forecast %}
+            <em>against {{ day_forecast }} forecast</em>
+          {% endif %}
+        {% elif unwritten_meals %}
+          {{ unwritten_meals|length }} meal{{ unwritten_meals|length|pluralize }} today
+          <em>not written up</em>
+        {% elif day_turned_up %}
+          {{ day_turned_up }} turned up today
+        {% else %}
+          No service has run yet today
+        {% endif %}
+      </h1>
+      <p class="ov-sub">
+        {% if unwritten_meals %}
+          {% for meal in unwritten_meals %}{{ meal.label }}{% if not forloop.last %} and {% endif %}{% endfor %}
+          ran without a write-up, so the numbers below are still empty.
+        {% elif next_meal %}
+          {{ next_meal.label }} is next at {{ next_meal.time }}.
+        {% elif today_meals %}
+          Every service for today has run.
+        {% endif %}
+        {% if hall %}{{ hall.name }}{% else %}Across both dining halls{% endif %}.
+      </p>
+    </div>
+    <div class="ov-brief-side">
+      <span class="ov-hall">
+        {% if hall %}{{ hall.name }}{% else %}Both dining halls{% endif %}
+      </span>
+      <a class="ov-cta" href="{% url 'dashboard-waste' %}?start={{ start|date:'Y-m-d' }}&amp;end={{ end|date:'Y-m-d' }}{% if hall %}&amp;hall={{ hall.id }}{% endif %}">
+        Where the money went
+      </a>
+    </div>
+  </div>
+</header>
 
 <form class="toolbar" method="get">
   {% if savings %}
@@ -25,171 +86,134 @@
     <select id="f-hall" name="hall">
       <option value="">All halls</option>
       {% for h in halls %}
-        <option value="{{ h.id }}" {% if hall and hall.id == hall.id %}selected{% endif %}>{{ h.name }}</option>
+        <option value="{{ h.id }}" {% if hall and hall.id == h.id %}selected{% endif %}>{{ h.name }}</option>
       {% endfor %}
     </select>
   </div>
   <div class="toolbar-actions">
     <button class="btn" type="submit">Apply</button>
-    <a class="btn btn-ghost" href="{% url 'dashboard-waste' %}?start={{ start|date:'Y-m-d' }}&amp;end={{ end|date:'Y-m-d' }}{% if hall %}&amp;hall={{ hall.id }}{% endif %}">Full waste report</a>
     <a class="btn btn-ghost" href="{% url 'console-forecast' %}">Forecast</a>
   </div>
 </form>
 
-<!-- ===================== The ruled figures ===================== -->
-{% include "components/figures.html" with figures=figures %}
-
-{% if savings %}
-  <!-- ===================== The baseline reconciliation ===================== -->
-  <section class="panel">
-    <div class="panelhead">
-      <h2>Reconciled against the baseline window</h2>
-      <span class="hint">{{ savings.baseline.start|date:"d M Y" }} to {{ savings.baseline.end|date:"d M Y" }} against {{ savings.live.start|date:"d M Y" }} to {{ savings.live.end|date:"d M Y" }}</span>
-    </div>
-    <div class="table-wrap c-scroll">
-      <table class="ledger">
-        <thead>
-          <tr>
-            <th>Measure</th>
-            <th class="num">Baseline</th>
-            <th class="num">Live</th>
-            <th class="num">Change</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="metric">Waste cost</td>
-            <td class="num">₹{{ savings.baseline.waste_cost|floatformat:0 }}</td>
-            <td class="num">₹{{ savings.live.waste_cost|floatformat:0 }}</td>
-            <td class="num neg">{{ savings.waste_cost_change_pct|floatformat:1 }}%</td>
-          </tr>
-          <tr>
-            <td class="metric">Waste cost per service</td>
-            <td class="num">₹{% widthratio savings.baseline.waste_cost savings.baseline.services 1 %}</td>
-            <td class="num">₹{% widthratio savings.live.waste_cost savings.live.services 1 %}</td>
-            <td class="num pos">₹{{ savings.saving_per_service|floatformat:0 }}</td>
-          </tr>
-          <tr>
-            <td class="metric">Weight thrown away</td>
-            <td class="num">{{ savings.baseline.waste_quantity_kg|floatformat:1 }} kg</td>
-            <td class="num">{{ savings.live.waste_quantity_kg|floatformat:1 }} kg</td>
-            <td class="num">{% widthratio savings.live.waste_quantity_kg savings.baseline.waste_quantity_kg 1 %}%</td>
-          </tr>
-          <tr>
-            <td class="metric">Services measured</td>
-            <td class="num">{{ savings.baseline.services }}</td>
-            <td class="num">{{ savings.live.services }}</td>
-            <td class="num fill">Same basis</td>
-          </tr>
-        </tbody>
-        <tfoot>
-          <tr>
-            <th>Saving against the baseline</th>
-            <th class="num"></th>
-            <th class="num">{{ savings.saving_pct|floatformat:1 }}%</th>
-            <th class="num">₹{{ savings.annualised_saving|floatformat:0 }} a year</th>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-  </section>
-{% endif %}
-
-<!-- ===================== Trend charts ===================== -->
-<div class="grid-2">
-  <section class="panel">
-    <div class="panelhead">
-      <h2>Weekly waste cost</h2>
-      <span class="hint">₹ per week</span>
-    </div>
-    <div class="panelbody">
-      {% if waste_by_week %}
-        {{ waste_by_week|json_script:"wasteByWeek" }}
-        <div class="chart" data-chart="bar" data-src="wasteByWeek" data-tone="loss"
-             data-value="waste_cost" data-label="week" data-prefix="₹" data-height="200"
-             data-title="Waste cost per week"></div>
-      {% else %}
-        <div class="empty">
-          <h3>No waste recorded in this period</h3>
-          <p>Once services start recording prepared, served and leftover portions, the weekly
-             waste cost appears here.</p>
-          <a class="btn btn-ghost" href="{% url 'kitchen-dashboard' %}">Record on the kitchen screen</a>
-        </div>
-      {% endif %}
-    </div>
-  </section>
-
-  <section class="panel">
-    <div class="panelhead">
-      <h2>Forecast error by week</h2>
-      <span class="hint">MAPE %, lower is better</span>
-    </div>
-    <div class="panelbody">
-      {% if mape_over_time %}
-        {{ mape_over_time|json_script:"mapeByWeek" }}
-        <div class="chart" data-chart="line" data-src="mapeByWeek" data-tone="model"
-             data-value="mape_pct" data-label="week" data-suffix="%" data-height="200"
-             data-title="Forecast error by week"></div>
-      {% else %}
-        <div class="empty">
-          <h3>No forecasts to score yet</h3>
-          <p>Forecasts are compared with the attendance that actually turned up. Once a
-             forecast and its service meet, the error shows here.</p>
-        </div>
-      {% endif %}
-    </div>
-  </section>
-</div>
-
-<!-- ===================== Today’s service reconciliation ===================== -->
-<section class="panel">
-  <div class="panelhead">
-    <h2>Today’s services, reconciled</h2>
-    <span class="hint">{{ todays_services|length }} services</span>
+<!-- ===================== The day as three beats ===================== -->
+<section class="ov-section">
+  <div class="ov-section-head">
+    <h2 class="ov-section-title">How today is going</h2>
+    <span class="ov-section-note">{{ todays_services|length }} services scheduled</span>
   </div>
-  {% if todays_services %}
-    <div class="table-wrap c-scroll">
-      <table class="ledger is-pinned">
-        <thead>
-          <tr>
-            <th>Hall</th>
-            <th>Meal</th>
-            <th class="num">Turned up</th>
-            <th class="num">Forecast</th>
-            <th class="num">To cook</th>
-            <th class="num">Left over</th>
-            <th>Reconciled</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for s in todays_services %}
-            <tr>
-              <td class="metric">{{ s.hall.name }}</td>
-              <td>{{ s.get_meal_display }}</td>
-              <td class="num">{{ s.attendance_count }}</td>
-              <td class="num">{% if s.forecast %}{{ s.forecast.predicted_attendance|floatformat:0 }}{% else %}<span class="fill">No forecast</span>{% endif %}</td>
-              <td class="num">{% if s.preparation_plan %}{{ s.preparation_plan.portions_to_prepare }}{% else %}<span class="fill">No plan</span>{% endif %}</td>
-              <td class="num">{% if s.actual %}{{ s.actual.leftover_portions_total }}{% else %}<span class="fill">Not recorded</span>{% endif %}</td>
-              <td>
-                {% if s.forecast %}
-                  {% if s.attendance_count >= s.forecast.lower_bound and s.attendance_count <= s.forecast.upper_bound %}
-                    <span class="state is-match">In range</span>
-                  {% else %}
-                    <span class="state is-open">Out of range</span>
-                  {% endif %}
-                {% elif s.actual %}
-                  <span class="state is-match">Recorded</span>
+
+  {% if today_meals %}
+    <div class="ov-beats">
+      {% for meal in today_meals %}
+        <article class="ov-beat{% if meal.state == 'now' %} is-now{% endif %}">
+          <div class="ov-beat-head">
+            <h3 class="ov-beat-name">{{ meal.label }}</h3>
+            <span class="ov-beat-time">{{ meal.time }}</span>
+          </div>
+
+          {% if meal.state == 'later' %}
+            <p class="ov-beat-number ov-beat-pending">
+              &mdash;
+              <span class="ov-beat-of">{{ meal.expected }} expected at {{ meal.time }}</span>
+            </p>
+            <p class="ov-beat-note"><span class="ov-chip is-quiet">Not served yet</span></p>
+          {% elif meal.recorded == 0 %}
+            <p class="ov-beat-number ov-beat-pending">
+              &mdash;
+              <span class="ov-beat-of">{{ meal.expected }} expected · nothing written up</span>
+            </p>
+            {% if meal.forecasted %}
+              <div class="ov-gauge" role="img"
+                   aria-label="The forecast for this meal was {{ meal.forecast }}, and nothing has been written up yet">
+                <span class="ov-gauge-mark" style="left:{% widthratio meal.forecast meal.expected 100 %}%"></span>
+              </div>
+            {% endif %}
+            <p class="ov-beat-note"><span class="ov-chip is-quiet">Not written up</span></p>
+          {% else %}
+            <p class="ov-beat-number">
+              {{ meal.turned_up }}
+              <span class="ov-beat-of">of {{ meal.expected }} expected</span>
+            </p>
+            {% if meal.forecasted %}
+              <div class="ov-gauge" role="img"
+                   aria-label="{{ meal.turned_up }} turned up against a forecast of {{ meal.forecast }}">
+                <span class="ov-gauge-fill" style="width:{% widthratio meal.turned_up meal.expected 100 %}%"></span>
+                <span class="ov-gauge-mark" style="left:{% widthratio meal.forecast meal.expected 100 %}%"></span>
+              </div>
+              <p class="ov-beat-note">
+                {% if meal.delta > 0 %}
+                  <span class="ov-chip is-over">{{ meal.delta }} over forecast</span>
+                {% elif meal.delta < 0 %}
+                  <span class="ov-chip is-short">{{ meal.delta|cut:"-" }} short of forecast</span>
                 {% else %}
-                  <span class="state">Not planned</span>
+                  <span class="ov-chip is-exact">Exactly on forecast</span>
                 {% endif %}
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+              </p>
+            {% else %}
+              <p class="ov-beat-note"><span class="ov-chip is-quiet">No forecast yet</span></p>
+            {% endif %}
+          {% endif %}
+
+          <p class="ov-beat-foot">
+            {% if meal.state == 'later' %}Not served yet
+            {% elif meal.state == 'now' %}On the counter now
+            {% else %}
+              {% if meal.in_range %}{{ meal.in_range }} in range{% endif %}
+              {% if meal.out_of_range %}{% if meal.in_range %}, {% endif %}{{ meal.out_of_range }} out of range{% endif %}
+              {% if meal.unwritten %}{% if meal.in_range or meal.out_of_range %}, {% endif %}{{ meal.unwritten }} not written up{% endif %}
+              {% if not meal.in_range and not meal.out_of_range and not meal.unwritten %}Nothing to reconcile yet{% endif %}
+            {% endif %}
+          </p>
+        </article>
+      {% endfor %}
     </div>
+
+    <details class="ov-more">
+      <summary>Every service today, in full</summary>
+      <div class="table-wrap c-scroll">
+        <table class="ledger is-pinned">
+          <thead>
+            <tr>
+              <th>Hall</th>
+              <th>Meal</th>
+              <th class="num">Turned up</th>
+              <th class="num">Forecast</th>
+              <th class="num">To cook</th>
+              <th class="num">Left over</th>
+              <th>Reconciled</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in todays_services %}
+              <tr>
+                <td class="metric">{{ s.hall.name }}</td>
+                <td>{{ s.get_meal_display }}</td>
+                <td class="num">{{ s.attendance_count }}</td>
+                <td class="num">{% if s.forecast %}{{ s.forecast.predicted_attendance|floatformat:0 }}{% else %}<span class="fill">No forecast</span>{% endif %}</td>
+                <td class="num">{% if s.preparation_plan %}{{ s.preparation_plan.portions_to_prepare }}{% else %}<span class="fill">No plan</span>{% endif %}</td>
+                <td class="num">{% if s.actual %}{{ s.actual.leftover_portions_total }}{% else %}<span class="fill">Not recorded</span>{% endif %}</td>
+                <td>
+                  {% if s.forecast %}
+                    {% if s.attendance_count >= s.forecast.lower_bound and s.attendance_count <= s.forecast.upper_bound %}
+                      <span class="state is-match">In range</span>
+                    {% else %}
+                      <span class="state is-open">Out of range</span>
+                    {% endif %}
+                  {% elif s.actual %}
+                    <span class="state is-match">Recorded</span>
+                  {% else %}
+                    <span class="state">Not planned</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </details>
   {% else %}
-    <div class="empty">
+    <div class="ov-empty">
       <h3>No services scheduled today</h3>
       <p>Publish a menu schedule for today so the kitchen has a service to plan against.</p>
       <a class="btn btn-ghost" href="{% url 'console-menus' %}">Open the menu board</a>
@@ -197,64 +221,232 @@
   {% endif %}
 </section>
 
-<!-- ===================== Weekday pattern + top dishes ===================== -->
-<div class="grid-2">
-  <section class="panel">
-    <div class="panelhead">
-      <h2>Attendance by weekday</h2>
-      <span class="hint">mean students per service</span>
-    </div>
-    {% if weekday_pattern %}
-      {{ weekday_pattern|json_script:"weekdayPattern" }}
-      <div class="panelbody">
-        <div class="chart" data-chart="bar" data-src="weekdayPattern" data-tone="model"
-             data-value="avg_attendance" data-label="weekday" data-height="180"
-             data-title="Average attendance by weekday"></div>
-      </div>
-    {% else %}
-      <div class="empty">
-        <h3>No attendance history yet</h3>
-        <p>Capture a few services and the weekly rhythm of demand will appear here.</p>
-      </div>
-    {% endif %}
-  </section>
+<!-- ===================== The money ===================== -->
+<section class="ov-section">
+  <div class="ov-section-head">
+    <h2 class="ov-section-title">Where the money went</h2>
+    <span class="ov-section-note">{{ start|date:"j M" }} to {{ end|date:"j M Y" }}</span>
+  </div>
 
-  <section class="panel">
-    <div class="panelhead">
-      <h2>Top ten waste dishes</h2>
-      <span class="hint">cost of the food left over</span>
+  <div class="ov-split">
+    <article class="ov-panel">
+      <p class="ov-figure">
+        {{ waste_cost_label }}
+        <span class="ov-figure-of">{{ waste_totals.waste_quantity_kg|floatformat:1 }} kg across {{ waste_totals.records }} dish-services</span>
+      </p>
+
+      {% if waste_by_cause %}
+        <ul class="ov-causes">
+          {% for cause in waste_by_cause %}
+            <li>
+              <div class="ov-cause-head">
+                <span class="ov-cause-name">{{ cause.label }}</span>
+                <span class="ov-cause-cost">{{ cause.cost_label }}</span>
+              </div>
+              <div class="ov-cause-bar">
+                <span style="width:{% widthratio cause.waste_cost waste_totals.waste_cost 100 %}%"></span>
+              </div>
+              <p class="ov-cause-note">
+                {{ cause.leftover_portions }} portions left · {{ cause.records }} records
+                {% if cause.cause == 'OVER_PREPARATION' %}· a forecasting problem
+                {% elif cause.cause == 'SPOILAGE' %}· a storage problem
+                {% elif cause.cause == 'QUALITY' %}· a supplier problem
+                {% endif %}
+              </p>
+            </li>
+          {% endfor %}
+        </ul>
+        <p class="ov-foot">
+          Over-preparation is a forecasting problem, spoilage is a storage problem and
+          quality rejection is a supplier problem. Each is fixed by a different person.
+        </p>
+      {% else %}
+        <p class="ov-foot">Nothing has been thrown away in this period.</p>
+      {% endif %}
+    </article>
+
+    <article class="ov-panel">
+      <div class="ov-panel-head">
+        <h3 class="ov-panel-title">Waste cost, week by week</h3>
+        <span class="ov-panel-hint">₹ per week</span>
+      </div>
+      {% if waste_by_week %}
+        {{ waste_by_week|json_script:"wasteByWeek" }}
+        <div class="ov-spark" data-spark="wasteByWeek" data-value="waste_cost" data-label="week"
+             data-prefix="₹" data-tone="loss" data-height="150"></div>
+        <p class="ov-foot">
+          {% with last=waste_by_week|last %}
+            The last week of the period came to ₹{{ last.waste_cost|floatformat:0 }}.
+          {% endwith %}
+        </p>
+      {% else %}
+        <div class="ov-empty">
+          <h3>No waste recorded in this period</h3>
+          <p>Once services start recording prepared, served and leftover portions, the weekly
+             waste cost appears here.</p>
+        </div>
+      {% endif %}
+    </article>
+  </div>
+</section>
+
+<!-- ===================== Is the forecast getting better ===================== -->
+<section class="ov-section">
+  <div class="ov-section-head">
+    <h2 class="ov-section-title">Is the forecast getting better?</h2>
+    <span class="ov-section-note">mean absolute percentage error</span>
+  </div>
+
+  <div class="ov-split">
+    <article class="ov-panel">
+      <p class="ov-figure">
+        {{ accuracy.mape_pct|floatformat:1 }}%
+        <span class="ov-figure-of">{{ accuracy.within_range }} of {{ accuracy.forecasts }} forecasts landed inside the published range</span>
+      </p>
+      <p class="ov-foot">
+        {% if accuracy.mape_pct < 10 %}
+          The forecast is close. The kitchen is cooking against a number it can trust.
+        {% elif accuracy.mape_pct < 20 %}
+          Close enough to plan against, and still worth watching.
+        {% else %}
+          The forecast is still guessing. Cook against the registered strength until it settles.
+        {% endif %}
+      </p>
+      <p class="ov-foot ov-foot-quiet">
+        {{ demand_summary.attendance_rate_pct|floatformat:1 }}% of registered strength turned up
+        across {{ demand_summary.services }} services in this period.
+      </p>
+      <p class="ov-foot ov-foot-quiet">
+        Exams lifted turnout by {{ exam_lift_pct|floatformat:1 }}% —
+        {{ period.exam_avg|floatformat:0 }} students during exams against
+        {{ period.normal_avg|floatformat:0 }} on ordinary days.
+      </p>
+    </article>
+
+    <article class="ov-panel">
+      <div class="ov-panel-head">
+        <h3 class="ov-panel-title">Forecast error by week</h3>
+        <span class="ov-panel-hint">MAPE %, lower is better</span>
+      </div>
+      {% if mape_over_time %}
+        {{ mape_over_time|json_script:"mapeByWeek" }}
+        <div class="ov-spark" data-spark="mapeByWeek" data-value="mape_pct" data-label="week"
+             data-suffix="%" data-tone="model" data-height="150"></div>
+      {% else %}
+        <div class="ov-empty">
+          <h3>No forecasts to score yet</h3>
+          <p>Forecasts are compared with the attendance that actually turned up. Once a
+             forecast and its service meet, the error shows here.</p>
+        </div>
+      {% endif %}
+    </article>
+  </div>
+</section>
+
+<!-- ===================== Which food, and when people come ===================== -->
+<div class="ov-split">
+  <section class="ov-section ov-section-nested">
+    <div class="ov-section-head">
+      <h2 class="ov-section-title">The food that cost the most</h2>
+      <span class="ov-section-note">cost of what was left over</span>
     </div>
     {% if top_dishes %}
-      <div class="table-wrap c-scroll">
-        <table class="ledger">
-          <thead>
-            <tr>
-              <th class="rank">#</th>
-              <th>Dish</th>
-              <th class="num">Portions</th>
-              <th class="num">kg</th>
-              <th class="num">Cost</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for d in top_dishes %}
-              <tr>
-                <td class="rank">{{ forloop.counter }}</td>
-                <td class="metric">{{ d.dish }}</td>
-                <td class="num">{{ d.leftover_portions }}</td>
-                <td class="num">{{ d.waste_quantity_kg|floatformat:1 }}</td>
-                <td class="num neg">₹{{ d.waste_cost|floatformat:0 }}</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+      <ol class="ov-dishes">
+        {% for d in top_dishes %}
+          <li>
+            <span class="ov-dish-thumb">
+              <img src="{% static 'img/dishes/'|add:d.slug|add:'.svg' %}" alt="" onerror="this.remove()">
+            </span>
+            <span class="ov-dish-name">{{ d.dish }}</span>
+            <span class="ov-dish-bar">
+              <span style="width:{% widthratio d.waste_cost top_dishes.0.waste_cost 100 %}%"></span>
+            </span>
+            <span class="ov-dish-cost">{{ d.cost_label }}</span>
+          </li>
+        {% endfor %}
+      </ol>
     {% else %}
-      <div class="empty">
+      <div class="ov-empty">
         <h3>Nothing to rank yet</h3>
         <p>Waste records appear here once the kitchen records what was left over.</p>
       </div>
     {% endif %}
   </section>
+
+  <section class="ov-section ov-section-nested">
+    <div class="ov-section-head">
+      <h2 class="ov-section-title">When people come</h2>
+      <span class="ov-section-note">mean students per service</span>
+    </div>
+    {% if weekday_pattern %}
+      {{ weekday_pattern|json_script:"weekdayPattern" }}
+      <div class="ov-spark" data-spark="weekdayPattern" data-value="avg_attendance" data-label="weekday"
+           data-tone="model" data-height="150" data-bars="1"></div>
+    {% else %}
+      <div class="ov-empty">
+        <h3>No attendance history yet</h3>
+        <p>Capture a few services and the weekly rhythm of demand will appear here.</p>
+      </div>
+    {% endif %}
+  </section>
 </div>
+
+<!-- ===================== The baseline reconciliation ===================== -->
+{% if savings %}
+  <section class="ov-section">
+    <div class="ov-section-head">
+      <h2 class="ov-section-title">Reconciled against the baseline window</h2>
+      <span class="ov-section-note">{{ savings.baseline.start|date:"d M Y" }} to {{ savings.baseline.end|date:"d M Y" }} against {{ savings.live.start|date:"d M Y" }} to {{ savings.live.end|date:"d M Y" }}</span>
+    </div>
+    <div class="ov-panel">
+      <p class="ov-figure">
+        {{ savings.saving_pct|floatformat:1 }}%
+        <span class="ov-figure-of">less waste than the baseline window · ₹{{ savings.annualised_saving|floatformat:0 }} a year at this rate</span>
+      </p>
+      <div class="table-wrap c-scroll">
+        <table class="ledger">
+          <thead>
+            <tr>
+              <th>Measure</th>
+              <th class="num">Baseline</th>
+              <th class="num">Live</th>
+              <th class="num">Change</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="metric">Waste cost</td>
+              <td class="num">₹{{ savings.baseline.waste_cost|floatformat:0 }}</td>
+              <td class="num">₹{{ savings.live.waste_cost|floatformat:0 }}</td>
+              <td class="num neg">{{ savings.waste_cost_change_pct|floatformat:1 }}%</td>
+            </tr>
+            <tr>
+              <td class="metric">Waste cost per service</td>
+              <td class="num">₹{% widthratio savings.baseline.waste_cost savings.baseline.services 1 %}</td>
+              <td class="num">₹{% widthratio savings.live.waste_cost savings.live.services 1 %}</td>
+              <td class="num pos">₹{{ savings.saving_per_service|floatformat:0 }}</td>
+            </tr>
+            <tr>
+              <td class="metric">Weight thrown away</td>
+              <td class="num">{{ savings.baseline.waste_quantity_kg|floatformat:1 }} kg</td>
+              <td class="num">{{ savings.live.waste_quantity_kg|floatformat:1 }} kg</td>
+              <td class="num">{% widthratio savings.live.waste_quantity_kg savings.baseline.waste_quantity_kg 1 %}%</td>
+            </tr>
+            <tr>
+              <td class="metric">Services measured</td>
+              <td class="num">{{ savings.baseline.services }}</td>
+              <td class="num">{{ savings.live.services }}</td>
+              <td class="num fill">Same basis</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/overview.js' %}" defer></script>
 {% endblock %}

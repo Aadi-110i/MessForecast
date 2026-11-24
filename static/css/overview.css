@@ -1,0 +1,488 @@
+/* =========================================================================
+   MessForecast — the manager's overview
+   -------------------------------------------------------------------------
+   The console is a working surface: ruled tables, tight numbers, chrome
+   around the edges. The overview is not that. A mess manager opens it once
+   in the morning and once in the evening, and it has to answer one
+   question fast — how is the mess doing — and then let the numbers be
+   found.
+
+   So this sheet is composed like a briefing: a headline sentence, the day
+   as three beats, the money told as a story with the causes drawn as
+   proportions, and the long tail below. The charts are drawn as
+   sparklines rather than panels with axes, because a trend read at a
+   glance does not need a scale to be legible.
+
+   Loaded only by the overview, after the console skin.
+   ========================================================================= */
+
+body.ov-shell {
+  --ov-ground: #f4eadb;
+  --ov-paper: #fffdf9;
+  --ov-paper-2: #fff6ea;
+  --ov-ink: #17130f;
+  --ov-ink-2: #453c33;
+  --ov-muted: #6b6158;
+  --ov-rule: rgba(23, 19, 15, 0.13);
+  --ov-hair: rgba(23, 19, 15, 0.08);
+  --ov-accent: #ee540c;
+  --ov-accent-deep: #b03a03;
+  --ov-accent-wash: #fff0e4;
+  --ov-loss: #a8620a;
+  --ov-good: #3f7d3a;
+  --ov-radius: 20px;
+
+  background:
+    radial-gradient(1200px 560px at 88% -10%, rgba(238, 84, 12, 0.08), transparent 62%),
+    radial-gradient(900px 500px at 4% 2%, rgba(168, 98, 10, 0.07), transparent 60%),
+    var(--ov-ground);
+  background-attachment: fixed;
+}
+
+/* The chrome steps back. A manager reads this page, not the frame. */
+body.ov-shell .rail { background: transparent; border-right: 0; }
+body.ov-shell .rail-heading {
+  font-family: var(--font-display);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  color: var(--ov-muted);
+}
+body.ov-shell .rail-link { border-radius: 14px; padding: 10px 12px; font-weight: 600; }
+body.ov-shell .rail-link[aria-current="page"] {
+  background: var(--ov-accent-wash);
+  color: var(--ov-accent-deep);
+}
+body.ov-shell .rail-note { display: none; }
+body.ov-shell .foot { border-top: 0; }
+
+/* --- The briefing ------------------------------------------------------- */
+.ov-brief {
+  position: relative;
+  overflow: hidden;
+  margin: 0 0 var(--space-lg);
+  padding: var(--space-xl) var(--space-lg) var(--space-lg);
+  border-bottom: 1px solid var(--ov-rule);
+  background: linear-gradient(168deg, #fffdf9 0%, #fff4e6 55%, #ffeada 100%);
+}
+.ov-brief-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md) var(--space-lg);
+  align-items: flex-end;
+  justify-content: space-between;
+}
+.ov-when {
+  font-size: var(--text-xs);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ov-muted);
+  margin: 0 0 12px;
+}
+.ov-headline {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.9rem, 4.4vw, 3.1rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  margin: 0;
+  color: var(--ov-ink);
+  max-width: 22ch;
+}
+.ov-headline em {
+  font-style: normal;
+  color: var(--ov-accent);
+}
+.ov-sub {
+  margin: 12px 0 0;
+  font-size: var(--text-md);
+  color: var(--ov-ink-2);
+  max-width: 52ch;
+}
+.ov-brief-side { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+.ov-hall {
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: var(--ov-paper);
+  border: 1px solid var(--ov-rule);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ov-ink-2);
+}
+.ov-cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 13px 22px;
+  border-radius: 999px;
+  background: var(--ov-accent);
+  color: #fffdf9;
+  font-weight: 700;
+  font-size: var(--text-sm);
+  text-decoration: none;
+  box-shadow: 0 16px 28px -18px rgba(238, 84, 12, 0.9);
+  transition: background 160ms, transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ov-cta:hover { background: var(--ov-accent-deep); transform: translateY(-2px); }
+
+/* --- Section heads ------------------------------------------------------- */
+.ov-section { margin: 0 0 var(--space-xl); }
+.ov-section-nested { margin: 0; }
+.ov-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin: 0 0 var(--space-md);
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--ov-rule);
+}
+.ov-section-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.2rem, 2.1vw, 1.6rem);
+  letter-spacing: -0.025em;
+  margin: 0;
+}
+.ov-section-note { font-size: var(--text-sm); color: var(--ov-muted); }
+
+/* --- The day as three beats --------------------------------------------- */
+.ov-beats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-md);
+}
+.ov-beat {
+  position: relative;
+  background: var(--ov-paper);
+  border: 1px solid var(--ov-rule);
+  border-radius: var(--ov-radius);
+  padding: var(--space-lg);
+  box-shadow: 0 18px 34px -30px rgba(86, 42, 8, 0.6);
+}
+.ov-beat.is-now {
+  border-color: var(--ov-accent);
+  box-shadow: 0 0 0 3px var(--ov-accent-wash), 0 18px 34px -30px rgba(86, 42, 8, 0.6);
+}
+.ov-beat-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.ov-beat-name {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--text-lg);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.ov-beat-time { font-size: var(--text-sm); font-weight: 700; color: var(--ov-accent-deep); }
+.ov-beat-number {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2rem, 3.6vw, 2.9rem);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  margin: var(--space-md) 0 0;
+  color: var(--ov-ink);
+  font-variant-numeric: tabular-nums;
+}
+.ov-beat-of {
+  display: block;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--ov-muted);
+  margin-top: 6px;
+}
+/* A meal with nothing written up yet shows a dash, not a zero. */
+.ov-beat-pending { color: var(--ov-muted); opacity: 0.55; }
+/* The gauge: what turned up against the strength, with the forecast marked. */
+.ov-gauge {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(23, 19, 15, 0.08);
+  margin: var(--space-md) 0 10px;
+}
+.ov-gauge-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+  background: var(--ov-accent);
+}
+.ov-gauge-mark {
+  position: absolute;
+  top: -4px;
+  width: 2px;
+  height: 16px;
+  background: var(--ov-ink);
+  border-radius: 1px;
+  opacity: 0.55;
+}
+.ov-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.ov-chip.is-over { background: var(--ov-accent-wash); color: var(--ov-accent-deep); }
+.ov-chip.is-short { background: rgba(168, 98, 10, 0.12); color: #7a4708; }
+.ov-chip.is-exact { background: rgba(63, 125, 58, 0.12); color: var(--ov-good); }
+.ov-chip.is-quiet { background: rgba(23, 19, 15, 0.06); color: var(--ov-muted); }
+.ov-beat-note { margin: 10px 0 0; }
+.ov-beat-foot {
+  margin: var(--space-md) 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--ov-hair);
+  font-size: var(--text-sm);
+  color: var(--ov-muted);
+}
+
+/* --- The full service table lives behind a disclosure -------------------- */
+.ov-more {
+  margin-top: var(--space-md);
+  background: var(--ov-paper);
+  border: 1px solid var(--ov-rule);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.ov-more > summary {
+  cursor: pointer;
+  padding: 14px var(--space-lg);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--ov-ink-2);
+  list-style: none;
+}
+.ov-more > summary::-webkit-details-marker { display: none; }
+.ov-more > summary::before {
+  content: "+";
+  display: inline-block;
+  width: 1.2em;
+  font-weight: 800;
+  color: var(--ov-accent);
+}
+.ov-more[open] > summary::before { content: "−"; }
+.ov-more > summary:hover { background: var(--ov-paper-2); }
+
+/* --- Panels -------------------------------------------------------------- */
+.ov-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: var(--space-md);
+  align-items: start;
+}
+.ov-panel {
+  background: var(--ov-paper);
+  border: 1px solid var(--ov-rule);
+  border-radius: var(--ov-radius);
+  padding: var(--space-lg);
+  box-shadow: 0 18px 34px -32px rgba(86, 42, 8, 0.6);
+}
+.ov-panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: var(--space-md);
+}
+.ov-panel-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-md);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.ov-panel-hint { font-size: var(--text-xs); color: var(--ov-muted); letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* The one big number on a panel, with its context set small beneath it. */
+.ov-figure {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2.2rem, 4.6vw, 3.4rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  margin: 0 0 var(--space-md);
+  color: var(--ov-ink);
+  font-variant-numeric: tabular-nums;
+}
+.ov-figure-of {
+  display: block;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--ov-muted);
+  margin-top: 10px;
+  max-width: 40ch;
+}
+.ov-foot {
+  margin: var(--space-md) 0 0;
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  color: var(--ov-ink-2);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--ov-hair);
+}
+.ov-foot-quiet { color: var(--ov-muted); }
+
+/* --- The causes ----------------------------------------------------------
+   A proportion, not a table: the question is "which problem is this?",
+   and the bar answers it before the number does. */
+.ov-causes { margin: 0; padding: 0; list-style: none; }
+.ov-causes li { margin: 0 0 var(--space-md); }
+.ov-causes li:last-child { margin-bottom: 0; }
+.ov-cause-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.ov-cause-name { font-weight: 700; font-size: var(--text-sm); }
+.ov-cause-cost {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+.ov-cause-bar {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(23, 19, 15, 0.07);
+  overflow: hidden;
+}
+.ov-cause-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--ov-accent), #f0932f);
+}
+.ov-causes li:nth-child(2) .ov-cause-bar span { background: linear-gradient(90deg, #c98a2b, #e3b35e); }
+.ov-causes li:nth-child(3) .ov-cause-bar span { background: linear-gradient(90deg, #8a6a3a, #b08c58); }
+.ov-causes li:nth-child(n + 4) .ov-cause-bar span { background: linear-gradient(90deg, #7d7468, #a79c8d); }
+.ov-cause-note {
+  margin: 6px 0 0;
+  font-size: var(--text-xs);
+  color: var(--ov-muted);
+}
+
+/* --- The food that cost the most ---------------------------------------- */
+.ov-dishes { margin: 0; padding: 0; list-style: none; counter-reset: dish; }
+.ov-dishes li {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) minmax(60px, 1.1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--ov-hair);
+}
+.ov-dishes li:last-child { border-bottom: 0; }
+.ov-dish-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--ov-paper-2);
+  border: 1px solid var(--ov-hair);
+}
+.ov-dish-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ov-dish-name { font-weight: 600; font-size: var(--text-sm); }
+.ov-dish-bar {
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(23, 19, 15, 0.07);
+  overflow: hidden;
+}
+.ov-dish-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--ov-loss);
+}
+.ov-dish-cost {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--ov-ink-2);
+  min-width: 4.5ch;
+  text-align: right;
+}
+
+/* --- The sparkline ------------------------------------------------------- */
+.ov-spark { width: 100%; }
+.ov-spark svg { width: 100%; height: auto; display: block; overflow: visible; }
+.ov-spark .spark-area { opacity: 0.16; }
+.ov-spark .spark-line { fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.ov-spark .spark-dot { stroke: var(--ov-paper); stroke-width: 2; }
+.ov-spark .spark-label { font-size: 11px; fill: var(--ov-muted); font-family: var(--font-body); }
+.ov-spark .spark-value { font-size: 12px; font-weight: 700; font-family: var(--font-display); fill: var(--ov-ink-2); }
+.ov-spark.is-loss .spark-line { stroke: var(--ov-accent); }
+.ov-spark.is-loss .spark-area { fill: var(--ov-accent); }
+.ov-spark.is-loss .spark-dot { fill: var(--ov-accent); }
+.ov-spark.is-model .spark-line { stroke: #8a6a3a; }
+.ov-spark.is-model .spark-area { fill: #8a6a3a; }
+.ov-spark.is-model .spark-dot { fill: #8a6a3a; }
+.ov-spark .spark-bar { fill: #c98a2b; }
+
+/* --- Empty --------------------------------------------------------------- */
+.ov-empty {
+  background: var(--ov-paper);
+  border: 1px dashed var(--ov-rule);
+  border-radius: var(--ov-radius);
+  padding: var(--space-2xl) var(--space-lg);
+  text-align: center;
+}
+.ov-empty h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-lg);
+  margin: 0 0 6px;
+}
+.ov-empty p { margin: 0 0 var(--space-md); color: var(--ov-muted); }
+.ov-empty p:last-child { margin-bottom: 0; }
+
+/* --- Narrow --------------------------------------------------------------
+   A manager reads this on a laptop and a tablet in a corridor. One column,
+   and the beats stay in reading order. */
+@media (max-width: 60rem) {
+  .ov-split { grid-template-columns: minmax(0, 1fr); }
+  .ov-beats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ov-brief { padding: var(--space-lg) var(--space-md); }
+  .ov-headline { font-size: clamp(1.8rem, 8vw, 2.6rem); }
+}
+
+@media (max-width: 40rem) {
+  .ov-beats { grid-template-columns: minmax(0, 1fr); }
+  .ov-brief-inner { flex-direction: column; align-items: stretch; }
+  .ov-brief-side { align-items: stretch; }
+  .ov-cta { justify-content: center; }
+  .ov-dishes li { grid-template-columns: 36px minmax(0, 1fr) auto; }
+  .ov-dish-bar { display: none; }
+}
+
+/* --- Motion --------------------------------------------------------------
+   One direction, one beat: the briefing lands, then the sections follow. */
+@keyframes ov-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+.ov-brief { animation: ov-rise 460ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.ov-section { animation: ov-rise 520ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.ov-section:nth-of-type(1) { animation-delay: 60ms; }
+.ov-section:nth-of-type(2) { animation-delay: 120ms; }
+.ov-section:nth-of-type(3) { animation-delay: 180ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ov-brief, .ov-section { animation: none; }
+  .ov-cta { transition: none; }
+}

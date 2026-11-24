@@ -57,10 +57,20 @@ The screen a mess manager opens first. It answers one question: *how much
 food did this mess throw away, how close did the forecast land, and are the
 two getting closer?*
 
+It is written as one briefing rather than a row of widgets:
+
+- A headline sentence about today — how many turned up against the forecast,
+  or how many meals are still not written up. It never reports a meal the
+  kitchen has not written up as zero turnout.
 - A window filter (from, to, hall) that every figure respects.
-- Four figures: waste cost, forecast error, average turnout, exam-period lift.
-- Two charts: weekly waste cost as bars, forecast error by week as a line.
-- Today's services reconciled, row by row, against the published band.
+- The day as three beats — breakfast, lunch, dinner — each showing turnout
+  against the forecast, with the forecast marked on a gauge. A meal with no
+  write-up shows a dash, not a zero.
+- The full service reconciliation, one row per service, behind a disclosure.
+- The money told as a story: one figure for the waste, the causes drawn as
+  proportions, and the weekly trend as a sparkline.
+- The forecast error as a figure, a sentence, and a sparkline of the trend.
+- The food that cost the most, drawn, and the rhythm of demand by weekday.
 - The method well, so the number can be argued with.
 
 ### 2.2 Forecast dashboard — `/console/forecast/`

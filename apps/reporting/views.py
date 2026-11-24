@@ -5,6 +5,7 @@ from __future__ import annotations
 import datetime as dt
 
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -62,6 +63,19 @@ def _selected_hall(request):
     return get_object_or_404(DiningHall, pk=hall_id)
 
 
+def _maybe(obj, name: str):
+    """A reverse one-to-one that may not exist.
+
+    ``service.forecast`` raises ``DoesNotExist`` when the service has no
+    forecast. A template swallows that and treats it as missing; Python does
+    not, so every one of these is read through here.
+    """
+    try:
+        return getattr(obj, name)
+    except ObjectDoesNotExist:
+        return None
+
+
 @login_required
 @require_GET
 def dashboard_home(request):
@@ -103,6 +117,80 @@ def dashboard_home(request):
     demand_summary = demand_services.attendance_summary(start, end, hall)
     period = demand_services.attendance_by_period(start, end, hall)
 
+    # Today's services, grouped by meal, so the manager reads the day as three
+    # beats instead of a row per hall and meal.
+    today_meals: list[dict] = []
+    by_meal: dict[str, dict] = {}
+    for service in todays_services:
+        entry = by_meal.setdefault(
+            service.meal,
+            {
+                "meal": service.meal,
+                "label": service.get_meal_display(),
+                "time": MEAL_TIMES.get(service.meal, {}).get("time", ""),
+                "expected": 0,
+                "turned_up": 0,
+                "forecast": 0,
+                "forecasted": 0,
+                "cooked": 0,
+                "leftover": 0,
+                "recorded": 0,
+                "services": 0,
+                "in_range": 0,
+                "out_of_range": 0,
+                "unwritten": 0,
+                "state": "later",
+            },
+        )
+        entry["services"] += 1
+        entry["expected"] += service.registered_strength
+        entry["turned_up"] += service.attendance_count
+        forecast = _maybe(service, "forecast")
+        plan = _maybe(service, "preparation_plan")
+        actual = _maybe(service, "actual")
+        if forecast is not None:
+            entry["forecast"] += int(forecast.predicted_attendance)
+            entry["forecasted"] += 1
+        if plan is not None:
+            entry["cooked"] += plan.portions_to_prepare
+        if actual is not None:
+            entry["leftover"] += actual.leftover_portions_total
+            entry["recorded"] += 1
+        else:
+            entry["unwritten"] += 1
+        if forecast is not None and service.attendance_count:
+            if service.attendance_count >= forecast.lower_bound and service.attendance_count <= forecast.upper_bound:
+                entry["in_range"] += 1
+            else:
+                entry["out_of_range"] += 1
+    for entry in by_meal.values():
+        entry["state"] = _meal_state(entry["meal"], timezone.localtime())
+        entry["delta"] = entry["turned_up"] - entry["forecast"] if entry["forecasted"] else 0
+        today_meals.append(entry)
+    today_meals.sort(key=lambda e: MEAL_SERVICE_ORDER.get(e["meal"], 9))
+
+    day_expected = sum(e["expected"] for e in today_meals)
+    day_turned_up = sum(e["turned_up"] for e in today_meals)
+    day_forecast = sum(e["forecast"] for e in today_meals)
+    next_meal = next((e for e in today_meals if e["state"] == "later"), None)
+    served_meals = [e for e in today_meals if e["state"] != "later"]
+    # A meal that has run but has not been written up says nothing about the
+    # students, and must not be reported as though they had not come.
+    unwritten_meals = [e for e in served_meals if e["recorded"] == 0]
+    written_meals = [e for e in served_meals if e["recorded"] > 0]
+
+    # Waste by dish, each with its picture, so the manager sees which food is
+    # throwing the money away rather than reading a rank column.
+    top_dishes = waste_services.top_waste_dishes(start, end, hall, limit=10)
+    for dish in top_dishes:
+        dish["slug"] = core_utils.dish_art_slug_for(dish.get("code", ""), dish.get("dish", ""))
+        dish["cost_label"] = f"₹{dish['waste_cost']:,.0f}"
+
+    # The causes of the waste, each with its share of the money.
+    waste_by_cause = waste_services.waste_by_cause(start, end, hall)
+    for cause in waste_by_cause:
+        cause["cost_label"] = f"₹{cause['waste_cost']:,.0f}"
+
     context = {
         "start": start,
         "end": end,
@@ -111,37 +199,26 @@ def dashboard_home(request):
         "accuracy": accuracy,
         "savings": savings,
         "waste_totals": waste_totals,
+        "waste_cost_label": f"₹{waste_totals['waste_cost']:,.0f}",
         "waste_by_week": waste_services.waste_by_week(start, end, hall),
-        "top_dishes": waste_services.top_waste_dishes(start, end, hall, limit=10),
+        "waste_by_cause": waste_by_cause,
+        "top_dishes": top_dishes,
         "mape_over_time": reporting.mape_over_time(start, end, hall),
         "todays_services": todays_services,
+        "today_meals": today_meals,
+        "day_expected": day_expected,
+        "day_turned_up": day_turned_up,
+        "day_forecast": day_forecast,
+        "next_meal": next_meal,
+        "served_meals": served_meals,
+        "unwritten_meals": unwritten_meals,
+        "written_meals": written_meals,
         "weekday_pattern": demand_services.attendance_by_weekday(start, end, hall),
         "period": demand_services.attendance_by_period(start, end, hall),
         "demand_summary": demand_summary,
-        "figures": [
-            {
-                "label": "Waste cost in period",
-                "value": f"₹{waste_totals['waste_cost']:,.0f}",
-                "note": f"{waste_totals['waste_quantity_kg']:,.1f} kg across {waste_totals['records']} dish-services",
-                "tone": "loss",
-            },
-            {
-                "label": "Forecast error",
-                "value": f"{accuracy['mape_pct']:,.1f}%",
-                "note": f"{accuracy['forecasts']} forecasts, {accuracy['within_range']} inside the published range",
-                "tone": "loss" if accuracy["mape_pct"] >= 20 else "match",
-            },
-            {
-                "label": "Average turnout",
-                "value": f"{demand_summary['avg_attendance']:,.0f}",
-                "note": f"{demand_summary['attendance_rate_pct']:,.1f}% of registered strength over {demand_summary['services']} services",
-            },
-            {
-                "label": "Exam-period lift",
-                "value": f"{period['exam_lift_pct']:,.1f}%",
-                "note": f"{period['exam_avg']:,.0f} students during exams, {period['normal_avg']:,.0f} on ordinary days",
-            },
-        ],
+        # The exam lift is a forecast input, not a headline: it belongs in the
+        # period summary rather than on the front of the page.
+        "exam_lift_pct": period["exam_lift_pct"],
     }
     return render(request, "dashboard/home.html", context)
 

@@ -127,9 +127,17 @@ def dish_art_slug(dish) -> str:
     """
     if dish is None:
         return ""
-    code = getattr(dish, "code", "") or ""
-    if code in DISH_ART_OVERRIDES:
-        return DISH_ART_OVERRIDES[code]
+    return dish_art_slug_for(getattr(dish, "code", "") or "", getattr(dish, "name", "") or "")
+
+
+def dish_art_slug_for(code: str, name: str = "") -> str:
+    """The illustration file name for a dish, from its code and name.
+
+    The waste report groups by dish code rather than carrying dish objects
+    around, so the same rule has to work from a code and a name.
+    """
     from django.utils.text import slugify
 
-    return slugify(getattr(dish, "name", "") or code.lower())
+    if code in DISH_ART_OVERRIDES:
+        return DISH_ART_OVERRIDES[code]
+    return slugify(name or (code or "").lower())
