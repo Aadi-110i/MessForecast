@@ -56,6 +56,10 @@
       if (track && track.hasAttribute('role')) {
         track.setAttribute('aria-valuenow', String(Math.round(pct)));
       }
+      var pctEl = document.getElementById('live-progress-pct');
+      if (pctEl) {
+        pctEl.textContent = Math.round(pct) + '% (' + count + '/' + registered + ')';
+      }
     }
   }
 

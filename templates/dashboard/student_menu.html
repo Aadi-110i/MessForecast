@@ -1,0 +1,95 @@
+{% extends "console/base_console.html" %}
+{% load static %}
+
+{% comment %}
+The fortnight, written out.
+
+A student comes here to look ahead: what is on next Tuesday. So this is a
+menu card rather than a calendar — one block per day, one band per meal,
+and every dish drawn small beside its name.
+{% endcomment %}
+
+{% block title %}The menu · {{ app_name }}{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/console.css' %}">
+  <link rel="stylesheet" href="{% static 'css/student.css' %}">
+{% endblock %}
+
+{% block body_class %}stu-shell{% endblock %}
+
+{% block console_content %}
+
+<header class="stu-mast">
+  <div class="stu-mast-inner">
+    <div>
+      <p class="stu-when">Two weeks of food</p>
+      <h1 class="stu-hello">The <em>menu</em></h1>
+    </div>
+    <div class="stu-mast-side">
+      <span class="stu-hall">
+        {% if hall %}{{ hall.name }}{% else %}All dining halls{% endif %}
+      </span>
+      <a class="stu-cta" href="{% url 'dashboard-student' %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 12l9-9 9 9"></path>
+          <path d="M5 10v10h14V10"></path>
+        </svg>
+        Back to today
+      </a>
+    </div>
+  </div>
+</header>
+
+{% for day in days %}
+  <section class="stu-section">
+    <div class="stu-section-head">
+      <h2 class="stu-section-title">
+        {{ day.weekday }} {{ day.date|date:"j M" }}
+        {% if day.is_today %}<span class="stu-state is-now" style="vertical-align:middle;margin-left:10px">Today</span>{% endif %}
+      </h2>
+      <span class="stu-section-note">
+        {% if day.meals %}{{ day.meals|length }} meal{{ day.meals|length|pluralize }}{% else %}Nothing published{% endif %}
+      </span>
+    </div>
+
+    {% if day.meals %}
+      <div class="stu-menu-page">
+        {% for meal in day.meals %}
+          <div class="stu-menu-band">
+            <div class="stu-menu-band-head">
+              <h3 class="stu-menu-band-name">{{ meal.label }}</h3>
+              <span class="stu-meal-time">{{ meal.time }}</span>
+            </div>
+            <div class="stu-menu-items">
+              {% for dish in meal.dishes %}
+                <div class="stu-menu-item">
+                  <span class="stu-menu-thumb">
+                    <img src="{% static 'img/dishes/'|add:dish.slug|add:'.svg' %}"
+                         alt="{{ dish.name }}" loading="lazy" onerror="this.remove()">
+                  </span>
+                  <span class="stu-menu-text">
+                    <span class="stu-menu-dish">{{ dish.name }}</span>
+                    <span class="stu-menu-kind">
+                      {% if dish.is_veg %}<span class="stu-mark"></span>
+                      {% elif dish.is_nonveg %}<span class="stu-mark is-nonveg"></span>
+                      {% else %}<span class="stu-mark is-other"></span>{% endif %}
+                      {{ dish.kind }}
+                    </span>
+                  </span>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="stu-empty">
+        <h3>Nothing published for {{ day.weekday }}</h3>
+        <p>The mess office publishes the menu a few days ahead.</p>
+      </div>
+    {% endif %}
+  </section>
+{% endfor %}
+
+{% endblock %}

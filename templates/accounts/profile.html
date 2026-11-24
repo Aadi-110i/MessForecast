@@ -1,6 +1,20 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Profile · {{ app_name }}{% endblock %}
+
+{% comment %}
+A student reaches this page from their menu, so it wears the same warm
+ground and the same short rail. Everyone else keeps the console furniture.
+{% endcomment %}
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/console.css' %}">
+  {% if user.role == "STUDENT" %}
+  <link rel="stylesheet" href="{% static 'css/student.css' %}">
+  {% endif %}
+{% endblock %}
+
+{% block body_class %}{% if user.role == "STUDENT" %}stu-shell{% endif %}{% endblock %}
 
 {% block content %}
 {% include "components/page_head.html" with title="Your profile" eyebrow="Your account" lede="Personal information tied to your account. Your role is set when your account is created and cannot be changed from here." %}

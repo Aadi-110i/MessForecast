@@ -3,18 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Attendance capture, {{ app_name }}</title>
+  <title>Attendance capture · {{ app_name }}</title>
   <meta name="description" content="Scan or type student attendance at the counter for an open mess service.">
   <meta name="theme-color" content="#F7EEE1">
   <link rel="manifest" href="{% url 'pwa-manifest' %}">
   <link rel="icon" href="{% static 'pwa/icon.svg' %}" type="image/svg+xml">
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
   <link rel="stylesheet" href="{% static 'css/kitchen.css' %}">
+  <link rel="stylesheet" href="{% static 'css/scan.css' %}">
 </head>
-<body class="k-shell">
+<body class="scan-page">
 <script>
-/* A new service worker takes over the page it is looking at. The reader gets
-   the new screen without being asked to refresh. */
 (function () {
   if (!('serviceWorker' in navigator)) { return; }
   navigator.serviceWorker.addEventListener('message', function (event) {
@@ -27,129 +26,294 @@
 </script>
 {% csrf_token %}
 
-<header class="k-ticket">
-  <div class="k-ticket-head">
-    <span class="k-mark">MessForecast</span>
-    <div class="k-where">
-      <div class="k-hall">Attendance capture</div>
-      <div class="k-when">{{ today|date:"l, d F Y" }}, {{ services|length }} service{{ services|length|pluralize }}</div>
+<header class="scan-header">
+  <div class="scan-header-left">
+    <a href="{% url 'kitchen-dashboard' %}" class="scan-back-link" title="Return to Kitchen Screen">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      <span>Kitchen</span>
+    </a>
+    <a href="{% url 'home' %}" class="scan-brand">MessForecast</a>
+    <div class="scan-header-meta">
+      <div class="scan-title">Attendance Capture</div>
+      <div class="scan-subtitle">{{ today|date:"l, d F Y" }} · {{ services|length }} service{{ services|length|pluralize }}</div>
     </div>
-    <div class="k-head-right">
-      <span class="k-pill" id="net-pill"><span class="dot" aria-hidden="true"></span><span id="net-label">Online</span></span>
-      <span class="k-pill queued" id="queue-pill" hidden><span class="dot" aria-hidden="true"></span><span id="queue-label">0 queued</span></span>
-    </div>
+  </div>
+  <div class="scan-header-right">
+    <span class="scan-status-pill" id="net-pill">
+      <span class="pulse-dot" aria-hidden="true"></span>
+      <span id="net-label">Online</span>
+    </span>
+    <span class="scan-status-pill queued" id="queue-pill" hidden>
+      <span class="pulse-dot" aria-hidden="true"></span>
+      <span id="queue-label">0 queued</span>
+    </span>
   </div>
 </header>
 
-<main class="k-main">
-  <div class="k-capture">
-    <!-- ===================== Left: the counter ===================== -->
-    <div class="k-stack">
-      <section class="k-card">
-        <div class="k-card-head"><h2>Open service</h2></div>
-        <div class="k-card-body">
+<main class="scan-shell">
+  <div class="scan-grid">
+    <!-- ===================== Left Column: Counter & Scan Actions ===================== -->
+    <div class="scan-col">
+      <!-- 1. Open Service Card -->
+      <section class="scan-card">
+        <div class="scan-card-head">
+          <div class="scan-card-title-group">
+            <span class="scan-card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </span>
+            <h2>Open service</h2>
+          </div>
+          <span class="scan-card-badge">Live Counter</span>
+        </div>
+        <div class="scan-card-body">
           {% if services %}
-            <div class="field after-table">
-              <label class="k-label" for="svc">Service</label>
-              <select class="k-select" id="svc">
-                {% for s in services %}
-                  <option value="{{ s.id }}"
-                          data-hall="{{ s.hall_id }}"
-                          data-date="{{ s.date|date:'Y-m-d' }}"
-                          data-meal="{{ s.meal }}"
-                          data-registered="{{ s.registered_strength }}"
-                          data-count="{{ s.attendance_count }}">
-                    {{ s.hall.name }}, {{ s.get_meal_display }}
-                  </option>
-                {% endfor %}
-              </select>
+            <div class="scan-field">
+              <label class="scan-label" for="svc">Select Service Hall</label>
+              <div class="scan-select-wrap">
+                <select class="scan-select" id="svc">
+                  {% for s in services %}
+                    <option value="{{ s.id }}"
+                            data-hall="{{ s.hall_id }}"
+                            data-date="{{ s.date|date:'Y-m-d' }}"
+                            data-meal="{{ s.meal }}"
+                            data-registered="{{ s.registered_strength }}"
+                            data-count="{{ s.attendance_count }}">
+                      {{ s.hall.name }}, {{ s.get_meal_display }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
             </div>
 
-            <div class="k-stamps k-stamps--pair after-table">
-              <div class="k-stamp">
-                <span class="s-label">Turned up</span>
-                <span class="k-count" id="live-count">0</span>
-                <span class="k-count-sub">students scanned</span>
+            <div class="scan-stat-grid">
+              <div class="scan-stat-tile primary">
+                <div class="scan-stat-label">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  <span>Turned up</span>
+                </div>
+                <span class="scan-stat-number" id="live-count">0</span>
+                <span class="scan-stat-sub">students scanned</span>
               </div>
-              <div class="k-stamp">
-                <span class="s-label">Registered</span>
-                <span class="k-count" id="live-registered">0</span>
-                <span class="k-count-sub">expected at this hall</span>
+              <div class="scan-stat-tile">
+                <div class="scan-stat-label">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                  <span>Registered</span>
+                </div>
+                <span class="scan-stat-number" id="live-registered">0</span>
+                <span class="scan-stat-sub">expected at this hall</span>
               </div>
             </div>
-            <div class="k-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100"
-                 aria-valuenow="0" aria-label="Scanned students against registered strength">
-              <i id="live-bar"></i>
+
+            <div class="scan-progress-box">
+              <div class="scan-progress-head">
+                <span class="scan-progress-title">Turnout Progress</span>
+                <span class="scan-progress-metric" id="live-progress-pct">Active</span>
+              </div>
+              <div class="scan-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100"
+                   aria-valuenow="0" aria-label="Scanned students against registered strength">
+                <i class="scan-progress-fill" id="live-bar"></i>
+              </div>
             </div>
           {% else %}
-            <div class="k-empty">
-              <h3>No service open for capture</h3>
-              <p>Schedule a menu for today so there is a service to scan attendance against.</p>
+            <div class="scan-log-empty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <strong>No service open for capture</strong>
+              <span>Schedule a menu for today so there is a service to scan attendance against.</span>
             </div>
           {% endif %}
         </div>
       </section>
 
-      <section class="k-card">
-        <div class="k-card-head"><h2>Scan a student</h2></div>
-        <div class="k-card-body">
-          <div class="k-methods">
-            <button class="k-tap" id="btn-qr" type="button">Scan QR code</button>
-            <button class="k-tap rfid" id="btn-rfid" type="button">RFID tap</button>
+      <!-- 2. Scan a Student Card -->
+      <section class="scan-card">
+        <div class="scan-card-head">
+          <div class="scan-card-title-group">
+            <span class="scan-card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
+                <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
+                <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
+                <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
+                <line x1="7" y1="12" x2="17" y2="12"></line>
+              </svg>
+            </span>
+            <h2>Scan a student</h2>
+          </div>
+          <span class="scan-card-badge">Instant Verification</span>
+        </div>
+        <div class="scan-card-body">
+          <div class="scan-methods-grid">
+            <button class="scan-action-btn primary" id="btn-qr" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+              <span>Scan QR Code</span>
+            </button>
+            <button class="scan-action-btn secondary" id="btn-rfid" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                <line x1="2" y1="10" x2="22" y2="10"></line>
+              </svg>
+              <span>RFID Tap</span>
+            </button>
           </div>
 
-          <div class="after-table">
-            <label class="k-label" for="manual-id">Or type the credential number</label>
-            <div class="k-manual after-table">
-              <input class="k-input" id="manual-id" type="text" inputmode="numeric" autocomplete="off"
-                     placeholder="e.g. 2023CS0142">
-              <button class="k-btn" id="btn-manual" type="button">Record</button>
+          <div class="scan-manual-box">
+            <label class="scan-label" for="manual-id">Or type credential number manually</label>
+            <div class="scan-input-group">
+              <input class="scan-input" id="manual-id" type="text" inputmode="numeric" autocomplete="off"
+                     placeholder="e.g. 2023CS0142" spellcheck="false">
+              <button class="scan-submit-btn" id="btn-manual" type="button">
+                <span>Record</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </button>
             </div>
           </div>
 
-          <video id="qr-video" class="k-video" playsinline muted hidden
-                 poster="{% static 'pwa/icon.svg' %}"></video>
+          <video id="qr-video" class="scan-camera-viewport" playsinline muted hidden poster="{% static 'pwa/icon.svg' %}"></video>
         </div>
       </section>
     </div>
 
-    <!-- ===================== Right: the log ===================== -->
-    <div class="k-stack">
-      <section class="k-card">
-        <div class="k-card-head"><h2>Recent scans</h2></div>
-        <div class="k-card-body">
-          <div class="k-log" id="scan-log">
-            <div>Waiting for the first scan</div>
+    <!-- ===================== Right Column: Scan Feed & Service QR ===================== -->
+    <div class="scan-col">
+      <!-- 3. Recent Scans Card -->
+      <section class="scan-card">
+        <div class="scan-card-head">
+          <div class="scan-card-title-group">
+            <span class="scan-card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+            </span>
+            <h2>Recent scans</h2>
+          </div>
+          <span class="scan-card-badge">Live Feed</span>
+        </div>
+        <div class="scan-card-body">
+          <div class="scan-log-box" id="scan-log">
+            <div class="scan-log-empty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 14 14"></polyline>
+              </svg>
+              <span>Waiting for the first scan...</span>
+            </div>
           </div>
         </div>
       </section>
 
-      <section class="k-card">
-        <div class="k-card-head"><h2>Service QR for students</h2></div>
-        <div class="k-card-body">
+      <!-- 4. Service QR for Students Card -->
+      <section class="scan-card">
+        <div class="scan-card-head">
+          <div class="scan-card-title-group">
+            <span class="scan-card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                <path d="M7 7h.01"></path>
+                <path d="M17 7h.01"></path>
+                <path d="M7 17h.01"></path>
+                <path d="M17 17h.01"></path>
+              </svg>
+            </span>
+            <h2>Service QR for students</h2>
+          </div>
+        </div>
+        <div class="scan-card-body">
           {% if services %}
-            <p class="k-prose" style="margin-bottom:12px;">
-              Students can scan this QR code from their dashboard to mark attendance for the selected service.
+            <p style="font-size:0.88rem;color:var(--color-muted,#72685d);margin:0 0 1rem;line-height:1.45;">
+              Students can scan this QR code directly from their student dashboard to mark attendance for this service.
             </p>
-            <div id="service-qr-box" style="background:#fff;padding:12px;border-radius:8px;display:inline-block;"></div>
-            <p class="hint" id="service-qr-payload" style="margin-top:8px;font-family:monospace;"></p>
-            <div style="margin-top:10px;">
-              <button class="k-btn" id="btn-download-qr" type="button">Download QR</button>
+            <div class="scan-qr-container">
+              <div class="scan-qr-frame">
+                <div id="service-qr-box"></div>
+              </div>
+              <div>
+                <span class="scan-qr-payload-chip" id="service-qr-payload"></span>
+              </div>
+              <button class="scan-btn-download" id="btn-download-qr" type="button">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>Download QR Code</span>
+              </button>
             </div>
           {% else %}
-            <p class="k-prose">Schedule a service for today to generate its QR code.</p>
+            <div class="scan-log-empty">
+              <span>Schedule a service for today to generate its QR code.</span>
+            </div>
           {% endif %}
         </div>
       </section>
 
-      <section class="k-card">
-        <div class="k-card-head"><h2>How offline capture works</h2></div>
-        <div class="k-card-body k-prose">
-          <p>Every scan is written to this tablet first, with its own identifier. If the
-             network is down the scan waits in the queue and is sent the moment the
-             connection returns.</p>
-          <p>Sending the same scan twice is harmless: the server ignores any identifier it
-             has already stored, so a re-send never doubles a student’s attendance.</p>
+      <!-- 5. Offline Resiliency Card -->
+      <section class="scan-card">
+        <div class="scan-card-head">
+          <div class="scan-card-title-group">
+            <span class="scan-card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            </span>
+            <h2>Offline resilient</h2>
+          </div>
+        </div>
+        <div class="scan-card-body">
+          <div class="scan-tip-list">
+            <div class="scan-tip-item">
+              <div class="scan-tip-bullet" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
+              <div>
+                <strong>Local Queue First:</strong> Every scan is securely registered on this device with a unique identifier and automatically syncs when connected.
+              </div>
+            </div>
+            <div class="scan-tip-item">
+              <div class="scan-tip-bullet" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
+              <div>
+                <strong>Deduplication:</strong> Repeated scans are safely recognized and ignored by the server, ensuring numbers are never double-counted.
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </div>
@@ -175,7 +339,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!val) { return; }
     var text = 'MESSFORECAST:SERVICE:' + val;
     qrBox.innerHTML = '';
-    new QRCode(qrBox, { text: text, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
+    new QRCode(qrBox, { text: text, width: 180, height: 180, correctLevel: QRCode.CorrectLevel.M });
     if (payloadEl) { payloadEl.textContent = text; }
   }
 

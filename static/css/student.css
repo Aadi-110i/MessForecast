@@ -1,0 +1,777 @@
+/* =========================================================================
+   MessForecast — the student surface
+   -------------------------------------------------------------------------
+   A student is not a manager. The console is a working surface: ruled
+   tables, tight numbers, one accent for one action. This sheet is a
+   different thing altogether — a mess menu.
+
+   So: warm paper, one orange, and food. The menu is the hero, the meal
+   names are set like a printed menu card, and every dish carries its own
+   illustration instead of a row in a ledger. Nothing here counts anything
+   at a student, because a student wants to know what is cooking and how to
+   mark that they came.
+
+   Loaded only by the student pages, after the console skin, so it can
+   replace the console's furniture rather than fight it.
+   ========================================================================= */
+
+body.stu-shell {
+  --stu-ground: #f7eee1;
+  --stu-paper: #fffdf9;
+  --stu-paper-2: #fff6ea;
+  --stu-ink: #17130f;
+  --stu-ink-2: #3b332c;
+  --stu-muted: #6b6158;
+  --stu-rule: rgba(23, 19, 15, 0.12);
+  --stu-hair: rgba(23, 19, 15, 0.08);
+  --stu-accent: #ee540c;
+  --stu-accent-deep: #b03a03;
+  --stu-accent-wash: #fff0e4;
+  --stu-veg: #3f7d3a;
+  --stu-nonveg: #b03a1f;
+  --stu-radius: 22px;
+
+  background:
+    radial-gradient(1100px 520px at 12% -8%, rgba(238, 84, 12, 0.07), transparent 60%),
+    radial-gradient(900px 480px at 92% 4%, rgba(168, 98, 10, 0.06), transparent 62%),
+    var(--stu-ground);
+  background-attachment: fixed;
+}
+
+/* --- The shell ------------------------------------------------------------
+   The console rail is a filing cabinet of sections. A student gets three
+   words, so the rail becomes a short list and the page takes the width. */
+body.stu-shell .rail {
+  background: transparent;
+  border-right: 0;
+}
+body.stu-shell .rail-heading {
+  font-family: var(--font-display);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  color: var(--stu-muted);
+}
+body.stu-shell .rail-link {
+  border-radius: 14px;
+  padding: 10px 12px;
+  font-weight: 600;
+}
+body.stu-shell .rail-link[aria-current="page"] {
+  background: var(--stu-accent-wash);
+  color: var(--stu-accent-deep);
+}
+body.stu-shell .rail-note { display: none; }
+body.stu-shell .page {
+  padding: 0 0 var(--space-2xl);
+}
+body.stu-shell .foot { border-top: 0; }
+
+/* --- The masthead ---------------------------------------------------------
+   The one place a big word is allowed to sit. The date is small and set
+   in the muted voice, the greeting is set like a menu headline. */
+.stu-mast {
+  position: relative;
+  overflow: hidden;
+  margin: 0 0 var(--space-xl);
+  padding: var(--space-xl) var(--space-lg) var(--space-lg);
+  border-radius: 0 0 34px 34px;
+  background: linear-gradient(168deg, #fffdf9 0%, #fff3e4 52%, #ffe9d6 100%);
+  border: 1px solid var(--stu-rule);
+  border-top: 0;
+  box-shadow: 0 30px 60px -44px rgba(86, 42, 8, 0.5);
+}
+.stu-mast::after {
+  content: "";
+  position: absolute;
+  right: -90px;
+  top: -110px;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(238, 84, 12, 0.22), rgba(238, 84, 12, 0) 70%);
+  pointer-events: none;
+}
+.stu-mast-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md) var(--space-lg);
+  align-items: flex-end;
+  justify-content: space-between;
+}
+.stu-when {
+  font-size: var(--text-xs);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--stu-muted);
+  margin: 0 0 10px;
+}
+.stu-hello {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2.1rem, 5vw, 3.4rem);
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  margin: 0;
+  color: var(--stu-ink);
+  max-width: 16ch;
+}
+.stu-hello em {
+  font-style: normal;
+  color: var(--stu-accent);
+}
+.stu-mast-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+.stu-hall {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: var(--stu-paper);
+  border: 1px solid var(--stu-rule);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--stu-ink-2);
+  box-shadow: 0 8px 18px -14px rgba(86, 42, 8, 0.5);
+}
+.stu-hall::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--stu-accent);
+}
+
+/* The one action on the surface, and the only orange button. */
+.stu-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 22px;
+  border-radius: 999px;
+  background: var(--stu-accent);
+  color: #fffdf9;
+  font-weight: 700;
+  font-size: var(--text-md);
+  text-decoration: none;
+  border: 0;
+  cursor: pointer;
+  box-shadow: 0 16px 28px -18px rgba(238, 84, 12, 0.9);
+  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1), background 160ms;
+}
+.stu-cta:hover {
+  background: var(--stu-accent-deep);
+  transform: translateY(-2px);
+}
+.stu-cta svg { width: 20px; height: 20px; }
+
+/* --- Section heads --------------------------------------------------------
+   A menu board labels its sections. These are small, set in the display
+   face, with a rule that runs to the edge of the page. */
+.stu-section {
+  margin: 0 0 var(--space-xl);
+}
+.stu-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin: 0 0 var(--space-md);
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--stu-rule);
+}
+.stu-section-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.25rem, 2.2vw, 1.7rem);
+  letter-spacing: -0.025em;
+  margin: 0;
+  color: var(--stu-ink);
+}
+.stu-section-note {
+  font-size: var(--text-sm);
+  color: var(--stu-muted);
+}
+.stu-more {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--stu-accent-deep);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.stu-more:hover { text-decoration: underline; }
+
+/* --- The day's meals ------------------------------------------------------
+   Three big cards, one per meal. They are the spine of the page: what is
+   cooking, when, and whether it is already behind you. */
+.stu-meals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-md);
+}
+.stu-meal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--stu-paper);
+  border: 1px solid var(--stu-rule);
+  border-radius: var(--stu-radius);
+  overflow: hidden;
+  box-shadow: 0 18px 34px -30px rgba(86, 42, 8, 0.6);
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms;
+}
+.stu-meal:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 28px 46px -32px rgba(86, 42, 8, 0.6);
+}
+.stu-meal-art {
+  aspect-ratio: 4 / 3;
+  background: var(--stu-paper-2);
+  overflow: hidden;
+}
+.stu-meal-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.stu-meal-body { padding: var(--space-md) var(--space-lg) var(--space-lg); }
+.stu-meal-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.stu-meal-name {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--text-xl);
+  letter-spacing: -0.025em;
+  margin: 0;
+}
+.stu-meal-time {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--stu-accent-deep);
+  white-space: nowrap;
+}
+.stu-meal-dishes {
+  margin: 10px 0 14px;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+  color: var(--stu-ink-2);
+  line-height: 1.55;
+}
+.stu-meal-dishes li { margin: 0; }
+
+/* The state of the meal: already behind you, on the counter, or still to
+   come. One word, one colour. */
+.stu-state {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.stu-state::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.stu-state.is-now {
+  background: var(--stu-accent-wash);
+  color: var(--stu-accent-deep);
+}
+.stu-state.is-later {
+  background: rgba(23, 19, 15, 0.06);
+  color: var(--stu-muted);
+}
+.stu-state.is-served {
+  background: rgba(63, 125, 58, 0.12);
+  color: var(--stu-veg);
+}
+
+/* --- The dishes -----------------------------------------------------------
+   The menu proper. A card per dish: its picture, its name, and the small
+   marks a menu uses to say what kind of food it is. */
+.stu-dishes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: var(--space-md);
+}
+.stu-dish {
+  background: var(--stu-paper);
+  border: 1px solid var(--stu-rule);
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms;
+}
+.stu-dish:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 26px 44px -34px rgba(86, 42, 8, 0.62);
+}
+.stu-dish-art {
+  aspect-ratio: 4 / 3;
+  background: var(--stu-paper-2);
+  overflow: hidden;
+}
+.stu-dish-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.stu-dish:hover .stu-dish-art img { transform: scale(1.05); }
+.stu-dish-body { padding: 14px 16px 16px; }
+.stu-dish-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-lg);
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.15;
+}
+.stu-dish-kind {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--stu-muted);
+}
+/* The green and red marks of a printed Indian menu, kept small. */
+.stu-mark {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  border: 1.5px solid var(--stu-veg);
+  flex: 0 0 auto;
+}
+.stu-mark.is-nonveg { border-color: var(--stu-nonveg); }
+.stu-mark.is-other { border-color: var(--stu-rule); }
+
+/* --- The week -------------------------------------------------------------
+   A strip of days, each with the dishes it holds. A phone scrolls it; a
+   desktop shows the whole week at once. */
+.stu-week {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(200px, 1fr);
+  gap: var(--space-md);
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scroll-snap-type: x mandatory;
+}
+.stu-day {
+  scroll-snap-align: start;
+  background: var(--stu-paper);
+  border: 1px solid var(--stu-rule);
+  border-radius: 18px;
+  padding: var(--space-md);
+}
+.stu-day.is-today {
+  border-color: var(--stu-accent);
+  box-shadow: 0 0 0 3px var(--stu-accent-wash);
+}
+.stu-day-date {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.stu-day-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-md);
+}
+.stu-day-num {
+  font-size: var(--text-xs);
+  color: var(--stu-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.stu-day-meal {
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+}
+.stu-day-meal-name {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--stu-accent-deep);
+  margin-bottom: 6px;
+}
+.stu-day-dishes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.stu-chip {
+  font-size: var(--text-xs);
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(23, 19, 15, 0.05);
+  color: var(--stu-ink-2);
+  white-space: nowrap;
+}
+
+/* --- Your meals -----------------------------------------------------------
+   A student's record of their own meals is a rhythm, not a table. Four
+   weeks of dots, then the last few meals written out. */
+.stu-track {
+  background: var(--stu-paper);
+  border: 1px solid var(--stu-rule);
+  border-radius: var(--stu-radius);
+  padding: var(--space-lg);
+}
+.stu-track-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: var(--space-md);
+}
+.stu-track-count {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.6rem, 3vw, 2.3rem);
+  letter-spacing: -0.03em;
+  color: var(--stu-ink);
+}
+.stu-track-count span { color: var(--stu-accent); }
+.stu-dots {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14px, 1fr));
+  gap: 7px;
+}
+.stu-dot {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba(23, 19, 15, 0.08);
+  border: 1px solid var(--stu-hair);
+}
+.stu-dot.is-hit {
+  background: var(--stu-accent);
+  border-color: var(--stu-accent);
+  box-shadow: 0 4px 10px -6px rgba(238, 84, 12, 0.9);
+}
+.stu-dot.is-today { border-color: var(--stu-accent); border-style: dashed; }
+.stu-recent {
+  margin: var(--space-lg) 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--stu-hair);
+}
+.stu-recent li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--stu-hair);
+  font-size: var(--text-sm);
+}
+.stu-recent li:last-child { border-bottom: 0; }
+.stu-recent-when { color: var(--stu-muted); white-space: nowrap; }
+.stu-recent-what { font-weight: 600; color: var(--stu-ink-2); }
+
+/* --- The notice board -----------------------------------------------------
+   Notices are pinned to a board, so they get paper and a pin. */
+.stu-notices {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-md);
+}
+.stu-note {
+  position: relative;
+  background: var(--stu-paper);
+  border: 1px solid var(--stu-rule);
+  border-radius: 6px 18px 18px 18px;
+  padding: var(--space-lg) var(--space-lg) var(--space-lg);
+  box-shadow: 0 16px 30px -28px rgba(86, 42, 8, 0.7);
+}
+.stu-note::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  background: var(--stu-accent);
+  box-shadow: 0 3px 6px -2px rgba(86, 42, 8, 0.6);
+}
+.stu-note-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-md);
+  line-height: 1.3;
+  margin: 6px 0 8px;
+}
+.stu-note-when {
+  font-size: var(--text-xs);
+  color: var(--stu-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* --- Marking attendance ---------------------------------------------------
+   The one thing a student came here to do, so it is a card with a big
+   button and a way in when the camera does not work. */
+.stu-checkin {
+  background: linear-gradient(160deg, #fffdf9, #fff4e6);
+  border: 1px solid var(--stu-rule);
+  border-radius: var(--stu-radius);
+  padding: var(--space-lg);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-lg);
+  align-items: start;
+}
+.stu-checkin h3 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--text-xl);
+  letter-spacing: -0.025em;
+  margin: 0 0 8px;
+}
+.stu-checkin p {
+  margin: 0 0 var(--space-md);
+  color: var(--stu-ink-2);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+}
+.stu-scanner {
+  border-radius: 16px;
+  overflow: hidden;
+  background: linear-gradient(160deg, #2a211a, #17130f);
+  min-height: 240px;
+  display: grid;
+  place-items: center;
+  box-shadow: inset 0 0 0 1px rgba(247, 238, 225, 0.12);
+}
+#student-qr-reader { width: 100%; }
+/* The scanner library ships its own chrome. This dresses it in the app's
+   colours so it does not read as a black box dropped into the page. */
+.stu-scanner #student-qr-reader > div { border: 0 !important; background: transparent !important; }
+.stu-scanner #student-qr-reader__scan_region { background: transparent !important; }
+.stu-scanner video { border-radius: 12px; }
+.stu-scanner button {
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 20px;
+  background: var(--stu-accent);
+  color: #fffdf9;
+  font: inherit;
+  font-weight: 700;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+.stu-scanner button:hover { background: var(--stu-accent-deep); }
+.stu-manual {
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px dashed var(--stu-rule);
+}
+.stu-manual label {
+  display: block;
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--stu-muted);
+  margin-bottom: 8px;
+}
+.stu-manual-row { display: flex; gap: 8px; }
+.stu-manual input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--stu-field-edge, rgba(23, 19, 15, 0.24));
+  background: var(--stu-paper);
+  font: inherit;
+  font-size: var(--text-sm);
+}
+.stu-manual button {
+  flex: 0 0 auto;
+  padding: 12px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--stu-accent);
+  background: var(--stu-accent);
+  color: #fffdf9;
+  font: inherit;
+  font-weight: 700;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+.stu-manual button:hover { background: var(--stu-accent-deep); }
+.stu-banner {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  background: rgba(63, 125, 58, 0.12);
+  color: #2c5c28;
+}
+.stu-banner.is-error {
+  background: rgba(176, 58, 31, 0.1);
+  color: #8c2f1a;
+}
+.stu-banner[hidden] { display: none; }
+
+/* --- An empty day --------------------------------------------------------- */
+.stu-empty {
+  background: var(--stu-paper);
+  border: 1px dashed var(--stu-rule);
+  border-radius: var(--stu-radius);
+  padding: var(--space-2xl) var(--space-lg);
+  text-align: center;
+}
+.stu-empty h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-lg);
+  margin: 0 0 6px;
+}
+.stu-empty p { margin: 0; color: var(--stu-muted); }
+
+/* --- The printed menu -----------------------------------------------------
+   A day written the way a mess writes it: a band per meal, the dish names
+   set large, and a small picture beside each one. */
+.stu-menu-page {
+  background: var(--stu-paper);
+  border: 1px solid var(--stu-rule);
+  border-radius: var(--stu-radius);
+  overflow: hidden;
+}
+.stu-menu-band {
+  display: grid;
+  grid-template-columns: 13rem minmax(0, 1fr);
+  gap: var(--space-lg);
+  padding: var(--space-lg);
+  border-bottom: 1px solid var(--stu-hair);
+}
+.stu-menu-band:last-child { border-bottom: 0; }
+.stu-menu-band:nth-child(odd) { background: rgba(23, 19, 15, 0.015); }
+.stu-menu-band-head { display: flex; flex-direction: column; gap: 4px; }
+.stu-menu-band-name {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--text-xl);
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+.stu-menu-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: var(--space-md) var(--space-lg);
+}
+.stu-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.stu-menu-thumb {
+  flex: 0 0 auto;
+  width: 62px;
+  height: 62px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--stu-paper-2);
+  border: 1px solid var(--stu-hair);
+}
+.stu-menu-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.stu-menu-text { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.stu-menu-dish {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-md);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.stu-menu-kind {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: var(--text-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--stu-muted);
+}
+
+/* --- Narrow ---------------------------------------------------------------
+   A student reads this on a phone in the queue at the counter. Everything
+   that is not the dish becomes one column, and the tap targets grow. */
+@media (max-width: 60rem) {
+  body.stu-shell .rail { padding: var(--space-md); }
+  .stu-meals { grid-template-columns: minmax(0, 1fr); }
+  .stu-checkin { grid-template-columns: minmax(0, 1fr); }
+  .stu-mast { padding: var(--space-lg) var(--space-md); }
+  .stu-hello { font-size: clamp(2rem, 10vw, 2.8rem); }
+  .stu-menu-band { grid-template-columns: minmax(0, 1fr); gap: var(--space-md); }
+}
+
+@media (max-width: 40rem) {
+  body.stu-shell .page { padding: 0 0 var(--space-xl); }
+  .stu-mast-inner { flex-direction: column; align-items: stretch; }
+  .stu-mast-side { align-items: stretch; }
+  .stu-cta { justify-content: center; }
+  .stu-week { grid-auto-columns: 78%; }
+  .stu-dishes { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .stu-notices { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* --- Motion ---------------------------------------------------------------
+   The page arrives in one move: the masthead, then the meals, then the
+   menu. A student opening this at the counter wants it settled at once,
+   so the whole thing is short and one-directional. */
+@keyframes stu-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+.stu-mast { animation: stu-rise 480ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.stu-section { animation: stu-rise 520ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.stu-section:nth-of-type(1) { animation-delay: 60ms; }
+.stu-section:nth-of-type(2) { animation-delay: 110ms; }
+.stu-section:nth-of-type(3) { animation-delay: 160ms; }
+.stu-section:nth-of-type(4) { animation-delay: 210ms; }
+.stu-section:nth-of-type(5) { animation-delay: 260ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .stu-mast,
+  .stu-section { animation: none; }
+  .stu-dish:hover,
+  .stu-meal:hover,
+  .stu-dish-art img { transition: none; }
+}

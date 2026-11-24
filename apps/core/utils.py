@@ -106,3 +106,30 @@ def as_date(value):
     if isinstance(value, dt.datetime):
         return value.date()
     return value
+
+
+#: Dish codes whose menu illustration is not simply the name in lower case.
+#: Everything else falls back to the slug of the dish name.
+DISH_ART_OVERRIDES = {
+    "BANANA_MILK": "banana-milk",
+    "VEG_CURRY": "mixed-veg-curry",
+    "PATTY": "veg-patty",
+}
+
+
+def dish_art_slug(dish) -> str:
+    """The file name of a dish's illustration, without the extension.
+
+    The student menu draws every dish as a picture, so each dish needs a
+    stable name for its artwork. A dish whose picture has not been drawn
+    still resolves to a slug; the template falls back to a plain wordmark
+    when the file is missing.
+    """
+    if dish is None:
+        return ""
+    code = getattr(dish, "code", "") or ""
+    if code in DISH_ART_OVERRIDES:
+        return DISH_ART_OVERRIDES[code]
+    from django.utils.text import slugify
+
+    return slugify(getattr(dish, "name", "") or code.lower())

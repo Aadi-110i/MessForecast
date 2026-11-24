@@ -1,0 +1,702 @@
+/* =========================================================================
+   MessForecast — Attendance Capture & Scan Page Styles
+   ========================================================================= */
+
+/* Base container & page canvas */
+.scan-page {
+  background: var(--color-paper, #f7eee1);
+  min-height: 100vh;
+  color: var(--color-ink, #17130f);
+}
+
+.scan-shell {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.75rem 1.5rem 3rem;
+}
+
+/* Header customization */
+.scan-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(251, 248, 243, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1.5px solid rgba(23, 19, 15, 0.1);
+  padding: 0.9rem 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
+
+.scan-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.scan-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.95rem;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1.5px solid rgba(23, 19, 15, 0.14);
+  color: #17130f;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.scan-back-link:hover {
+  background: #17130f;
+  color: #ffffff;
+  border-color: #17130f;
+  transform: translateX(-2px);
+}
+
+.scan-brand {
+  font-family: var(--font-display, "Archivo", sans-serif);
+  font-weight: 800;
+  font-size: 1.35rem;
+  color: #17130f;
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+
+.scan-header-meta {
+  border-left: 1.5px solid rgba(23, 19, 15, 0.12);
+  padding-left: 1.25rem;
+}
+
+.scan-title {
+  font-family: var(--font-display, "Archivo", sans-serif);
+  font-weight: 700;
+  font-size: 1.15rem;
+  line-height: 1.2;
+  color: #17130f;
+}
+
+.scan-subtitle {
+  font-size: 0.85rem;
+  color: var(--color-muted, #72685d);
+  margin-top: 0.1rem;
+}
+
+.scan-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Status pills */
+.scan-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1.5px solid rgba(23, 19, 15, 0.12);
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #17130f;
+}
+
+.scan-status-pill .pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
+  animation: dot-pulse 2s infinite;
+}
+
+.scan-status-pill.queued {
+  background: #fff8f0;
+  border-color: rgba(224, 75, 8, 0.3);
+  color: #e04b08;
+}
+
+.scan-status-pill.queued .pulse-dot {
+  background: #e04b08;
+  box-shadow: 0 0 0 2px rgba(224, 75, 8, 0.25);
+}
+
+@keyframes dot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.9); }
+}
+
+/* Main Grid Layout */
+.scan-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(360px, 1fr);
+  gap: 1.75rem;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .scan-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.scan-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+/* Enhanced Cards */
+.scan-card {
+  background: #ffffff;
+  border: 1.5px solid rgba(23, 19, 15, 0.12);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px -4px rgba(30, 20, 10, 0.05), 0 2px 6px -1px rgba(30, 20, 10, 0.03);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.scan-card:hover {
+  border-color: rgba(23, 19, 15, 0.22);
+  box-shadow: 0 10px 28px -6px rgba(30, 20, 10, 0.08), 0 3px 8px -2px rgba(30, 20, 10, 0.04);
+}
+
+/* Card Header */
+.scan-card-head {
+  padding: 1.15rem 1.5rem;
+  background: #faf6f0;
+  border-bottom: 1.5px solid rgba(23, 19, 15, 0.09);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.scan-card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.scan-card-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid rgba(23, 19, 15, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e04b08;
+  flex-shrink: 0;
+}
+
+.scan-card-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.scan-card-head h2 {
+  font-family: var(--font-display, "Archivo", sans-serif);
+  font-size: 1.18rem;
+  font-weight: 700;
+  color: #17130f;
+  margin: 0;
+  letter-spacing: -0.015em;
+}
+
+.scan-card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  background: #ffffff;
+  border: 1px solid rgba(23, 19, 15, 0.12);
+  color: var(--color-muted, #72685d);
+}
+
+/* Card Body */
+.scan-card-body {
+  padding: 1.5rem;
+}
+
+/* Service Selection Box */
+.scan-field {
+  margin-bottom: 1.35rem;
+}
+
+.scan-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-muted, #72685d);
+  margin-bottom: 0.5rem;
+}
+
+.scan-select-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.scan-select {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2317130f' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 1.25rem center;
+  border: 1.5px solid rgba(23, 19, 15, 0.16);
+  border-radius: 12px;
+  padding: 0.85rem 3rem 0.85rem 1.15rem;
+  font-family: inherit;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #17130f;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.scan-select:hover {
+  border-color: rgba(23, 19, 15, 0.32);
+}
+
+.scan-select:focus {
+  border-color: #e04b08;
+  box-shadow: 0 0 0 3px rgba(224, 75, 8, 0.16);
+}
+
+/* Stat Tiles Container */
+.scan-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.35rem;
+}
+
+@media (max-width: 480px) {
+  .scan-stat-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.scan-stat-tile {
+  background: #fbf8f3;
+  border: 1.5px solid rgba(23, 19, 15, 0.1);
+  border-radius: 14px;
+  padding: 1.25rem 1.35rem;
+  position: relative;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.scan-stat-tile:hover {
+  border-color: rgba(23, 19, 15, 0.22);
+}
+
+.scan-stat-tile.primary {
+  background: #fff9f5;
+  border-color: rgba(224, 75, 8, 0.24);
+}
+
+.scan-stat-label {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-muted, #72685d);
+}
+
+.scan-stat-tile.primary .scan-stat-label {
+  color: #d63e06;
+}
+
+.scan-stat-number {
+  display: block;
+  font-family: var(--font-display, "Archivo", sans-serif);
+  font-weight: 800;
+  font-size: clamp(2.5rem, 5.5vw, 3.8rem);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+  color: #17130f;
+  margin: 0.45rem 0 0.35rem;
+}
+
+.scan-stat-tile.primary .scan-stat-number {
+  color: #e04b08;
+}
+
+.scan-stat-sub {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--color-muted, #72685d);
+}
+
+/* Progress Section */
+.scan-progress-box {
+  background: #faf6f0;
+  border: 1.5px solid rgba(23, 19, 15, 0.09);
+  border-radius: 14px;
+  padding: 1.15rem 1.35rem;
+}
+
+.scan-progress-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.scan-progress-title {
+  font-size: 0.86rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #17130f;
+}
+
+.scan-progress-metric {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #e04b08;
+  font-family: monospace;
+}
+
+.scan-progress-track {
+  height: 12px;
+  background: #ffffff;
+  border: 1.5px solid rgba(23, 19, 15, 0.12);
+  border-radius: 999px;
+  overflow: hidden;
+  padding: 2px;
+}
+
+.scan-progress-fill {
+  display: block;
+  height: 100%;
+  width: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff8b4d, #e04b08);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Method Action Buttons */
+.scan-methods-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 480px) {
+  .scan-methods-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.scan-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  padding: 1.6rem 1rem;
+  border-radius: 14px;
+  font-family: var(--font-display, "Archivo", sans-serif);
+  font-size: 1.12rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+.scan-action-btn svg {
+  width: 32px;
+  height: 32px;
+}
+
+.scan-action-btn.primary {
+  background: linear-gradient(145deg, #f05a14, #d63e06);
+  color: #ffffff;
+  border-color: #c23504;
+  box-shadow: 0 8px 24px -4px rgba(224, 75, 8, 0.4);
+}
+
+.scan-action-btn.primary:hover {
+  background: linear-gradient(145deg, #ff6924, #e04b08);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -4px rgba(224, 75, 8, 0.5);
+}
+
+.scan-action-btn.secondary {
+  background: #ffffff;
+  color: #17130f;
+  border-color: rgba(23, 19, 15, 0.16);
+}
+
+.scan-action-btn.secondary:hover {
+  background: #faf6f0;
+  border-color: rgba(23, 19, 15, 0.32);
+  transform: translateY(-2px);
+}
+
+.scan-action-btn:active {
+  transform: translateY(1px);
+}
+
+/* Manual Credential Entry */
+.scan-manual-box {
+  background: #faf6f0;
+  border: 1.5px solid rgba(23, 19, 15, 0.1);
+  border-radius: 14px;
+  padding: 1.25rem 1.35rem;
+}
+
+.scan-input-group {
+  display: flex;
+  gap: 0.65rem;
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 480px) {
+  .scan-input-group {
+    flex-direction: column;
+  }
+}
+
+.scan-input {
+  flex: 1;
+  height: 48px;
+  background: #ffffff;
+  border: 1.5px solid rgba(23, 19, 15, 0.16);
+  border-radius: 11px;
+  padding: 0 1.15rem;
+  font-family: ui-monospace, "Cascadia Mono", monospace;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #17130f;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.scan-input::placeholder {
+  color: #a49787;
+  font-weight: 400;
+}
+
+.scan-input:focus {
+  border-color: #e04b08;
+  box-shadow: 0 0 0 3px rgba(224, 75, 8, 0.16);
+}
+
+.scan-submit-btn {
+  height: 48px;
+  padding: 0 1.65rem;
+  border-radius: 11px;
+  background: #17130f;
+  color: #ffffff;
+  font-family: var(--font-display, "Archivo", sans-serif);
+  font-size: 0.95rem;
+  font-weight: 700;
+  border: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.scan-submit-btn:hover {
+  background: #332b24;
+  transform: translateY(-1px);
+}
+
+.scan-submit-btn:active {
+  transform: translateY(1px);
+}
+
+/* Video scanner viewport */
+.scan-camera-viewport {
+  margin-top: 1.25rem;
+  border: 2px dashed #e04b08;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #000000;
+  position: relative;
+}
+
+.scan-camera-viewport video {
+  width: 100%;
+  display: block;
+}
+
+/* Scan Log Feed */
+.scan-log-box {
+  background: #faf6f0;
+  border: 1.5px solid rgba(23, 19, 15, 0.1);
+  border-radius: 14px;
+  padding: 0.65rem;
+  min-height: 180px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.scan-log-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: var(--color-muted, #72685d);
+  gap: 0.65rem;
+  font-size: 0.92rem;
+}
+
+.scan-log-empty svg {
+  width: 32px;
+  height: 32px;
+  opacity: 0.45;
+}
+
+.scan-log-box div {
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid rgba(23, 19, 15, 0.08);
+  font-family: ui-monospace, "Cascadia Mono", monospace;
+  font-size: 0.92rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  border-radius: 8px;
+  margin-bottom: 0.35rem;
+}
+
+.scan-log-box div:last-child {
+  margin-bottom: 0;
+}
+
+.scan-log-box .new {
+  color: #15803d;
+  font-weight: 600;
+  border-left: 3px solid #22c55e;
+}
+
+.scan-log-box .dupe {
+  color: #b91c1c;
+  font-weight: 600;
+  border-left: 3px solid #ef4444;
+}
+
+/* Service QR Display Card */
+.scan-qr-container {
+  background: #faf6f0;
+  border: 1.5px solid rgba(23, 19, 15, 0.1);
+  border-radius: 16px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.scan-qr-frame {
+  display: inline-flex;
+  padding: 1rem;
+  background: #ffffff;
+  border: 1.5px solid rgba(23, 19, 15, 0.12);
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  margin-bottom: 1rem;
+}
+
+.scan-qr-payload-chip {
+  font-family: ui-monospace, "Cascadia Mono", monospace;
+  font-size: 0.82rem;
+  background: #ffffff;
+  border: 1px solid rgba(23, 19, 15, 0.12);
+  border-radius: 8px;
+  padding: 0.4rem 0.85rem;
+  color: var(--color-ink-2, #3c3228);
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 1.15rem;
+}
+
+.scan-btn-download {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.4rem;
+  border-radius: 11px;
+  background: #17130f;
+  color: #ffffff;
+  font-family: var(--font-display, "Archivo", sans-serif);
+  font-size: 0.95rem;
+  font-weight: 700;
+  border: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.scan-btn-download:hover {
+  background: #332b24;
+  transform: translateY(-1px);
+}
+
+/* Offline Helper Tip Box */
+.scan-tip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.scan-tip-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background: #faf6f0;
+  border: 1.5px solid rgba(23, 19, 15, 0.08);
+  border-radius: 12px;
+  padding: 0.95rem 1.1rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--color-ink-2, #3c3228);
+}
+
+.scan-tip-bullet {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid rgba(23, 19, 15, 0.12);
+  color: #e04b08;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.scan-tip-bullet svg {
+  width: 13px;
+  height: 13px;
+}

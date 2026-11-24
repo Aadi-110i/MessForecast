@@ -126,6 +126,36 @@
 
   <div class="shell-body">
     <nav class="rail" id="rail" aria-label="Sections">
+      {% if user.role == "STUDENT" %}
+      {% comment %}
+        A student gets three words. The console rail is a filing cabinet of
+        sections, and a student has no business in any of them.
+      {% endcomment %}
+      <p class="rail-heading">Your mess</p>
+      <ul class="rail-list">
+        <li>
+          <a class="rail-link" href="{% url 'dashboard-student' %}" {% if request.resolver_match.url_name == 'dashboard-student' %}aria-current="page"{% endif %}>
+            <svg class="rail-mark" aria-hidden="true"><use href="#i-overview"></use></svg>
+            <span class="rail-label">Today</span>
+            <span class="rail-note">What is cooking</span>
+          </a>
+        </li>
+        <li>
+          <a class="rail-link" href="{% url 'dashboard-student-menu' %}" {% if request.resolver_match.url_name == 'dashboard-student-menu' %}aria-current="page"{% endif %}>
+            <svg class="rail-mark" aria-hidden="true"><use href="#i-menus"></use></svg>
+            <span class="rail-label">Menu</span>
+            <span class="rail-note">The fortnight ahead</span>
+          </a>
+        </li>
+        <li>
+          <a class="rail-link" href="{% url 'dashboard-student' %}#notices">
+            <svg class="rail-mark" aria-hidden="true"><use href="#i-reports"></use></svg>
+            <span class="rail-label">Notices</span>
+            <span class="rail-note">From the mess office</span>
+          </a>
+        </li>
+      </ul>
+      {% else %}
       <p class="rail-heading">Console</p>
       <ul class="rail-list">
         {% if user|can:"VIEW_MENU" %}
@@ -266,6 +296,7 @@
         </li>
         {% endif %}
       </ul>
+      {% endif %}
       {% endif %}
     </nav>
 

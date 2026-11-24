@@ -1,176 +1,266 @@
 {% extends "console/base_console.html" %}
 {% load static %}
 
-{% block title %}My dashboard · {{ app_name }}{% endblock %}
+{% comment %}
+The student surface.
+
+This is a menu, not a console. A student opens it to find out what is
+cooking, whether they have already eaten it, and how to mark that they
+came. So the page leads with the day's three meals, draws every dish, and
+keeps the numbers to one line.
+{% endcomment %}
+
+{% block title %}Today's menu · {{ app_name }}{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/console.css' %}">
+  <link rel="stylesheet" href="{% static 'css/student.css' %}">
+{% endblock %}
+
+{% block body_class %}stu-shell{% endblock %}
 
 {% block console_content %}
-{% include "components/page_head.html" with title="My dashboard" eyebrow="Your mess" lede="Your menu, your attendance, and the notices the mess office has published for students." %}
 
-{% if figures %}
-{% include "components/figures.html" with figures=figures %}
-{% endif %}
+<!-- ===================== The masthead ===================== -->
+<header class="stu-mast">
+  <div class="stu-mast-inner">
+    <div>
+      <p class="stu-when">{{ today|date:"l, d F Y" }}</p>
+      <h1 class="stu-hello">{{ greeting }},<br><em>what's cooking?</em></h1>
+    </div>
+    <div class="stu-mast-side">
+      <span class="stu-hall">
+        {% if hall %}{{ hall.name }}{% else %}All dining halls{% endif %}
+      </span>
+      <a class="stu-cta" href="#checkin">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"></path>
+          <path d="M3 12h18"></path>
+        </svg>
+        Mark my attendance
+      </a>
+    </div>
+  </div>
+</header>
 
-{% if todays_schedules %}
+<!-- ===================== The day's three meals ===================== -->
+<section class="stu-section">
+  <div class="stu-section-head">
+    <h2 class="stu-section-title">Today's meals</h2>
+    <span class="stu-section-note">Breakfast, lunch, dinner</span>
+  </div>
+
+  {% if meals %}
+    <div class="stu-meals">
+      {% for meal in meals %}
+        <article class="stu-meal">
+          <div class="stu-meal-art">
+            {% with first=meal.dishes.0 %}
+              {% if first %}
+                <img src="{% static 'img/dishes/'|add:first.slug|add:'.svg' %}"
+                     alt="{{ first.name }}" loading="lazy"
+                     onerror="this.remove()">
+              {% endif %}
+            {% endwith %}
+          </div>
+          <div class="stu-meal-body">
+            <div class="stu-meal-top">
+              <h3 class="stu-meal-name">{{ meal.label }}</h3>
+              <span class="stu-meal-time">{{ meal.time }}</span>
+            </div>
+            <ul class="stu-meal-dishes">
+              {% for dish in meal.dishes %}<li>{{ dish.name }}</li>{% endfor %}
+            </ul>
+            <span class="stu-state is-{{ meal.state }}">
+              {% if meal.state == "now" %}On the counter
+              {% elif meal.state == "served" %}Served
+              {% else %}Later today{% endif %}
+            </span>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="stu-empty">
+      <h3>No menu published for today yet</h3>
+      <p>As soon as the mess office publishes the menu, it appears here with every dish drawn.</p>
+    </div>
+  {% endif %}
+</section>
+
 <!-- ===================== Today's menu ===================== -->
-<section class="panel">
-  <div class="panelhead"><h2>Today's menu</h2></div>
-  <div class="table-wrap c-scroll">
-    <table class="ledger">
-      <thead>
-        <tr>
-          <th>Hall</th>
-          <th>Meal</th>
-          <th>Dishes</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for s in todays_schedules %}
-        <tr>
-          <td class="metric">{{ s.hall.name }}</td>
-          <td>{{ s.get_meal_display }}</td>
-          <td>
-            {% for name in s.dish_names %}
-              {{ name }}{% if not forloop.last %}, {% endif %}
-            {% empty %}
-              <span class="fill">No dishes published</span>
-            {% endfor %}
-          </td>
-        </tr>
+<section class="stu-section">
+  <div class="stu-section-head">
+    <h2 class="stu-section-title">On the menu today</h2>
+    <a class="stu-more" href="{% url 'dashboard-student-menu' %}">See the whole week →</a>
+  </div>
+
+  {% if meals %}
+    <div class="stu-dishes">
+      {% for meal in meals %}
+        {% for dish in meal.dishes %}
+          <article class="stu-dish">
+            <div class="stu-dish-art">
+              <img src="{% static 'img/dishes/'|add:dish.slug|add:'.svg' %}"
+                   alt="{{ dish.name }}" loading="lazy" onerror="this.remove()">
+            </div>
+            <div class="stu-dish-body">
+              <h3 class="stu-dish-name">{{ dish.name }}</h3>
+              <p class="stu-dish-kind">
+                {% if dish.is_veg %}<span class="stu-mark"></span>
+                {% elif dish.is_nonveg %}<span class="stu-mark is-nonveg"></span>
+                {% else %}<span class="stu-mark is-other"></span>{% endif %}
+                {{ dish.kind }} · {{ meal.label }}
+              </p>
+            </div>
+          </article>
         {% endfor %}
-      </tbody>
-    </table>
-  </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="stu-empty">
+      <h3>Nothing to show yet</h3>
+      <p>The menu for today has not been published.</p>
+    </div>
+  {% endif %}
 </section>
-{% else %}
-<div class="empty">
-  <h3>No menu published for today</h3>
-  <p>Once the mess office publishes today's schedule, what is being served appears here.</p>
-</div>
-{% endif %}
 
-<!-- ===================== Upcoming menus ===================== -->
-{% if upcoming %}
-<section class="panel">
-  <div class="panelhead"><h2>Coming up</h2></div>
-  <div class="table-wrap c-scroll">
-    <table class="ledger">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Meal</th>
-          <th>Hall</th>
-          <th>Dishes</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for s in upcoming %}
-        <tr>
-          <td class="metric">{{ s.date|date:"d M" }}</td>
-          <td>{{ s.get_meal_display }}</td>
-          <td>{{ s.hall.name }}</td>
-          <td>
-            {% for name in s.dish_names %}
-              {{ name }}{% if not forloop.last %}, {% endif %}
-            {% empty %}
-              <span class="fill">No dishes published</span>
-            {% endfor %}
-          </td>
-        </tr>
+<!-- ===================== The week ahead ===================== -->
+<section class="stu-section">
+  <div class="stu-section-head">
+    <h2 class="stu-section-title">Coming up</h2>
+    <a class="stu-more" href="{% url 'dashboard-student-menu' %}">Full menu →</a>
+  </div>
+  <div class="stu-week">
+    {% for day in week_days %}
+      <article class="stu-day{% if day.is_today %} is-today{% endif %}">
+        <div class="stu-day-date">
+          <span class="stu-day-name">{{ day.weekday }}</span>
+          <span class="stu-day-num">{{ day.date|date:"d M" }}</span>
+        </div>
+        {% for meal in day.meals %}
+          <div class="stu-day-meal">
+            <p class="stu-day-meal-name">{{ meal.label }}</p>
+            <div class="stu-day-dishes">
+              {% for dish in meal.dishes %}
+                <span class="stu-chip">{{ dish.name }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        {% empty %}
+          <div class="stu-day-meal">
+            <p class="stu-day-meal-name">Not published</p>
+          </div>
         {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</section>
-{% endif %}
-
-<div class="grid-2">
-  <!-- ===================== My attendance ===================== -->
-  <section class="panel">
-    <div class="panelhead">
-      <h2>My attendance</h2>
-      <span class="hint">{{ attendance_count }} records</span>
-    </div>
-    <div class="panelbody">
-      {% if recent_attendance %}
-        <div class="table-wrap c-scroll">
-          <table class="ledger">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Meal</th>
-                <th>Hall</th>
-                <th class="num">Method</th>
-                <th>Captured</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for a in recent_attendance %}
-              <tr>
-                <td class="metric">{{ a.service.date|date:"d M Y" }}</td>
-                <td>{{ a.service.get_meal_display }}</td>
-                <td>{{ a.service.hall.name }}</td>
-                <td class="num">{{ a.method }}</td>
-                <td>{{ a.captured_at|date:"H:i" }}</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      {% else %}
-        <div class="empty">
-          <h3>No attendance recorded yet</h3>
-          <p>Your scans appear here once you swipe in at a meal.</p>
-        </div>
-      {% endif %}
-    </div>
-  </section>
-
-  <!-- ===================== Announcements ===================== -->
-  <section class="panel">
-    <div class="panelhead"><h2>Announcements</h2></div>
-    <div class="panelbody">
-      {% if notifications %}
-        <div class="table-wrap c-scroll">
-          <table class="ledger">
-            <thead>
-              <tr><th>Notice</th><th class="num">Posted</th></tr>
-            </thead>
-            <tbody>
-              {% for n in notifications %}
-              <tr>
-                <td class="metric">{{ n.subject }}</td>
-                <td class="num">{{ n.created_at|date:"d M Y" }}</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      {% else %}
-        <div class="empty">
-          <h3>No announcements</h3>
-          <p>Notices from the mess office appear here.</p>
-        </div>
-      {% endif %}
-    </div>
-  </section>
-</div>
-
-<!-- ===================== Mark attendance by QR ===================== -->
-<section class="panel" id="student-qr-panel">
-  <div class="panelhead">
-    <h2>Mark attendance by QR</h2>
-    <span class="hint">Camera or QR image file</span>
-  </div>
-  <div class="panelbody">
-    {% csrf_token %}
-    <div id="student-qr-reader" style="max-width:420px;"></div>
-    <div id="student-qr-result" class="c-banner" role="status" hidden style="margin-top:12px;"></div>
+      </article>
+    {% endfor %}
   </div>
 </section>
 
-<p class="hint" style="margin-top:16px;">
-  Manage your profile: <a href="{% url 'profile-page' %}">your account</a>.
+<!-- ===================== Your own record ===================== -->
+<section class="stu-section">
+  <div class="stu-section-head">
+    <h2 class="stu-section-title">Your meals</h2>
+    <span class="stu-section-note">The last four weeks</span>
+  </div>
+  <div class="stu-track">
+    <div class="stu-track-head">
+      <p class="stu-track-count"><span>{{ last_30_days }}</span> meals in 30 days</p>
+      <span class="stu-section-note">
+        {{ attendance_count }} record{{ attendance_count|pluralize }} in all ·
+        {{ distinct_halls }} hall{{ distinct_halls|pluralize }} ·
+        {{ present_today }} today
+      </span>
+    </div>
+
+    <div class="stu-dots">
+      {% for dot in attendance_dots %}
+        <span class="stu-dot{% if dot.total %} is-hit{% endif %}{% if dot.is_today %} is-today{% endif %}"
+              title="{{ dot.date|date:'d M' }} — {{ dot.total }} meal{{ dot.total|pluralize }}"></span>
+      {% endfor %}
+    </div>
+
+    {% if recent_attendance %}
+      <ul class="stu-recent">
+        {% for a in recent_attendance %}
+          <li>
+            <span class="stu-recent-what">{{ a.service.get_meal_display }} · {{ a.service.hall.name }}</span>
+            <span class="stu-recent-when">{{ a.service.date|date:"d M" }} at {{ a.captured_at|date:"H:i" }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="stu-empty" style="margin-top:16px">
+        <h3>No meals marked yet</h3>
+        <p>Scan the code at the counter and your record starts here.</p>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- ===================== Notices ===================== -->
+<section class="stu-section" id="notices">
+  <div class="stu-section-head">
+    <h2 class="stu-section-title">Notices</h2>
+    <span class="stu-section-note">From the mess office</span>
+  </div>
+  {% if notifications %}
+    <div class="stu-notices">
+      {% for n in notifications %}
+        <article class="stu-note">
+          <h3 class="stu-note-title">{{ n.subject }}</h3>
+          <p class="stu-note-when">{{ n.created_at|date:"d M Y" }}</p>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="stu-empty">
+      <h3>Nothing on the board</h3>
+      <p>Notices from the mess office appear here.</p>
+    </div>
+  {% endif %}
+</section>
+
+<!-- ===================== Mark attendance ===================== -->
+<section class="stu-section" id="checkin">
+  <div class="stu-section-head">
+    <h2 class="stu-section-title">Mark your attendance</h2>
+    <span class="stu-section-note">Scan the code on the counter</span>
+  </div>
+  <div class="stu-checkin">
+    <div>
+      <h3>Scan and eat</h3>
+      <p>
+        Point your camera at the code on the counter. Your meal is recorded
+        against your own record, and nothing else.
+      </p>
+      <div class="stu-scanner">
+        <div id="student-qr-reader"></div>
+      </div>
+    </div>
+    <div>
+      <h3>Can't use the camera?</h3>
+      <p>
+        Type the number printed under the code on the counter instead. It is
+        the same code, and it records the same meal.
+      </p>
+      <div class="stu-manual">
+        <label for="stu-code">Code from the counter</label>
+        <div class="stu-manual-row">
+          <input id="stu-code" type="text" inputmode="numeric" autocomplete="off"
+                 placeholder="e.g. 5132">
+          <button type="button" id="stu-code-submit">Mark it</button>
+        </div>
+        <div class="stu-banner" id="student-qr-result" role="status" hidden></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<p class="hint" style="margin-top:8px">
+  Manage your details: <a href="{% url 'profile-page' %}">your profile</a>.
 </p>
+
 {% endblock %}
 
 {% block scripts %}
@@ -180,25 +270,17 @@
   'use strict';
   var readerEl = document.getElementById('student-qr-reader');
   var resultBox = document.getElementById('student-qr-result');
-  if (!readerEl || !resultBox || typeof Html5QrcodeScanner === 'undefined') { return; }
-
-  var lastScanned = '';
-  var lastTime = 0;
+  var codeInput = document.getElementById('stu-code');
+  var codeButton = document.getElementById('stu-code-submit');
+  if (!resultBox) { return; }
 
   function showResult(message, isError) {
-    resultBox.className = 'c-banner ' + (isError ? 'is-error' : 'is-notice');
+    resultBox.className = 'stu-banner' + (isError ? ' is-error' : '');
     resultBox.textContent = message;
     resultBox.hidden = false;
   }
 
-  function onScanSuccess(decodedText) {
-    var now = Date.now();
-    if (decodedText === lastScanned && now - lastTime < 3000) {
-      return;
-    }
-    lastScanned = decodedText;
-    lastTime = now;
-
+  function mark(qrText) {
     fetch("{% url 'student-qr-checkin' %}", {
       method: 'POST',
       credentials: 'same-origin',
@@ -207,11 +289,11 @@
         'X-CSRFToken': window.MessForecast.csrfToken(),
         'X-Requested-With': 'XMLHttpRequest'
       },
-      body: JSON.stringify({ qr_text: decodedText })
+      body: JSON.stringify({ qr_text: qrText })
     }).then(function (res) {
       return res.json().then(function (data) {
         if (!res.ok) {
-          showResult((data && data.detail) || 'Could not mark attendance from this QR code.', true);
+          showResult((data && data.detail) || 'Could not mark attendance from this code.', true);
           return;
         }
         showResult(data.detail || 'Attendance marked.', false);
@@ -222,6 +304,45 @@
     }).catch(function () {
       showResult('Network error while marking attendance. Please try again.', true);
     });
+  }
+
+  /* The typed code: the same payload the camera reads, or the bare number. */
+  if (codeButton && codeInput) {
+    codeButton.addEventListener('click', function () {
+      var value = (codeInput.value || '').trim();
+      if (!value) {
+        showResult('Type the number printed under the code first.', true);
+        return;
+      }
+      mark(value);
+    });
+    codeInput.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        codeButton.click();
+      }
+    });
+  }
+
+  if (!readerEl || typeof Html5QrcodeScanner === 'undefined') {
+    if (readerEl) {
+      readerEl.innerHTML = '<p style="color:#f7eee1;padding:18px;font-size:0.9rem">' +
+        'The camera could not start on this device. Use the code on the right instead.</p>';
+    }
+    return;
+  }
+
+  var lastScanned = '';
+  var lastTime = 0;
+
+  function onScanSuccess(decodedText) {
+    var now = Date.now();
+    if (decodedText === lastScanned && now - lastTime < 3000) {
+      return;
+    }
+    lastScanned = decodedText;
+    lastTime = now;
+    mark(decodedText);
   }
 
   var config = {

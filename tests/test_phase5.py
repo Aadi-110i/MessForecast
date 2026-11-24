@@ -325,7 +325,11 @@ class RoleDashboardTests(TestCase):
         schedule_menu(menu, self.hall, dt.date.today(), meal="LUNCH")
         response = self.client.get(reverse("dashboard-student"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Today's menu")
+        # The student surface is a menu: the day's dishes are drawn, and the
+        # dish that is on today is named on the page.
+        self.assertContains(response, "On the menu today")
+        self.assertContains(response, dish.name)
+        self.assertContains(response, reverse("dashboard-student-menu"))
 
     def test_kitchen_staff_lands_on_kitchen(self):
         user = make_user("k", User.Role.KITCHEN_STAFF)
@@ -378,7 +382,11 @@ class CapabilityNavigationTests(TestCase):
         response = self.client.get(reverse("dashboard-student"))
         self.assertEqual(response.status_code, 200)
         html = response.content.decode()
-        self.assertIn("Menus", html)
+        # A student gets the menu and nothing else: their own menu, the day
+        # ahead and the notices. No console sections.
+        self.assertIn(reverse("dashboard-student-menu"), html)
+        self.assertNotIn(reverse("console-menus"), html)
+        self.assertNotIn(reverse("console-recipes"), html)
         self.assertNotIn("Planning", html)
         self.assertNotIn("Settings", html)
         self.assertNotIn("Kitchen", html)
@@ -554,13 +562,15 @@ class Phase5GapFixesTests(TestCase):
         response = self.client.get(reverse("dashboard-student"))
         self.assertEqual(response.status_code, 200)
         html = response.content.decode()
-        self.assertIn("Meals attended", html)
+        self.assertIn("Your meals", html)
         self.assertIn(reverse("profile-page"), html)
         self.assertNotIn(reverse("accounts-profile"), html)
         self.assertNotIn('<p class="rail-heading">Administration</p>', html)
         self.assertNotIn('<p class="rail-heading">Operations</p>', html)
         # Never show another student's attendance identifier or count.
-        self.assertIn("1 records", html)
+        self.assertIn("1 record", html)
+        self.assertNotIn("2 records", html)
+        self.assertNotIn("S202", html)
 
     def test_finance_dashboard_shows_cost_rates_and_profile_link(self):
         from decimal import Decimal

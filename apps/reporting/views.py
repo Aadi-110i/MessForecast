@@ -16,7 +16,9 @@ from apps.accounts.models import User
 from apps.actuals.models import ServiceActual
 from apps.attendance.models import AttendanceRecord, MealService
 from apps.catalog.models import CostRate, DiningHall
+from apps.core.constants import MEAL_SERVICE_ORDER, MealType
 from apps.core.decorators import requires
+from apps.core import utils as core_utils
 from apps.core.utils import csv_response
 from apps.demand import services as demand_services
 from apps.events.models import ServiceLevelConfig
@@ -479,6 +481,123 @@ def data_quality_monitor(request):
 # Role-specific dashboards
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# The student surface
+# ---------------------------------------------------------------------------
+
+#: When each meal is served, and the window in which it counts as "on the
+#: counter". A student wants to know whether they have missed it yet.
+MEAL_TIMES = {
+    MealType.BREAKFAST: {"label": "Breakfast", "time": "8:00 AM", "start": (7, 0), "end": (9, 45)},
+    MealType.LUNCH: {"label": "Lunch", "time": "1:00 PM", "start": (12, 0), "end": (14, 45)},
+    MealType.DINNER: {"label": "Dinner", "time": "7:00 PM", "start": (18, 30), "end": (21, 0)},
+}
+
+
+def _meal_state(meal: str, when: dt.datetime | None = None) -> str:
+    """``served``, ``now`` or ``later`` for one meal."""
+    spec = MEAL_TIMES.get(meal)
+    if spec is None:
+        return "later"
+    moment = when or timezone.localtime()
+    minutes = moment.hour * 60 + moment.minute
+    start = spec["start"][0] * 60 + spec["start"][1]
+    end = spec["end"][0] * 60 + spec["end"][1]
+    if minutes >= end:
+        return "served"
+    if minutes >= start:
+        return "now"
+    return "later"
+
+
+#: How a dish category is written on the menu, in the words a menu uses.
+DISH_KINDS = {
+    "VEG": "Vegetable",
+    "NONVEG": "Non-veg",
+    "STAPLE": "Staple",
+    "DAAL": "Daal",
+    "SALAD": "Fresh",
+    "BEVERAGE": "To drink",
+    "SWEET": "Sweet",
+}
+
+
+def _dish_cards(items) -> list[dict]:
+    """Menu rows turned into the small dictionaries the menu template draws."""
+    cards = []
+    for item in items:
+        dish = item.dish
+        cards.append(
+            {
+                "name": dish.name,
+                "slug": core_utils.dish_art_slug(dish),
+                "category": dish.category,
+                "kind": DISH_KINDS.get(dish.category, "Dish"),
+                "is_veg": dish.category == "VEG",
+                "is_nonveg": dish.category == "NONVEG",
+            }
+        )
+    return cards
+
+
+def _meal_entry(meal: str) -> dict:
+    spec = MEAL_TIMES.get(meal, {})
+    return {
+        "meal": meal,
+        "label": spec.get("label", meal.title()),
+        "time": spec.get("time", ""),
+        "halls": [],
+        "dishes": [],
+        "seen": set(),
+    }
+
+
+def _menus_by_date(schedules) -> dict:
+    """Group published schedule rows by date, then by meal.
+
+    Both halls usually cook the same menu, so the dishes are collected once
+    and the halls that serve them are listed beside them. The whole week is
+    read in one query and grouped in Python, because a student opening this
+    on a phone should not wait for fourteen round trips.
+    """
+    by_date: dict[dt.date, dict[str, dict]] = {}
+    for schedule in schedules:
+        meals = by_date.setdefault(schedule.date, {})
+        entry = meals.setdefault(schedule.meal, _meal_entry(schedule.meal))
+        if schedule.hall.name not in entry["halls"]:
+            entry["halls"].append(schedule.hall.name)
+        # The prefetch cache holds every item of the menu; filtering it in
+        # Python keeps this to one query per week rather than one per row.
+        items = [i for i in schedule.menu.items.all() if i.meal == schedule.meal]
+        for card in _dish_cards(items):
+            if card["name"] in entry["seen"]:
+                continue
+            entry["seen"].add(card["name"])
+            entry["dishes"].append(card)
+    for meals in by_date.values():
+        for entry in meals.values():
+            entry.pop("seen", None)
+    return by_date
+
+
+def _sorted_meals(meals: dict[str, dict]) -> list[dict]:
+    return sorted(meals.values(), key=lambda e: MEAL_SERVICE_ORDER.get(e["meal"], 9))
+
+
+def _student_schedules(start: dt.date, end: dt.date, hall=None):
+    schedules = (
+        MenuSchedule.objects.filter(
+            date__gte=start, date__lte=end, is_published=True
+        )
+        .select_related("menu", "hall")
+        .prefetch_related("menu__items__dish")
+        .order_by("date", "meal", "hall__code")
+    )
+    if hall is not None:
+        schedules = schedules.filter(hall=hall)
+    return schedules
+
+
 @login_required
 @require_GET
 def student_dashboard(request):
@@ -489,36 +608,33 @@ def student_dashboard(request):
 
     today = timezone.localdate()
     hall = _selected_hall(request)
+    now = timezone.localtime()
+
+    # The whole week is read once, then grouped in Python.
+    week_end = today + dt.timedelta(days=6)
+    by_date = _menus_by_date(_student_schedules(today, week_end, hall))
 
     # What is being served today, across halls (a student eats in a hall).
-    todays_schedules = (
-        MenuSchedule.objects.filter(date=today, is_published=True)
-        .select_related("menu", "hall")
-        .prefetch_related("menu__items__dish")
-        .order_by("hall__code", "meal")
-    )
-    if hall is not None:
-        todays_schedules = todays_schedules.filter(hall=hall)
+    todays_meals = [
+        {**entry, "state": _meal_state(entry["meal"], now)}
+        for entry in _sorted_meals(by_date.get(today, {}))
+    ]
 
-    # Precompute the dishes per meal so the template never calls a method with
-    # an argument (Django templates cannot do that).
-    for schedule in todays_schedules:
-        schedule.dish_names = [
-            item.dish.name for item in schedule.menu.items_for_meal(schedule.meal)
-        ]
-
-    # Coming meals, so a student can plan ahead.
-    end = today + dt.timedelta(days=7)
-    upcoming = (
-        MenuSchedule.objects.filter(date__gt=today, date__lte=end, is_published=True)
-        .select_related("menu", "hall")
-        .prefetch_related("menu__items__dish")
-        .order_by("date", "meal", "hall__code")[:24]
-    )
-    for schedule in upcoming:
-        schedule.dish_names = [
-            item.dish.name for item in schedule.menu.items_for_meal(schedule.meal)
-        ]
+    # The days ahead, so a student can plan what to come back for.
+    week_days = []
+    for offset in range(7):
+        day = today + dt.timedelta(days=offset)
+        week_days.append(
+            {
+                "date": day,
+                "weekday": core_utils.weekday_name(day.isoweekday()),
+                "is_today": day == today,
+                "meals": [
+                    {**entry, "state": "later" if offset else _meal_state(entry["meal"], now)}
+                    for entry in _sorted_meals(by_date.get(day, {}))
+                ],
+            }
+        )
 
     # The student's own attendance only - never another student's.
     identifier = request.user.student_identifier or request.user.username
@@ -526,7 +642,7 @@ def student_dashboard(request):
         student_identifier=identifier
     ).select_related("service", "service__hall")
 
-    recent_attendance = attendance_qs.order_by("-captured_at")[:12]
+    recent_attendance = attendance_qs.order_by("-captured_at")[:6]
     attendance_count = attendance_qs.count()
     present_today = attendance_qs.filter(
         service__date=today
@@ -536,48 +652,88 @@ def student_dashboard(request):
     ).count()
     distinct_halls = attendance_qs.values("service__hall").distinct().count()
 
+    # Four weeks of dots, so the record reads as a rhythm rather than a table.
+    window_start = today - dt.timedelta(days=27)
+    per_day = (
+        attendance_qs.filter(service__date__gte=window_start)
+        .values("service__date")
+        .annotate(total=models.Count("id"))
+        .order_by("service__date")
+    )
+    counts = {row["service__date"]: row["total"] for row in per_day}
+    attendance_dots = [
+        {
+            "date": window_start + dt.timedelta(days=offset),
+            "total": counts.get(window_start + dt.timedelta(days=offset), 0),
+            "is_today": window_start + dt.timedelta(days=offset) == today,
+        }
+        for offset in range(28)
+    ]
+
     # Announcements addressed to this student or to everyone.
     notifications = (
         Notification.objects.filter(
             models.Q(recipient=request.user) | models.Q(role_target=User.Role.STUDENT)
         )
-        .order_by("-created_at")[:10]
+        .order_by("-created_at")[:6]
+    )
+
+    hour = now.hour
+    greeting = (
+        "Good morning" if hour < 12 else "Good afternoon" if hour < 17 else "Good evening"
     )
 
     context = {
         "today": today,
         "hall": hall,
         "halls": DiningHall.objects.filter(is_active=True),
-        "todays_schedules": todays_schedules,
-        "upcoming": upcoming,
+        "greeting": greeting,
+        "meals": todays_meals,
+        "week_days": week_days,
+        "attendance_dots": attendance_dots,
         "recent_attendance": recent_attendance,
         "attendance_count": attendance_count,
         "present_today": present_today,
+        "last_30_days": last_30_days,
+        "distinct_halls": distinct_halls,
         "notifications": notifications,
-        "figures": [
-            {
-                "label": "Meals attended",
-                "value": attendance_count,
-                "note": "Total recorded swipes",
-            },
-            {
-                "label": "Attended today",
-                "value": present_today,
-                "note": today.strftime("%d %b %Y"),
-            },
-            {
-                "label": "Last 30 days",
-                "value": last_30_days,
-                "note": "Meals in the past month",
-            },
-            {
-                "label": "Halls visited",
-                "value": distinct_halls,
-                "note": "Distinct dining halls",
-            },
-        ],
     }
     return render(request, "dashboard/student.html", context)
+
+
+@login_required
+@require_GET
+def student_menu(request):
+    """The week's menu, written out like a printed menu card."""
+
+    if request.user.role != User.Role.STUDENT:
+        return JsonResponse({"detail": "Not permitted"}, status=403)
+
+    today = timezone.localdate()
+    hall = _selected_hall(request)
+    start = today - dt.timedelta(days=today.weekday())
+    end = start + dt.timedelta(days=13)
+
+    by_date = _menus_by_date(_student_schedules(start, end, hall))
+    days = []
+    for offset in range(14):
+        day = start + dt.timedelta(days=offset)
+        days.append(
+            {
+                "date": day,
+                "weekday": core_utils.weekday_name(day.isoweekday()),
+                "is_today": day == today,
+                "is_past": day < today,
+                "meals": _sorted_meals(by_date.get(day, {})),
+            }
+        )
+
+    return render(
+        request,
+        "dashboard/student_menu.html",
+        {"today": today, "hall": hall, "days": days},
+    )
+
 
 
 @login_required
