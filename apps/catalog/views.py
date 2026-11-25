@@ -34,12 +34,13 @@ def recipe_console(request):
     today = dt.date.today()
     dishes = catalog_services.active_dishes(today)
     costs = catalog_services.dish_costs(dishes, today)
+    usage_map = catalog_services.menu_usage_map(dishes)
 
     rows = []
     for dish in dishes:
         recipe = getattr(dish, "_active_recipe", None)
         cost = costs.get(dish.pk, {})
-        usage = catalog_services.menu_usage(dish)
+        usage = usage_map.get(dish.pk, {"menus": [], "meals": [], "count": 0})
         rows.append(
             {
                 "dish": dish,

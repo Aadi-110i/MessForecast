@@ -15,6 +15,8 @@ from __future__ import annotations
 import datetime as dt
 from decimal import Decimal
 
+from django.core.cache import cache
+from django.db.models import Count, Max, Min, Q
 from django.shortcuts import render
 from django.utils import timezone
 
@@ -29,16 +31,13 @@ from apps.waste import services as waste_services
 def _periods() -> dict | None:
     """The baseline and live windows, read from the records themselves."""
     today = timezone.localdate()
-    first = MealService.objects.order_by("date").values_list("date", flat=True).first()
-    if first is None:
-        return None
-    baseline_end = (
-        MealService.objects.filter(prep_mode=PrepMode.REGISTERED_STRENGTH)
-        .order_by("-date")
-        .values_list("date", flat=True)
-        .first()
+    bounds = MealService.objects.aggregate(
+        first=Min("date"),
+        baseline_end=Max("date", filter=Q(prep_mode=PrepMode.REGISTERED_STRENGTH)),
     )
-    if baseline_end is None:
+    first = bounds["first"]
+    baseline_end = bounds["baseline_end"]
+    if first is None or baseline_end is None:
         return None
     live_start = min(baseline_end + dt.timedelta(days=1), today)
     return {
@@ -83,16 +82,16 @@ def _weeks(days: int) -> int:
 def _kitchen_preview() -> dict:
     """The kitchen tablet preview shown on the hero section."""
     today = timezone.localdate()
-    services = (
+    services = list(
         MealService.objects.filter(date=today)
         .select_related("hall", "forecast", "preparation_plan", "actual")
         .order_by("meal", "hall__code")
     )
-    if not services.exists():
+    if not services:
         latest_date = MealService.objects.order_by("-date").values_list("date", flat=True).first()
         if latest_date:
             today = latest_date
-            services = (
+            services = list(
                 MealService.objects.filter(date=today)
                 .select_related("hall", "forecast", "preparation_plan", "actual")
                 .order_by("meal", "hall__code")
@@ -173,21 +172,21 @@ def _kitchen_preview() -> dict:
 def _scan_preview() -> dict:
     """The attendance capture screen preview shown on the scan section."""
     today = timezone.localdate()
-    services = (
+    services = list(
         MealService.objects.filter(date=today)
         .select_related("hall")
         .order_by("meal", "hall__code")
     )
-    if not services.exists():
+    if not services:
         latest_date = MealService.objects.order_by("-date").values_list("date", flat=True).first()
         if latest_date:
-            services = (
+            services = list(
                 MealService.objects.filter(date=latest_date)
                 .select_related("hall")
                 .order_by("meal", "hall__code")
             )
 
-    first = services.first() if services.exists() else None
+    first = services[0] if services else None
     options = [
         {"id": s.id, "label": f"{s.hall.name}, {s.get_meal_display()}"} for s in services
     ]
@@ -204,7 +203,7 @@ def _scan_preview() -> dict:
     }
 
 
-def landing_context() -> dict:
+def _build_landing_context() -> dict:
     """Everything the landing page shows, measured rather than typed."""
     kitchen = _kitchen_preview()
     scan = _scan_preview()
@@ -219,11 +218,11 @@ def landing_context() -> dict:
         periods["end"],
     )
     accuracy = reporting.accuracy_summary(periods["live_start"], periods["end"])
-    services = MealService.objects.filter(
+    svc_agg = MealService.objects.filter(
         date__gte=periods["start"], date__lte=periods["end"]
-    )
-    service_count = services.count()
-    day_count = services.values("date").distinct().count()
+    ).aggregate(service_count=Count("id"), day_count=Count("date", distinct=True))
+    service_count = svc_agg["service_count"] or 0
+    day_count = svc_agg["day_count"] or 0
     forecast_count = Forecast.objects.filter(
         service__date__gte=periods["live_start"], service__date__lte=periods["end"]
     ).count()
@@ -264,6 +263,11 @@ def landing_context() -> dict:
             "live_weeks": _weeks(periods["live_days"]),
         },
     }
+
+
+def landing_context() -> dict:
+    """Cached wrapper around _build_landing_context (60s TTL)."""
+    return cache.get_or_set("landing_context_v1", _build_landing_context, 60)
 
 
 def landing_index(request):

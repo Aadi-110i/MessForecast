@@ -70,6 +70,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "django.middleware.gzip.GZipMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -111,15 +112,28 @@ DATABASES = {
         "PASSWORD": env("POSTGRES_PASSWORD", "messforecast_dev_pw"),
         "HOST": env("POSTGRES_HOST", "127.0.0.1"),
         "PORT": env("POSTGRES_PORT", "5432"),
-        "CONN_MAX_AGE": int(env("POSTGRES_CONN_MAX_AGE", "60")),
+        "CONN_MAX_AGE": int(env("POSTGRES_CONN_MAX_AGE", "300")),
         "OPTIONS": {
             "connect_timeout": 10,
+            "keepalives": 1,
+            "keepalives_idle": 30,
+            "keepalives_interval": 10,
+            "keepalives_count": 5,
         },
         "TEST": {
             "NAME": env("POSTGRES_TEST_DB", "test_messforecast"),
         },
     }
 }
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "messforecast-default",
+        "TIMEOUT": 60,
+    }
+}
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

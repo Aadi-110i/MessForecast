@@ -28,6 +28,7 @@ def menu_cycles() -> list[Menu]:
     return list(
         Menu.objects.filter(is_active=True)
         .annotate(item_count=Count("items", distinct=True))
+        .prefetch_related("items__dish")
         .order_by("name")
     )
 
@@ -53,13 +54,23 @@ def schedule_board(
     so the template never has to do the grouping itself.
     """
     end = start + dt.timedelta(days=days - 1)
-    rows = (
+    rows = list(
         MenuSchedule.objects.filter(date__gte=start, date__lte=end)
         .select_related("menu")
         .order_by("date", "meal")
     )
     if hall is not None:
-        rows = rows.filter(hall=hall)
+        rows = [r for r in rows if r.hall_id == hall.pk]
+
+    menu_ids = {r.menu_id for r in rows}
+    dish_counts: dict[tuple[int, str], int] = {}
+    if menu_ids:
+        for entry in (
+            MenuItem.objects.filter(menu_id__in=menu_ids)
+            .values("menu_id", "meal")
+            .annotate(c=Count("id"))
+        ):
+            dish_counts[(entry["menu_id"], entry["meal"])] = entry["c"]
 
     cells: dict[str, dict[str, dict]] = {}
     for row in rows:
@@ -72,7 +83,7 @@ def schedule_board(
             "full_name": row.menu.name,
             "menu_code": row.menu.code,
             "published": row.is_published,
-            "dish_count": row.menu.items.filter(meal=row.meal).count(),
+            "dish_count": dish_counts.get((row.menu_id, row.meal), 0),
             "id": row.id,
         }
 
@@ -120,24 +131,56 @@ def publish_schedule(schedule_id: int, published: bool) -> MenuSchedule:
     return row
 
 
-def cycle_summary(menu: Menu) -> dict:
-    """What one cycle contains, for the cycle list and its detail panel."""
-    items = menu.items.select_related("dish")
-    by_meal: dict[str, dict] = {}
-    for meal in MealType:
-        meal_items = list(items.filter(meal=meal.value))
-        by_meal[meal.value] = {
+def _build_cycle_summary(menu: Menu, items: list[MenuItem], scheduled: int, published: int) -> dict:
+    grouped: dict[str, list[str]] = {m.value: [] for m in MealType}
+    for item in items:
+        grouped.setdefault(item.meal, []).append(item.dish.name)
+    by_meal = {
+        meal.value: {
             "label": meal.label,
-            "dishes": [i.dish.name for i in meal_items],
-            "count": len(meal_items),
+            "dishes": grouped.get(meal.value, []),
+            "count": len(grouped.get(meal.value, [])),
         }
+        for meal in MealType
+    }
     return {
         "menu": menu,
         "by_meal": by_meal,
-        "total_dishes": items.count(),
-        "scheduled": MenuSchedule.objects.filter(menu=menu).count(),
-        "published": MenuSchedule.objects.filter(menu=menu, is_published=True).count(),
+        "total_dishes": len(items),
+        "scheduled": scheduled,
+        "published": published,
     }
+
+
+def cycle_summary(menu: Menu) -> dict:
+    """What one cycle contains, for the cycle list and its detail panel."""
+    items = list(menu.items.select_related("dish"))
+    counts = MenuSchedule.objects.filter(menu=menu).aggregate(
+        scheduled=Count("id"),
+        published=Count("id", filter=Q(is_published=True)),
+    )
+    return _build_cycle_summary(menu, items, counts["scheduled"] or 0, counts["published"] or 0)
+
+
+def cycle_summaries(menus: list[Menu]) -> list[dict]:
+    """Batch-build cycle summaries for a list of menus (with items__dish prefetched)."""
+    if not menus:
+        return []
+    menu_ids = [m.pk for m in menus]
+    sched_counts = {
+        row["menu_id"]: (row["scheduled"], row["published"])
+        for row in MenuSchedule.objects.filter(menu_id__in=menu_ids)
+        .values("menu_id")
+        .annotate(
+            scheduled=Count("id"),
+            published=Count("id", filter=Q(is_published=True)),
+        )
+    }
+    summaries = []
+    for m in menus:
+        scheduled, published = sched_counts.get(m.pk, (0, 0))
+        summaries.append(_build_cycle_summary(m, list(m.items.all()), scheduled, published))
+    return summaries
 
 
 def unassigned_dishes() -> list[Dish]:

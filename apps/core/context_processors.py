@@ -16,17 +16,7 @@ def platform_context(request):
     return context
 
 
-def _pass_figures(request):
-    """The two figures carried on the access pass of the sign-in screen.
-
-    They are read from the records rather than typed into the template, so
-    the pass says something true about the platform it opens. The queries run
-    only for the two screens that show the pass, and nowhere else.
-    """
-    path = getattr(request, "path", "") or ""
-    if not (path.startswith("/accounts/login") or path.startswith("/accounts/register")):
-        return {}
-
+def _compute_pass_figures():
     import datetime as dt
 
     from django.utils import timezone
@@ -40,9 +30,14 @@ def _pass_figures(request):
     # The next service that has a forecast on it, or the registered strength
     # if the forecaster has not reached it yet.
     expected = None
-    service = MealService.objects.filter(date__gte=today).order_by("date", "meal").first()
+    service = (
+        MealService.objects.filter(date__gte=today)
+        .select_related("forecast")
+        .order_by("date", "meal")
+        .first()
+    )
     if service is not None:
-        forecast = Forecast.objects.filter(service=service).first()
+        forecast = getattr(service, "forecast", None)
         if forecast is not None:
             expected = int(round(float(forecast.predicted_attendance)))
         else:
@@ -61,3 +56,19 @@ def _pass_figures(request):
     waste_pct = round(leftover / prepared * 100, 1) if prepared else None
 
     return {"auth_expected_turnout": expected, "auth_waste_pct": waste_pct}
+
+
+def _pass_figures(request):
+    """The two figures carried on the access pass of the sign-in screen.
+
+    They are read from the records rather than typed into the template, so
+    the pass says something true about the platform it opens. The queries run
+    only for the two screens that show the pass, and nowhere else.
+    """
+    path = getattr(request, "path", "") or ""
+    if not (path.startswith("/accounts/login") or path.startswith("/accounts/register")):
+        return {}
+
+    from django.core.cache import cache
+
+    return cache.get_or_set("auth_pass_figures_v1", _compute_pass_figures, 60)

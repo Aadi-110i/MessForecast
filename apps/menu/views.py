@@ -52,7 +52,7 @@ def menu_console(request):
     board_start = week_start(today)
 
     cycles = menu_services.menu_cycles()
-    summaries = [menu_services.cycle_summary(m) for m in cycles]
+    summaries = menu_services.cycle_summaries(cycles)
 
     selected = summaries[0] if summaries else None
     selected_specs = []
