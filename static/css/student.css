@@ -41,6 +41,15 @@ body.stu-shell {
 /* --- The shell ------------------------------------------------------------
    The console rail is a filing cabinet of sections. A student gets three
    words, so the rail becomes a short list and the page takes the width. */
+html {
+  scroll-behavior: smooth;
+}
+
+#checkin,
+#notices {
+  scroll-margin-top: calc(var(--topbar-h, 4rem) + 1.5rem);
+}
+
 body.stu-shell .rail {
   background: transparent;
   border-right: 0;
@@ -376,18 +385,34 @@ body.stu-shell .foot { border-top: 0; }
 .stu-week {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(200px, 1fr);
-  gap: var(--space-md);
+  grid-auto-columns: clamp(285px, 22vw, 340px);
+  gap: var(--space-lg);
   overflow-x: auto;
-  padding-bottom: 6px;
+  padding-bottom: 12px;
   scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(23, 19, 15, 0.2) transparent;
+}
+.stu-week::-webkit-scrollbar {
+  height: 6px;
+}
+.stu-week::-webkit-scrollbar-track {
+  background: rgba(23, 19, 15, 0.04);
+  border-radius: 999px;
+}
+.stu-week::-webkit-scrollbar-thumb {
+  background: rgba(23, 19, 15, 0.2);
+  border-radius: 999px;
+}
+.stu-week::-webkit-scrollbar-thumb:hover {
+  background: rgba(23, 19, 15, 0.35);
 }
 .stu-day {
   scroll-snap-align: start;
   background: var(--stu-paper);
   border: 1px solid var(--stu-rule);
-  border-radius: 18px;
-  padding: var(--space-md);
+  border-radius: 20px;
+  padding: 1.25rem 1.35rem;
 }
 .stu-day.is-today {
   border-color: var(--stu-accent);

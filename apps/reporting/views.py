@@ -214,7 +214,7 @@ def dashboard_home(request):
         "unwritten_meals": unwritten_meals,
         "written_meals": written_meals,
         "weekday_pattern": demand_services.attendance_by_weekday(start, end, hall),
-        "period": demand_services.attendance_by_period(start, end, hall),
+        "period": period,
         "demand_summary": demand_summary,
         # The exam lift is a forecast input, not a headline: it belongs in the
         # period summary rather than on the front of the page.
@@ -317,7 +317,9 @@ def dashboard_planning(request):
     plans = PreparationPlan.objects.filter(service__date__gte=start, service__date__lte=end)
     if hall is not None:
         plans = plans.filter(service__hall=hall)
-    plans = plans.select_related("service", "service__hall", "forecast").prefetch_related("lines__dish")
+    plans = plans.select_related("service", "service__hall", "forecast", "indent").prefetch_related(
+        "lines__dish", "indent__lines__ingredient"
+    )
 
     today = timezone.localdate()
     when = request.GET.get("when") or "upcoming"
@@ -327,6 +329,11 @@ def dashboard_planning(request):
         ordered = plans.filter(service__date__gte=today).order_by("service__date", "service__meal")
 
     shown = list(ordered[:12])
+    counts = plans.aggregate(
+        total=models.Count("id"),
+        upcoming=models.Count("id", filter=models.Q(service__date__gte=today)),
+        past=models.Count("id", filter=models.Q(service__date__lt=today)),
+    )
 
     context = {
         "start": start,
@@ -336,9 +343,9 @@ def dashboard_planning(request):
         "plans": shown,
         "when": when,
         "today": today,
-        "total_plans": plans.count(),
-        "upcoming_count": plans.filter(service__date__gte=today).count(),
-        "past_count": plans.filter(service__date__lt=today).count(),
+        "total_plans": counts["total"] or 0,
+        "upcoming_count": counts["upcoming"] or 0,
+        "past_count": counts["past"] or 0,
     }
     return render(request, "dashboard/planning.html", context)
 
@@ -719,15 +726,17 @@ def student_dashboard(request):
         student_identifier=identifier
     ).select_related("service", "service__hall")
 
-    recent_attendance = attendance_qs.order_by("-captured_at")[:6]
-    attendance_count = attendance_qs.count()
-    present_today = attendance_qs.filter(
-        service__date=today
-    ).values("service").distinct().count()
-    last_30_days = attendance_qs.filter(
-        service__date__gte=today - dt.timedelta(days=30)
-    ).count()
-    distinct_halls = attendance_qs.values("service__hall").distinct().count()
+    recent_attendance = list(attendance_qs.order_by("-captured_at")[:6])
+    stats = attendance_qs.aggregate(
+        attendance_count=models.Count("id"),
+        present_today=models.Count("service_id", filter=models.Q(service__date=today), distinct=True),
+        last_30_days=models.Count("id", filter=models.Q(service__date__gte=today - dt.timedelta(days=30))),
+        distinct_halls=models.Count("service__hall_id", distinct=True),
+    )
+    attendance_count = stats["attendance_count"] or 0
+    present_today = stats["present_today"] or 0
+    last_30_days = stats["last_30_days"] or 0
+    distinct_halls = stats["distinct_halls"] or 0
 
     # Four weeks of dots, so the record reads as a rhythm rather than a table.
     window_start = today - dt.timedelta(days=27)

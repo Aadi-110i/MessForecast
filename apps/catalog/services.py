@@ -50,6 +50,7 @@ def active_recipes_for(dishes, on_date: dt.date | None = None) -> dict:
         Recipe.objects.filter(dish_id__in=dish_ids)
         .filter(Q(effective_from__lte=on_date))
         .filter(Q(effective_to__isnull=True) | Q(effective_to__gte=on_date))
+        .prefetch_related("items__ingredient")
         .order_by("dish_id", "-version")
     )
     chosen: dict[int, Recipe] = {}
@@ -87,7 +88,12 @@ def recipe_cost(recipe: Recipe | None, costs: dict | None = None) -> dict:
     portion_total_trim = Decimal("0")
     grams = Decimal("0")
 
-    for item in recipe.items.select_related("ingredient"):
+    items = (
+        recipe.items.all()
+        if hasattr(recipe, "_prefetched_objects_cache") and "items" in recipe._prefetched_objects_cache
+        else recipe.items.select_related("ingredient")
+    )
+    for item in items:
         unit_cost = costs.get(item.ingredient_id, Decimal("0"))
         gross = item.gross_quantity or Decimal("0")
         line_cost = gross * unit_cost
@@ -141,11 +147,11 @@ def dish_costs(dishes, on_date: dt.date | None = None, hall=None) -> dict:
     """Portion cost for every dish, keyed by dish id."""
     on_date = on_date or dt.date.today()
     recipes = active_recipes_for(dishes, on_date)
-    ingredient_ids = set()
-    for recipe in recipes.values():
-        ingredient_ids.update(
-            recipe.items.values_list("ingredient_id", flat=True)
-        )
+    ingredient_ids = {
+        item.ingredient_id
+        for recipe in recipes.values()
+        for item in recipe.items.all()
+    }
     from apps.catalog.models import Ingredient
 
     ingredients = Ingredient.objects.filter(pk__in=ingredient_ids)
@@ -162,10 +168,30 @@ def menu_usage(dish: Dish) -> dict:
     """Where a dish is served, so a recipe change can be weighed."""
     from apps.menu.models import MenuItem
 
-    items = MenuItem.objects.filter(dish=dish).select_related("menu")
+    items = list(MenuItem.objects.filter(dish=dish).select_related("menu"))
     menus = sorted({item.menu.name for item in items})
-    meals = sorted({item.meal for item in items}, key=lambda m: MealType(m).label if m in {x.value for x in MealType} else m)
-    return {"menus": menus, "meals": meals, "count": items.count()}
+    valid_meals = {x.value for x in MealType}
+    meals = sorted({item.meal for item in items}, key=lambda m: MealType(m).label if m in valid_meals else m)
+    return {"menus": menus, "meals": meals, "count": len(items)}
+
+
+def menu_usage_map(dishes: list[Dish]) -> dict[int, dict]:
+    """Batch-fetch menu usage for a list of dishes in one query."""
+    from apps.menu.models import MenuItem
+
+    if not dishes:
+        return {}
+    valid_meals = {x.value for x in MealType}
+    grouped: dict[int, list] = {d.pk: [] for d in dishes}
+    for item in MenuItem.objects.filter(dish__in=dishes).select_related("menu"):
+        grouped.setdefault(item.dish_id, []).append(item)
+
+    result: dict[int, dict] = {}
+    for dish_id, items in grouped.items():
+        menus = sorted({item.menu.name for item in items})
+        meals = sorted({item.meal for item in items}, key=lambda m: MealType(m).label if m in valid_meals else m)
+        result[dish_id] = {"menus": menus, "meals": meals, "count": len(items)}
+    return result
 
 
 def next_version(dish: Dish) -> int:
